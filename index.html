@@ -158,22 +158,22 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 }
 .ae-features { display: flex; flex-wrap: wrap; gap: .45rem; }
 .ae-feat {
-  display: flex; align-items: center; gap: .4rem;
+  display: flex; align-items: center; gap: .5rem;
   background: rgba(4,10,20,.6); border: 1px solid var(--border);
-  border-radius: 6px; padding: .35rem .7rem;
-  font-size: .72rem; font-family: var(--mono);
+  border-radius: 6px; padding: .4rem .85rem;
+  font-size: .78rem; font-family: var(--mono);
 }
 .ae-feat.danger  { border-color: rgba(255,61,113,.4);  }
 .ae-feat.warning { border-color: rgba(255,170,0,.4);   }
 .ae-feat.safe    { border-color: rgba(41,121,255,.3);  }
 .ae-feat.ok      { border-color: rgba(0,224,150,.25);  }
-.ae-feat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ae-feat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .ae-feat-dot.danger  { background: var(--red);    box-shadow: 0 0 6px var(--red); }
 .ae-feat-dot.warning { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
 .ae-feat-dot.safe    { background: var(--blue);   box-shadow: 0 0 6px var(--blue); }
 .ae-feat-dot.ok      { background: var(--green);  box-shadow: 0 0 6px var(--green); }
-.ae-feat-name { color: var(--text); }
-.ae-feat-val  { color: var(--accent); margin-right: .2rem; }
+.ae-feat-name { color: #ffffff; font-weight: 600; }
+.ae-feat-val  { color: var(--accent); font-weight: 700; margin-right: .3rem; }
 
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
@@ -448,10 +448,12 @@ function renderAttackExplain(label, explanations, usedVals){
     const val  = expl ? expl.value : (usedVals[feat] ?? '—');
     const level= expl ? expl.level : 'ok';
     const m    = META[feat] || {};
+    const r    = RANGES[feat];
+    const isBin = r && !!r.opts;
     const displayVal = typeof val === 'number'
       ? (Number.isInteger(val) ? val : val.toFixed(2))
       : val;
-    const unit = m.unit || '';
+    const unit = isBin ? '' : (m.unit || '');
 
     const el = document.createElement('div');
     el.className = `ae-feat ${level}`;
