@@ -73,18 +73,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 }
 .demo-banner-title::before { content: '// '; opacity: .45; }
 
-/* ── Range Legend ── */
-.range-legend {
-  display: none;
-}
-.rl-title { font-size: .62rem; font-family: var(--mono); color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
-.rl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .5rem .75rem; }
-.rl-row { display: flex; align-items: baseline; gap: .4rem; font-size: .76rem; }
-.rl-name { color: var(--accent); font-family: var(--mono); font-size: .67rem; min-width: 140px; }
-.rl-range { color: var(--muted); font-family: var(--mono); font-size: .67rem; }
-.rl-type { font-size: .62rem; padding: .08rem .35rem; border-radius: 3px; background: rgba(255,170,0,.12); color: var(--yellow); font-family: var(--mono); flex-shrink: 0; }
-.rl-type.binary { background: rgba(0,229,255,.1); color: var(--accent); }
-
 /* ── Run button ── */
 .run-wrap { display: flex; justify-content: center; margin-bottom: 2rem; }
 .run-btn {
@@ -140,6 +128,53 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .ips-BLOCK      { background: rgba(255,61,113,.2); color: var(--red); }
 .ips-RATE-LIMIT { background: rgba(255,170,0,.2);  color: var(--yellow); }
 
+/* ── Attack Explanation Box ── */
+.attack-explain {
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  animation: fadeUp .4s ease both;
+}
+.attack-explain.BENIGN   { border-color: rgba(0,224,150,.3);  background: rgba(0,224,150,.04); }
+.attack-explain.DDoS     { border-color: rgba(255,61,113,.35); background: rgba(255,61,113,.04); }
+.attack-explain.PortScan { border-color: rgba(255,170,0,.35);  background: rgba(255,170,0,.04); }
+
+.ae-header { display: flex; align-items: center; gap: .65rem; margin-bottom: .85rem; }
+.ae-badge {
+  font-size: .6rem; font-family: var(--mono); letter-spacing: 1.5px;
+  padding: .2rem .6rem; border-radius: 4px; font-weight: 700; text-transform: uppercase;
+}
+.ae-badge.BENIGN   { background: rgba(0,224,150,.15); color: var(--green); }
+.ae-badge.DDoS     { background: rgba(255,61,113,.15); color: var(--red); }
+.ae-badge.PortScan { background: rgba(255,170,0,.15);  color: var(--yellow); }
+.ae-title { font-size: .85rem; font-weight: 700; color: #fff; }
+
+.ae-desc { font-size: .82rem; color: var(--muted); line-height: 1.65; margin-bottom: 1rem; }
+
+.ae-features-title {
+  font-size: .62rem; font-family: var(--mono); letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .6rem;
+}
+.ae-features { display: flex; flex-wrap: wrap; gap: .45rem; }
+.ae-feat {
+  display: flex; align-items: center; gap: .4rem;
+  background: rgba(4,10,20,.6); border: 1px solid var(--border);
+  border-radius: 6px; padding: .35rem .7rem;
+  font-size: .72rem; font-family: var(--mono);
+}
+.ae-feat.danger  { border-color: rgba(255,61,113,.4);  }
+.ae-feat.warning { border-color: rgba(255,170,0,.4);   }
+.ae-feat.safe    { border-color: rgba(41,121,255,.3);  }
+.ae-feat.ok      { border-color: rgba(0,224,150,.25);  }
+.ae-feat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ae-feat-dot.danger  { background: var(--red);    box-shadow: 0 0 6px var(--red); }
+.ae-feat-dot.warning { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.ae-feat-dot.safe    { background: var(--blue);   box-shadow: 0 0 6px var(--blue); }
+.ae-feat-dot.ok      { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+.ae-feat-name { color: var(--text); }
+.ae-feat-val  { color: var(--accent); margin-right: .2rem; }
+
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
 @media(max-width:500px){ .proba-grid{ grid-template-columns:1fr; } }
@@ -187,7 +222,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="live">MODEL ONLINE</div>
   </header>
 
-  <!-- ── Demo description ── -->
   <div class="demo-banner">
     <div class="demo-banner-title">عن هذا النظام</div>
     <div class="db-item">
@@ -206,12 +240,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     </div>
   </div>
 
-  <!-- ── Range legend ── -->
-  <div class="range-legend">
-    <div class="rl-title">نطاقات القيم العشوائية المولَّدة</div>
-    <div class="rl-grid" id="range-legend-grid"></div>
-  </div>
-
   <div class="run-wrap">
     <button class="run-btn" id="run-btn" onclick="runPredict()">▶ &nbsp;التقط وحلّل الفلو</button>
   </div>
@@ -227,6 +255,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
   <div class="result-panel" id="result-panel">
     <div class="ptitle">نتيجة التحليل</div>
+
+    <!-- Verdict -->
     <div class="verdict" id="verdict">
       <div class="v-icon"  id="v-icon"></div>
       <div>
@@ -234,6 +264,18 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
         <div class="v-ips"   id="v-ips"></div>
       </div>
     </div>
+
+    <!-- ── Attack Explanation ── -->
+    <div class="attack-explain" id="attack-explain">
+      <div class="ae-header">
+        <span class="ae-badge" id="ae-badge"></span>
+        <span class="ae-title" id="ae-title"></span>
+      </div>
+      <div class="ae-desc" id="ae-desc"></div>
+      <div class="ae-features-title">الأعمدة المؤثرة في القرار</div>
+      <div class="ae-features" id="ae-features"></div>
+    </div>
+
     <div class="proba-grid"   id="proba-grid"></div>
     <hr class="sep">
     <div class="ptitle" style="margin-bottom:.9rem">تفسير الـ Features</div>
@@ -242,10 +284,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 </div>
 
 <script>
-/* ══════════════════════════════════════════
-   RANGES — with labels for legend
-══════════════════════════════════════════ */
-function burst(n, col){}
 const RANGES = {
   "Fwd IAT Mean":              { min:0,   max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
   "Bwd IAT Mean":              { min:0,   max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
@@ -263,20 +301,30 @@ const RANGES = {
   "ShortFlowLevel":            { opts:[0,1], unit:"binary", label:"Short Flow Level"                         },
 };
 
-/* Build range legend */
-(function buildLegend(){
-  const grid = document.getElementById('range-legend-grid');
-  Object.entries(RANGES).forEach(([key, r]) => {
-    const isBinary = !!r.opts;
-    const rangeText = isBinary ? '0 أو 1' : `${fmtNum(r.min)} – ${fmtNum(r.max)}`;
-    const typeText  = isBinary ? 'binary' : r.unit;
-    const typeClass = isBinary ? 'binary' : '';
-    const row = document.createElement('div');
-    row.className = 'rl-row';
-    row.innerHTML = `<span class="rl-name">${r.label || key}</span><span class="rl-range">${rangeText}</span><span class="rl-type ${typeClass}">${typeText}</span>`;
-    grid.appendChild(row);
-  });
-})();
+/* ── شرح كل نوع هجوم ── */
+const ATTACK_INFO = {
+  BENIGN: {
+    title: "حركة مرور طبيعية — لا تهديد",
+    desc: "الفلو الملتقط يمثل حركة مرور اعتيادية. لا توجد مؤشرات على هجوم. القيم ضمن النطاقات الطبيعية لشبكة سليمة، ويُنصح بالسماح بمرور هذا الـ flow.",
+    keyFeats: ["Fwd IAT Mean", "Bwd IAT Mean", "Average Packet Size", "Flow Duration"],
+  },
+  DDoS: {
+    title: "هجوم حجب الخدمة الموزع (DDoS)",
+    desc: "هجوم DDoS يهدف إلى إغراق الخادم بكميات ضخمة من الطلبات لتعطيله عن العمل. يتميز بكثافة حركة مرور عالية جداً، وحزم صغيرة ومتكررة بشكل آلي، مع تدفق مستمر وسريع من مصادر متعددة.",
+    keyFeats: ["TrafficIntensity", "Flow Packets/s", "Flow Bytes/s", "Burstiness", "Fwd IAT Mean"],
+  },
+  PortScan: {
+    title: "مسح المنافذ (PortScan)",
+    desc: "هجوم PortScan يُستخدم لاستكشاف المنافذ المفتوحة على الهدف بهدف إيجاد ثغرات. يتميز بـ flows قصيرة جداً تستهدف منافذ مختلفة، مع نسبة SYN عالية بدون ACK، وغياب شبه تام للردود العكسية.",
+    keyFeats: ["SynOnlyRatio", "PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel", "BackwardZeroLevel"],
+  },
+};
+
+let META = {};
+
+async function loadMeta(){
+  try { const r=await fetch("/meta"); const d=await r.json(); META=d.feature_meta||{}; } catch(e){}
+}
 
 function fmtNum(n){
   if(n >= 1e3) return n.toLocaleString();
@@ -296,15 +344,6 @@ function genRandom(){
   return v;
 }
 
-/* ══════════════════════════════════════════
-   META
-══════════════════════════════════════════ */
-let META={};
-
-async function loadMeta(){
-  try { const r=await fetch("/meta"); const d=await r.json(); META=d.feature_meta||{}; } catch(e){}
-}
-
 function evalLevel(feat,val){
   const thr=(META[feat]||{}).thresholds||[];
   for(const t of thr){
@@ -314,9 +353,7 @@ function evalLevel(feat,val){
   return {level:"ok", text:(META[feat]||{}).description||""};
 }
 
-/* ══════════════════════════════════════════
-   SCAN PROGRESS
-══════════════════════════════════════════ */
+/* ── Scan Progress ── */
 let scanTicker=null, scanProg=0;
 const STEPS = ["جمع بيانات الـ flow...","حساب الـ features...","تشغيل الموديل...","تحليل النتائج..."];
 
@@ -343,9 +380,7 @@ function endScan(){
   setTimeout(()=>{ fill.style.width='0%'; lbl.textContent=''; },800);
 }
 
-/* ══════════════════════════════════════════
-   RUN
-══════════════════════════════════════════ */
+/* ── Run ── */
 let runCount=0;
 
 async function runPredict(){
@@ -364,8 +399,6 @@ async function runPredict(){
     runCount++;
     document.getElementById('run-info').textContent=`RUN #${runCount}  ·  ${new Date().toLocaleTimeString('ar')}`;
     renderResult(d);
-    const cols={BENIGN:var_('--green'),DDoS:var_('--red'),PortScan:var_('--yellow')};
-    burst(d.label==='DDoS'?45:d.label==='PortScan'?28:14, cols[d.label]||'#00e5ff');
   } catch(e){
     endScan();
     alert("تأكد إن السيرفر شغال على :5000\n"+e.message);
@@ -375,11 +408,7 @@ async function runPredict(){
   }
 }
 
-function var_(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-/* ══════════════════════════════════════════
-   CHIPS — with range context
-══════════════════════════════════════════ */
+/* ── Chips ── */
 function showChips(vals){
   const strip=document.getElementById('vals-strip');
   strip.innerHTML='';
@@ -398,9 +427,42 @@ function showChips(vals){
   });
 }
 
-/* ══════════════════════════════════════════
-   RENDER RESULT
-══════════════════════════════════════════ */
+/* ── Render Attack Explanation ── */
+function renderAttackExplain(label, explanations, usedVals){
+  const info = ATTACK_INFO[label] || ATTACK_INFO.BENIGN;
+  const box  = document.getElementById('attack-explain');
+  const badge= document.getElementById('ae-badge');
+  const title= document.getElementById('ae-title');
+  const desc = document.getElementById('ae-desc');
+  const featsEl = document.getElementById('ae-features');
+
+  box.className  = `attack-explain ${label}`;
+  badge.className= `ae-badge ${label}`;
+  badge.textContent = label;
+  title.textContent = info.title;
+  desc.textContent  = info.desc;
+
+  featsEl.innerHTML = '';
+  info.keyFeats.forEach(feat => {
+    const expl = explanations[feat];
+    const val  = expl ? expl.value : (usedVals[feat] ?? '—');
+    const level= expl ? expl.level : 'ok';
+    const m    = META[feat] || {};
+    const displayVal = typeof val === 'number'
+      ? (Number.isInteger(val) ? val : val.toFixed(2))
+      : val;
+    const unit = m.unit || '';
+
+    const el = document.createElement('div');
+    el.className = `ae-feat ${level}`;
+    el.innerHTML = `<span class="ae-feat-dot ${level}"></span>
+      <span class="ae-feat-name">${m.label || feat}</span>
+      <span class="ae-feat-val">${displayVal}${unit ? ' '+unit : ''}</span>`;
+    featsEl.appendChild(el);
+  });
+}
+
+/* ── Render Result ── */
 function renderResult(d){
   const panel=document.getElementById('result-panel');
   panel.className=`result-panel ${d.label}`;
@@ -414,6 +476,10 @@ function renderResult(d){
   const ipsCls={'ALLOW':'ips-ALLOW','BLOCK':'ips-BLOCK','RATE LIMIT':'ips-RATE-LIMIT'}[d.ips]||'ips-ALLOW';
   document.getElementById('v-ips').innerHTML=`IPS Decision: <span class="${ipsCls}">${d.ips}</span>`;
 
+  /* Attack explanation */
+  renderAttackExplain(d.label, d.explanations||{}, d.used_values||{});
+
+  /* Proba */
   const pg=document.getElementById('proba-grid');
   pg.innerHTML='';
   for(const [cls,prob] of Object.entries(d.proba)){
@@ -428,6 +494,7 @@ function renderResult(d){
     document.querySelectorAll('.p-fill[data-w]').forEach(el=> el.style.width=el.dataset.w+'%');
   });
 
+  /* Feature explanations */
   const grid=document.getElementById('explain-grid');
   grid.innerHTML='';
   const expl=d.explanations||{};
