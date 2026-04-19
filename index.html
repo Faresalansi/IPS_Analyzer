@@ -295,7 +295,7 @@ const RANGES = {
   "Flow Packets/s":            { min:0,   max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
   "Flow Bytes/s":              { min:0,   max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
   "DistinctDestinationPort":   { min:1,   max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
-  "Burstiness":                { opts:[0,1], unit:"binary", label:"Burstiness"                               },
+
   "BackwardZeroLevel":         { opts:[0,1], unit:"binary", label:"Backward Zero Level"                      },
   "LowPacketLevel":            { opts:[0,1], unit:"binary", label:"Low Packet Level"                         },
   "ShortFlowLevel":            { opts:[0,1], unit:"binary", label:"Short Flow Level"                         },
@@ -341,6 +341,10 @@ function rnd(feat){
 function genRandom(){
   const v={};
   Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
+  // حساب Burstiness من القيم الحقيقية بدل العشوائي
+  const iatStd  = v["Flow IAT Std"]  || 0;
+  const iatMean = v["Flow IAT Mean"] || 0;
+  v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
   return v;
 }
 
