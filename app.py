@@ -166,11 +166,31 @@ FEATURE_META = {
             {"op": "==", "value": 0, "level": "safe",    "text": "Limited ports — normal traffic"},
         ]
     },
+    "Window_Count": {
+        "label": "Window Count",
+        "unit": "windows",
+        "description": "Number of TCP windows observed in the flow",
+        "thresholds": [
+            {"op": ">=", "value": 1000, "level": "danger",  "text": "≥1000 windows — very high window activity, possible DDoS"},
+            {"op": ">=", "value": 100,  "level": "warning", "text": "≥100 windows — elevated window count, monitor closely"},
+            {"op": "<",  "value": 100,  "level": "safe",    "text": "<100 windows — normal window count"},
+        ]
+    },
+    "WindowLevel": {
+        "label": "Window Level (computed)",
+        "unit": "0–2",
+        "description": "Auto-computed from Window_Count: 0=normal, 1=elevated (≥100), 2=high (≥1000)",
+        "thresholds": [
+            {"op": ">=", "value": 2, "level": "danger",  "text": "Level 2 — Window_Count ≥ 1000, high threat indicator"},
+            {"op": ">=", "value": 1, "level": "warning", "text": "Level 1 — Window_Count ≥ 100, elevated activity"},
+            {"op": "<",  "value": 1, "level": "safe",    "text": "Level 0 — Window_Count < 100, normal behavior"},
+        ]
+    },
 }
 
 
 def compute_derived(data: dict) -> dict:
-    """Computes TrafficIntensity, Burstiness, and level flags from raw values."""
+    """Computes TrafficIntensity, Burstiness, WindowLevel and level flags from raw values."""
     d = dict(data)
 
     # TrafficIntensity
@@ -197,6 +217,12 @@ def compute_derived(data: dict) -> dict:
 
     # PortDiversityLevel — based on DistinctDestinationPort >= 100
     d["PortDiversityLevel"] = int(float(d.get("DistinctDestinationPort", 0)) >= 100)
+
+    # WindowLevel — computed from Window_Count (mirrors training logic)
+    wc = float(d.get("Window_Count", 0))
+    if   wc >= 1000: d["WindowLevel"] = 2
+    elif wc >= 100:  d["WindowLevel"] = 1
+    else:            d["WindowLevel"] = 0
 
     return d
 
