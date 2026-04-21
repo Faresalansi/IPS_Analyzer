@@ -3,7 +3,7 @@ import pickle, numpy as np, os
 
 app = Flask(__name__, static_folder=".")
 
-# ── تحميل الموديل والأدوات ──────────────────────────────────
+# ── Load model and tools ──────────────────────────────────
 BASE = os.path.dirname(__file__)
 
 with open(os.path.join(BASE, "model.pkl"),          "rb") as f: model          = pickle.load(f)
@@ -12,165 +12,165 @@ with open(os.path.join(BASE, "features.pkl"),        "rb") as f: features       
 with open(os.path.join(BASE, "short_threshold.pkl"), "rb") as f: short_threshold= pickle.load(f)
 with open(os.path.join(BASE, "attack_severity.pkl"), "rb") as f: attack_severity= pickle.load(f)
 
-# ── thresholds metadata للـ frontend ───────────────────────
+# ── Feature threshold metadata for the frontend ───────────────────────
 FEATURE_META = {
     "Fwd IAT Mean": {
         "label": "Forward IAT Mean",
         "unit": "µs",
-        "description": "متوسط الزمن بين الحزم الأمامية",
+        "description": "Mean time between forward packets",
         "thresholds": [
-            {"op": "<=", "value": 0,      "level": "danger",  "text": "قيمة صفرية — نمط هجوم محتمل"},
-            {"op": "<",  "value": 1000,   "level": "warning", "text": "IAT منخفض جداً — تدفق مكثف مريب"},
-            {"op": "<",  "value": 100000, "level": "ok",      "text": "IAT طبيعي — حركة مرور اعتيادية"},
-            {"op": ">=", "value": 100000, "level": "safe",    "text": "IAT مرتفع — حركة هادئة جداً"},
+            {"op": "<=", "value": 0,      "level": "danger",  "text": "Zero value — possible attack pattern"},
+            {"op": "<",  "value": 1000,   "level": "warning", "text": "Very low IAT — suspiciously dense flow"},
+            {"op": "<",  "value": 100000, "level": "ok",      "text": "Normal IAT — regular traffic"},
+            {"op": ">=", "value": 100000, "level": "safe",    "text": "High IAT — very calm traffic"},
         ]
     },
     "Bwd IAT Mean": {
         "label": "Backward IAT Mean",
         "unit": "µs",
-        "description": "متوسط الزمن بين الحزم العكسية",
+        "description": "Mean time between backward packets",
         "thresholds": [
-            {"op": "<=", "value": 0,      "level": "danger",  "text": "لا ردود عكسية — مشبوه"},
-            {"op": "<",  "value": 1000,   "level": "warning", "text": "استجابة عكسية سريعة جداً"},
-            {"op": "<",  "value": 100000, "level": "ok",      "text": "استجابة طبيعية"},
-            {"op": ">=", "value": 100000, "level": "safe",    "text": "استجابة بطيئة — طبيعي"},
+            {"op": "<=", "value": 0,      "level": "danger",  "text": "No backward responses — suspicious"},
+            {"op": "<",  "value": 1000,   "level": "warning", "text": "Very fast backward response"},
+            {"op": "<",  "value": 100000, "level": "ok",      "text": "Normal response time"},
+            {"op": ">=", "value": 100000, "level": "safe",    "text": "Slow response — normal"},
         ]
     },
     "Average Packet Size": {
         "label": "Average Packet Size",
         "unit": "bytes",
-        "description": "متوسط حجم الحزمة",
+        "description": "Mean packet size",
         "thresholds": [
-            {"op": "<",  "value": 50,   "level": "danger",  "text": "حزم صغيرة جداً — نمط SYN Flood أو PortScan"},
-            {"op": "<",  "value": 200,  "level": "warning", "text": "حزم صغيرة — راقب النشاط"},
-            {"op": "<",  "value": 1000, "level": "ok",      "text": "حجم حزمة طبيعي"},
-            {"op": ">=", "value": 1000, "level": "safe",    "text": "حزم كبيرة — نقل بيانات اعتيادي"},
+            {"op": "<",  "value": 50,   "level": "danger",  "text": "Very small packets — SYN Flood or PortScan pattern"},
+            {"op": "<",  "value": 200,  "level": "warning", "text": "Small packets — monitor activity"},
+            {"op": "<",  "value": 1000, "level": "ok",      "text": "Normal packet size"},
+            {"op": ">=", "value": 1000, "level": "safe",    "text": "Large packets — normal data transfer"},
         ]
     },
     "SynOnlyRatio": {
         "label": "SYN-Only Ratio",
         "unit": "",
-        "description": "نسبة الـ flows التي تحتوي SYN فقط بدون ACK",
+        "description": "Ratio of flows containing SYN only without ACK",
         "thresholds": [
-            {"op": ">=", "value": 0.9, "level": "danger",  "text": "SYN Flood مرجح — حجب خدمة"},
-            {"op": ">=", "value": 0.5, "level": "warning", "text": "نسبة SYN مرتفعة — مشبوه"},
-            {"op": ">=", "value": 0.1, "level": "ok",      "text": "بعض حزم SYN — طبيعي نسبياً"},
-            {"op": "<",  "value": 0.1, "level": "safe",    "text": "SYN نادر — حركة طبيعية"},
+            {"op": ">=", "value": 0.9, "level": "danger",  "text": "SYN Flood likely — denial of service"},
+            {"op": ">=", "value": 0.5, "level": "warning", "text": "High SYN ratio — suspicious"},
+            {"op": ">=", "value": 0.1, "level": "ok",      "text": "Some SYN packets — relatively normal"},
+            {"op": "<",  "value": 0.1, "level": "safe",    "text": "Rare SYN — normal traffic"},
         ]
     },
     "Flow Duration": {
         "label": "Flow Duration",
         "unit": "µs",
-        "description": "مدة الـ flow الكاملة",
+        "description": "Total duration of the flow",
         "thresholds": [
-            {"op": "<",  "value": short_threshold,       "level": "danger",  "text": f"أقل من threshold ({short_threshold:.0f}µs) — short flow مشبوه"},
-            {"op": "<",  "value": short_threshold * 10,  "level": "warning", "text": "flow قصير نسبياً"},
-            {"op": "<",  "value": short_threshold * 100, "level": "ok",      "text": "flow متوسط — طبيعي"},
-            {"op": ">=", "value": short_threshold * 100, "level": "safe",    "text": "flow طويل — اتصال مستمر اعتيادي"},
+            {"op": "<",  "value": short_threshold,       "level": "danger",  "text": f"Below threshold ({short_threshold:.0f}µs) — suspicious short flow"},
+            {"op": "<",  "value": short_threshold * 10,  "level": "warning", "text": "Relatively short flow"},
+            {"op": "<",  "value": short_threshold * 100, "level": "ok",      "text": "Medium flow — normal"},
+            {"op": ">=", "value": short_threshold * 100, "level": "safe",    "text": "Long flow — sustained normal connection"},
         ]
     },
     "Flow IAT Mean": {
         "label": "Flow IAT Mean",
         "unit": "µs",
-        "description": "متوسط الزمن بين الحزم في الـ flow",
+        "description": "Mean inter-arrival time between packets in the flow",
         "thresholds": [
-            {"op": "<=", "value": 0,      "level": "danger",  "text": "IAT صفري — حزم متتالية فورية"},
-            {"op": "<",  "value": 1000,   "level": "warning", "text": "IAT منخفض — تدفق مكثف"},
-            {"op": "<",  "value": 100000, "level": "ok",      "text": "IAT طبيعي"},
-            {"op": ">=", "value": 100000, "level": "safe",    "text": "IAT مرتفع — حركة هادئة"},
+            {"op": "<=", "value": 0,      "level": "danger",  "text": "Zero IAT — back-to-back instant packets"},
+            {"op": "<",  "value": 1000,   "level": "warning", "text": "Low IAT — dense flow"},
+            {"op": "<",  "value": 100000, "level": "ok",      "text": "Normal IAT"},
+            {"op": ">=", "value": 100000, "level": "safe",    "text": "High IAT — calm traffic"},
         ]
     },
     "Flow IAT Std": {
         "label": "Flow IAT Std",
         "unit": "µs",
-        "description": "انحراف معياري للـ IAT — يقيس التذبذب",
+        "description": "Standard deviation of IAT — measures variability",
         "thresholds": [
-            {"op": "<",  "value": 100,    "level": "danger",  "text": "تذبذب منعدم — حركة آلية ثابتة"},
-            {"op": "<",  "value": 10000,  "level": "warning", "text": "تذبذب منخفض — محتمل آلي"},
-            {"op": "<",  "value": 500000, "level": "ok",      "text": "تذبذب طبيعي"},
-            {"op": ">=", "value": 500000, "level": "safe",    "text": "تذبذب عالٍ — حركة بشرية متنوعة"},
+            {"op": "<",  "value": 100,    "level": "danger",  "text": "No variance — fixed automated traffic"},
+            {"op": "<",  "value": 10000,  "level": "warning", "text": "Low variance — possibly automated"},
+            {"op": "<",  "value": 500000, "level": "ok",      "text": "Normal variance"},
+            {"op": ">=", "value": 500000, "level": "safe",    "text": "High variance — diverse human traffic"},
         ]
     },
     "Flow Packets/s": {
         "label": "Flow Packets/s",
         "unit": "pkt/s",
-        "description": "عدد الحزم في الثانية — يُستخدم لحساب TrafficIntensity",
+        "description": "Packets per second — used to compute TrafficIntensity",
         "thresholds": [
-            {"op": ">=", "value": 1000, "level": "danger",  "text": "≥1000 pkt/s — TrafficIntensity=2 (عالٍ جداً، DDoS محتمل)"},
-            {"op": ">=", "value": 100,  "level": "warning", "text": "≥100 pkt/s — TrafficIntensity=1 (متوسط، راقب)"},
-            {"op": "<",  "value": 100,  "level": "safe",    "text": "<100 pkt/s — TrafficIntensity=0 (طبيعي)"},
+            {"op": ">=", "value": 1000, "level": "danger",  "text": "≥1000 pkt/s — TrafficIntensity=2 (very high, possible DDoS)"},
+            {"op": ">=", "value": 100,  "level": "warning", "text": "≥100 pkt/s — TrafficIntensity=1 (medium, monitor)"},
+            {"op": "<",  "value": 100,  "level": "safe",    "text": "<100 pkt/s — TrafficIntensity=0 (normal)"},
         ]
     },
     "Flow Bytes/s": {
         "label": "Flow Bytes/s",
         "unit": "B/s",
-        "description": "عدد البايتات في الثانية — يُستخدم لحساب TrafficIntensity",
+        "description": "Bytes per second — used to compute TrafficIntensity",
         "thresholds": [
-            {"op": ">=", "value": 100000, "level": "danger",  "text": "≥100,000 B/s — TrafficIntensity=2 (عالٍ جداً)"},
-            {"op": ">=", "value": 10000,  "level": "warning", "text": "≥10,000 B/s — TrafficIntensity=1 (متوسط)"},
-            {"op": "<",  "value": 10000,  "level": "safe",    "text": "<10,000 B/s — TrafficIntensity=0 (طبيعي)"},
+            {"op": ">=", "value": 100000, "level": "danger",  "text": "≥100,000 B/s — TrafficIntensity=2 (very high)"},
+            {"op": ">=", "value": 10000,  "level": "warning", "text": "≥10,000 B/s — TrafficIntensity=1 (medium)"},
+            {"op": "<",  "value": 10000,  "level": "safe",    "text": "<10,000 B/s — TrafficIntensity=0 (normal)"},
         ]
     },
     "TrafficIntensity": {
-        "label": "Traffic Intensity (محسوب)",
+        "label": "Traffic Intensity (computed)",
         "unit": "0–2",
-        "description": "يُحسب تلقائياً: max(PacketLevel, ByteLevel)",
+        "description": "Auto-computed: max(PacketLevel, ByteLevel)",
         "thresholds": [
-            {"op": ">=", "value": 2, "level": "danger",  "text": "كثافة عالية جداً — DDoS محتمل"},
-            {"op": ">=", "value": 1, "level": "warning", "text": "كثافة متوسطة — راقب"},
-            {"op": "<",  "value": 1, "level": "safe",    "text": "كثافة منخفضة — طبيعي"},
+            {"op": ">=", "value": 2, "level": "danger",  "text": "Very high intensity — possible DDoS"},
+            {"op": ">=", "value": 1, "level": "warning", "text": "Medium intensity — monitor"},
+            {"op": "<",  "value": 1, "level": "safe",    "text": "Low intensity — normal"},
         ]
     },
     "Burstiness": {
         "label": "Burstiness",
         "unit": "0 or 1",
-        "description": "هل الحركة متقطعة؟ (Std/Mean > 0.5)",
+        "description": "Is the traffic bursty? (Std/Mean > 0.5)",
         "thresholds": [
-            {"op": "==", "value": 1, "level": "warning", "text": "حركة متقطعة — نمط burst مشبوه"},
-            {"op": "==", "value": 0, "level": "safe",    "text": "حركة منتظمة — طبيعي"},
+            {"op": "==", "value": 1, "level": "warning", "text": "Bursty traffic — suspicious burst pattern"},
+            {"op": "==", "value": 0, "level": "safe",    "text": "Steady traffic — normal"},
         ]
     },
     "BackwardZeroLevel": {
         "label": "Backward Zero Level",
         "unit": "0 or 1",
-        "description": "هل 90%+ من الـ flows ليس لها ردود عكسية؟",
+        "description": "Do 90%+ of flows have no backward responses?",
         "thresholds": [
-            {"op": "==", "value": 1, "level": "danger",  "text": "لا ردود — one-way traffic مشبوه جداً"},
-            {"op": "==", "value": 0, "level": "safe",    "text": "ردود موجودة — اتصال ثنائي الاتجاه"},
+            {"op": "==", "value": 1, "level": "danger",  "text": "No responses — very suspicious one-way traffic"},
+            {"op": "==", "value": 0, "level": "safe",    "text": "Responses present — normal two-way connection"},
         ]
     },
     "LowPacketLevel": {
         "label": "Low Packet Level",
         "unit": "0 or 1",
-        "description": "هل 90%+ من الـ flows تحتوي ≤3 حزم؟",
+        "description": "Do 90%+ of flows contain ≤3 packets?",
         "thresholds": [
-            {"op": "==", "value": 1, "level": "danger",  "text": "flows بحزم قليلة جداً — PortScan أو SYN Flood"},
-            {"op": "==", "value": 0, "level": "safe",    "text": "flows بحزم كافية — طبيعي"},
+            {"op": "==", "value": 1, "level": "danger",  "text": "Flows with very few packets — PortScan or SYN Flood"},
+            {"op": "==", "value": 0, "level": "safe",    "text": "Sufficient packets in flows — normal"},
         ]
     },
     "ShortFlowLevel": {
         "label": "Short Flow Level",
         "unit": "0 or 1",
-        "description": f"هل 90%+ من الـ flows أقصر من threshold ({short_threshold:.0f}µs)؟",
+        "description": f"Do 90%+ of flows fall below the threshold ({short_threshold:.0f}µs)?",
         "thresholds": [
-            {"op": "==", "value": 1, "level": "danger",  "text": "flows قصيرة جداً — نمط هجوم واضح"},
-            {"op": "==", "value": 0, "level": "safe",    "text": "flows طبيعية الطول"},
+            {"op": "==", "value": 1, "level": "danger",  "text": "Very short flows — clear attack pattern"},
+            {"op": "==", "value": 0, "level": "safe",    "text": "Normal flow length"},
         ]
     },
     "PortDiversityLevel": {
         "label": "Port Diversity Level",
         "unit": "0 or 1",
-        "description": "هل عدد المنافذ المستهدفة (DistinctDestinationPort) ≥ 100؟",
+        "description": "Is the number of distinct destination ports ≥ 100?",
         "thresholds": [
-            {"op": "==", "value": 1, "level": "danger",  "text": "≥100 منفذ مستهدف — نمط PortScan واضح"},
-            {"op": "==", "value": 0, "level": "safe",    "text": "منافذ محدودة — حركة طبيعية"},
+            {"op": "==", "value": 1, "level": "danger",  "text": "≥100 ports targeted — clear PortScan pattern"},
+            {"op": "==", "value": 0, "level": "safe",    "text": "Limited ports — normal traffic"},
         ]
     },
 }
 
 
 def compute_derived(data: dict) -> dict:
-    """يحسب TrafficIntensity و Burstiness و Levels من القيم الخام."""
+    """Computes TrafficIntensity, Burstiness, and level flags from raw values."""
     d = dict(data)
 
     # TrafficIntensity
@@ -190,12 +190,12 @@ def compute_derived(data: dict) -> dict:
     ratio    = (iat_std / iat_mean) if iat_mean != 0 else 0
     d["Burstiness"] = int(ratio > 0.5)
 
-    # Levels (binary flags — ratio-based)
+    # Level flags (binary flags — ratio-based)
     d["BackwardZeroLevel"]  = int(float(d.get("BackwardZeroLevel",  0)) >= 0.9)
     d["LowPacketLevel"]     = int(float(d.get("LowPacketLevel",     0)) >= 0.9)
     d["ShortFlowLevel"]     = int(float(d.get("ShortFlowLevel",     0)) >= 0.9)
 
-    # PortDiversityLevel — يعتمد على DistinctDestinationPort >= 100
+    # PortDiversityLevel — based on DistinctDestinationPort >= 100
     d["PortDiversityLevel"] = int(float(d.get("DistinctDestinationPort", 0)) >= 100)
 
     return d
@@ -208,7 +208,7 @@ def index():
 
 @app.route("/meta")
 def meta():
-    """يرجع metadata الـ features والـ threshold."""
+    """Returns feature metadata and thresholds."""
     return jsonify({
         "features": features,
         "short_threshold": float(short_threshold),
@@ -222,10 +222,10 @@ def predict():
     body = request.get_json(force=True)
     raw  = body.get("features", {})
 
-    # حساب الـ derived features
+    # Compute derived features
     enriched = compute_derived(raw)
 
-    # بناء vector
+    # Build feature vector
     vec = []
     for feat in features:
         val = float(enriched.get(feat, 0))
@@ -238,7 +238,7 @@ def predict():
     label   = le_label.inverse_transform([pred])[0]
     ips     = attack_severity.get(label, "RATE LIMIT")
 
-    # تفسير كل feature
+    # Explain each feature
     explanations = {}
     for feat in features:
         val   = enriched.get(feat, 0)
