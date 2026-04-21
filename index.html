@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IDS — Network Threat Analyzer</title>
+<title>IPS — Network Threat Analyzer</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -43,7 +43,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .logo svg { width: 22px; height: 22px; fill: var(--accent); }
 .htext h1 { font-size: 1.4rem; font-weight: 900; color: #fff; letter-spacing: .3px; }
 .htext p  { font-size: .78rem; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
-.live { margin-right: auto; font-size: .72rem; font-family: var(--mono); color: var(--green); display: flex; align-items: center; gap: .4rem; }
+.live { margin-left: auto; font-size: .72rem; font-family: var(--mono); color: var(--green); display: flex; align-items: center; gap: .4rem; }
 .live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
 
@@ -123,7 +123,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .v-icon  { font-size: 2rem; }
 .v-label { font-size: 1.45rem; font-weight: 900; color: #fff; }
 .v-ips   { font-size: .8rem; font-family: var(--mono); color: var(--muted); margin-top: .2rem; }
-.v-ips span { padding: .16rem .5rem; border-radius: 4px; font-weight: 700; font-size: .73rem; margin-right: .3rem; }
+.v-ips span { padding: .16rem .5rem; border-radius: 4px; font-weight: 700; font-size: .73rem; margin-left: .3rem; }
 .ips-ALLOW      { background: rgba(0,224,150,.2);  color: var(--green); }
 .ips-BLOCK      { background: rgba(255,61,113,.2); color: var(--red); }
 .ips-RATE-LIMIT { background: rgba(255,170,0,.2);  color: var(--yellow); }
@@ -173,7 +173,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .ae-feat-dot.safe    { background: var(--blue);   box-shadow: 0 0 6px var(--blue); }
 .ae-feat-dot.ok      { background: var(--green);  box-shadow: 0 0 6px var(--green); }
 .ae-feat-name { color: #ffffff; font-weight: 600; }
-.ae-feat-val  { color: var(--accent); font-weight: 700; margin-right: .3rem; }
+.ae-feat-val  { color: var(--accent); font-weight: 700; margin-left: .3rem; }
 
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
@@ -223,25 +223,25 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   </header>
 
   <div class="demo-banner">
-    <div class="demo-banner-title">عن هذا النظام</div>
+    <div class="demo-banner-title">About This System</div>
     <div class="db-item">
       <div class="db-icon">🛡️</div>
       <div class="db-text">
-        <h3>ما هو هذا النظام؟</h3>
-        <p>نظام كشف التهديدات (IDS) يحلل خصائص حركة الشبكة ويصنفها إلى: حركة طبيعية (BENIGN)، أو هجوم حجب خدمة (DDoS)، أو مسح المنافذ (PortScan).</p>
+        <h3>What is this system?</h3>
+        <p>An Intrusion Detection System (IDS) that analyzes network traffic features and classifies them as: normal traffic (BENIGN), distributed denial-of-service attack (DDoS), or port scanning (PortScan).</p>
       </div>
     </div>
     <div class="db-item">
       <div class="db-icon">📊</div>
       <div class="db-text">
-        <h3>ماذا تعني النتيجة؟</h3>
-        <p>يعرض النظام نسب الاحتمالية لكل فئة، ويفسر كل feature بمستوى الخطورة، ثم يقترح قرار IPS: سماح أو حظر أو تحديد معدل.</p>
+        <h3>What does the result mean?</h3>
+        <p>The system displays probability scores for each class, interprets each feature by severity level, then recommends an IPS decision: Allow, Block, or Rate Limit.</p>
       </div>
     </div>
   </div>
 
   <div class="run-wrap">
-    <button class="run-btn" id="run-btn" onclick="runPredict()">▶ &nbsp;التقط وحلّل الفلو</button>
+    <button class="run-btn" id="run-btn" onclick="runPredict()">▶ &nbsp;Capture & Analyze Flow</button>
   </div>
 
   <div class="scan-wrap">
@@ -249,12 +249,12 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="scan-bar"><div class="scan-fill" id="scan-fill"></div></div>
   </div>
 
-  <div class="run-info" id="run-info">— اضغط لتحليل packet عشوائي —</div>
+  <div class="run-info" id="run-info">— Press to analyze a random packet —</div>
 
   <div class="vals-strip" id="vals-strip"></div>
 
   <div class="result-panel" id="result-panel">
-    <div class="ptitle">نتيجة التحليل</div>
+    <div class="ptitle">Analysis Result</div>
 
     <!-- Verdict -->
     <div class="verdict" id="verdict">
@@ -272,13 +272,13 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
         <span class="ae-title" id="ae-title"></span>
       </div>
       <div class="ae-desc" id="ae-desc"></div>
-      <div class="ae-features-title">الأعمدة المؤثرة في القرار</div>
+      <div class="ae-features-title">Key Features Influencing the Decision</div>
       <div class="ae-features" id="ae-features"></div>
     </div>
 
     <div class="proba-grid"   id="proba-grid"></div>
     <hr class="sep">
-    <div class="ptitle" style="margin-bottom:.9rem">تفسير الـ Features</div>
+    <div class="ptitle" style="margin-bottom:.9rem">Feature Explanations</div>
     <div class="explain-grid" id="explain-grid"></div>
   </div>
 </div>
@@ -301,21 +301,21 @@ const RANGES = {
   "ShortFlowLevel":            { opts:[0,1], unit:"binary", label:"Short Flow Level"                         },
 };
 
-/* ── شرح كل نوع هجوم ── */
+/* ── Attack type descriptions ── */
 const ATTACK_INFO = {
   BENIGN: {
-    title: "حركة مرور طبيعية — لا تهديد",
-    desc: "الفلو الملتقط يمثل حركة مرور اعتيادية. لا توجد مؤشرات على هجوم. القيم ضمن النطاقات الطبيعية لشبكة سليمة، ويُنصح بالسماح بمرور هذا الـ flow.",
+    title: "Normal Traffic — No Threat Detected",
+    desc: "The captured flow represents regular network traffic. No attack indicators found. All values fall within normal ranges for a healthy network. This flow should be allowed through.",
     keyFeats: ["Fwd IAT Mean", "Bwd IAT Mean", "Average Packet Size", "Flow Duration"],
   },
   DDoS: {
-    title: "هجوم حجب الخدمة الموزع (DDoS)",
-    desc: "هجوم DDoS يهدف إلى إغراق الخادم بكميات ضخمة من الطلبات لتعطيله عن العمل. يتميز بكثافة حركة مرور عالية جداً، وحزم صغيرة ومتكررة بشكل آلي، مع تدفق مستمر وسريع من مصادر متعددة.",
+    title: "Distributed Denial of Service Attack (DDoS)",
+    desc: "A DDoS attack aims to overwhelm the target server with massive request volumes to render it unavailable. It is characterized by extremely high traffic density, small repetitive automated packets, and a continuous high-speed flood from multiple sources.",
     keyFeats: ["TrafficIntensity", "Flow Packets/s", "Flow Bytes/s", "Burstiness", "Fwd IAT Mean"],
   },
   PortScan: {
-    title: "مسح المنافذ (PortScan)",
-    desc: "هجوم PortScan يُستخدم لاستكشاف المنافذ المفتوحة على الهدف بهدف إيجاد ثغرات. يتميز بـ flows قصيرة جداً تستهدف منافذ مختلفة، مع نسبة SYN عالية بدون ACK، وغياب شبه تام للردود العكسية.",
+    title: "Port Scanning Attack (PortScan)",
+    desc: "A PortScan attack is used to probe open ports on a target in order to discover vulnerabilities. It is characterized by very short flows targeting different ports, a high SYN ratio without ACK, and near-total absence of backward responses.",
     keyFeats: ["SynOnlyRatio", "PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel", "BackwardZeroLevel"],
   },
 };
@@ -341,7 +341,7 @@ function rnd(feat){
 function genRandom(){
   const v={};
   Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
-  // حساب Burstiness من القيم الحقيقية بدل العشوائي
+  // Compute Burstiness from real values instead of random
   const iatStd  = v["Flow IAT Std"]  || 0;
   const iatMean = v["Flow IAT Mean"] || 0;
   v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
@@ -359,7 +359,7 @@ function evalLevel(feat,val){
 
 /* ── Scan Progress ── */
 let scanTicker=null, scanProg=0;
-const STEPS = ["جمع بيانات الـ flow...","حساب الـ features...","تشغيل الموديل...","تحليل النتائج..."];
+const STEPS = ["Collecting flow data...","Computing features...","Running model...","Analyzing results..."];
 
 function startScan(){
   scanProg=0;
@@ -380,7 +380,7 @@ function endScan(){
   const fill=document.getElementById('scan-fill');
   const lbl =document.getElementById('scan-label');
   fill.style.width='100%';
-  lbl.textContent='✓ اكتمل التحليل';
+  lbl.textContent='✓ Analysis Complete';
   setTimeout(()=>{ fill.style.width='0%'; lbl.textContent=''; },800);
 }
 
@@ -390,7 +390,7 @@ let runCount=0;
 async function runPredict(){
   const btn=document.getElementById('run-btn');
   btn.classList.add('loading');
-  btn.textContent='⏳  جاري الالتقاط...';
+  btn.textContent='⏳  Capturing...';
   startScan();
 
   const vals=genRandom();
@@ -401,14 +401,14 @@ async function runPredict(){
     const d=await r.json();
     endScan();
     runCount++;
-    document.getElementById('run-info').textContent=`RUN #${runCount}  ·  ${new Date().toLocaleTimeString('ar')}`;
+    document.getElementById('run-info').textContent=`RUN #${runCount}  ·  ${new Date().toLocaleTimeString('en')}`;
     renderResult(d);
   } catch(e){
     endScan();
-    alert("تأكد إن السيرفر شغال على :5000\n"+e.message);
+    alert("Make sure the server is running on :5000\n"+e.message);
   } finally {
     btn.classList.remove('loading');
-    btn.textContent='▶  التقط وحلّل الفلو';
+    btn.textContent='▶  Capture & Analyze Flow';
   }
 }
 
@@ -529,7 +529,7 @@ function renderResult(d){
     c.className=`ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Traffic Intensity'}</div>
       <div class="ec-val">${ti} <small style="font-size:.55rem;color:var(--muted)">0–2</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(محسوب تلقائياً)</div>
+      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(auto-computed)</div>
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
@@ -543,7 +543,7 @@ function renderResult(d){
     c.className=`ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Port Diversity Level'}</div>
       <div class="ec-val">${pdl} <small style="font-size:.55rem;color:var(--muted)">(${raw} ports)</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(محسوب: DistinctPort ≥ 100)</div>
+      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(computed: DistinctPort ≥ 100)</div>
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
