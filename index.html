@@ -346,10 +346,31 @@ function rnd(feat){
 function genRandom(){
   const v={};
   Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
+
+  // ── CONSTRAINT: Flow Duration must be strictly greater than Fwd IAT Mean, Bwd IAT Mean, and Flow IAT Mean ──
+  const fwdIAT     = v["Fwd IAT Mean"];
+  const bwdIAT     = v["Bwd IAT Mean"];
+  const flowIATMean= v["Flow IAT Mean"];
+  const minIATFloor = Math.max(fwdIAT, bwdIAT, flowIATMean);
+  const maxDuration = RANGES["Flow Duration"].max;
+
+  if (minIATFloor >= maxDuration) {
+    // Edge case: clamp all three IATs down, then set a valid duration above them
+    v["Fwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    v["Bwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    v["Flow IAT Mean"] = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    const newFloor = Math.max(v["Fwd IAT Mean"], v["Bwd IAT Mean"], v["Flow IAT Mean"]);
+    v["Flow Duration"] = parseFloat((newFloor + 1 + Math.random() * (maxDuration - newFloor - 1)).toFixed(0));
+  } else {
+    // Normal case: pick Flow Duration in (minIATFloor, maxDuration]
+    v["Flow Duration"] = parseFloat((minIATFloor + 1 + Math.random() * (maxDuration - minIATFloor - 1)).toFixed(0));
+  }
+
   // Compute Burstiness from real values instead of random
   const iatStd  = v["Flow IAT Std"]  || 0;
   const iatMean = v["Flow IAT Mean"] || 0;
   v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
+
   return v;
 }
 
@@ -745,11 +766,10 @@ const EN_META = {
 };
 
 function getMeta(feat) {
-  // Prefer English fallback; only fall back to server META if no EN entry
   return EN_META[feat] || META[feat] || {};
 }
 
-function evalLevelEn(feat, val) {
+function evalLevel(feat, val) {
   const m = getMeta(feat);
   const thr = m.thresholds || [];
   for (const t of thr) {
