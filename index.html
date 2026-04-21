@@ -348,14 +348,7 @@ function genRandom(){
   return v;
 }
 
-function evalLevel(feat,val){
-  const thr=(META[feat]||{}).thresholds||[];
-  for(const t of thr){
-    const m=(t.op===">="&&val>=t.value)||(t.op==="<="&&val<=t.value)||(t.op===">"&&val>t.value)||(t.op==="<"&&val<t.value)||(t.op==="=="&&val===t.value);
-    if(m) return {level:t.level, text:t.text};
-  }
-  return {level:"ok", text:(META[feat]||{}).description||""};
-}
+function evalLevel(feat,val){ return evalLevelEn(feat,val); }
 
 /* ── Scan Progress ── */
 let scanTicker=null, scanProg=0;
@@ -451,7 +444,7 @@ function renderAttackExplain(label, explanations, usedVals){
     const expl = explanations[feat];
     const val  = expl ? expl.value : (usedVals[feat] ?? '—');
     const level= expl ? expl.level : 'ok';
-    const m    = META[feat] || {};
+    const m    = getMeta(feat);
     const r    = RANGES[feat];
     const isBin = r && !!r.opts;
     const displayVal = typeof val === 'number'
@@ -507,7 +500,7 @@ function renderResult(d){
   const used=d.used_values||{};
 
   Object.entries(expl).forEach(([feat,info],i)=>{
-    const m=META[feat]||{};
+    const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
     const rangeHint = r ? (r.opts ? '(0 or 1)' : `(${fmtNum(r.min)}–${fmtNum(r.max)} ${r.unit||''})`) : '';
@@ -524,7 +517,7 @@ function renderResult(d){
   if(used.TrafficIntensity!==undefined && !expl['TrafficIntensity']){
     const ti=used.TrafficIntensity;
     const ev=evalLevel('TrafficIntensity',ti);
-    const m=META['TrafficIntensity']||{};
+    const m=getMeta('TrafficIntensity');
     const c=document.createElement('div');
     c.className=`ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Traffic Intensity'}</div>
@@ -538,7 +531,7 @@ function renderResult(d){
     const pdl=used.PortDiversityLevel;
     const raw=used.DistinctDestinationPort||0;
     const ev=evalLevel('PortDiversityLevel',pdl);
-    const m=META['PortDiversityLevel']||{};
+    const m=getMeta('PortDiversityLevel');
     const c=document.createElement('div');
     c.className=`ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Port Diversity Level'}</div>
@@ -547,6 +540,184 @@ function renderResult(d){
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
+}
+
+/* ── English fallback metadata (overrides any Arabic from backend) ── */
+const EN_META = {
+  "Average Packet Size": {
+    label: "Average Packet Size", unit: "bytes",
+    thresholds: [
+      { op: "<=", value: 100,  level: "warning", text: "Very small packets — possible flooding pattern" },
+      { op: ">=", value: 1400, level: "warning", text: "Near-max size — possible bulk data transfer" },
+    ],
+    description: "Normal packet size — healthy flow"
+  },
+  "Backward Zero Level": {
+    label: "Backward Zero Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "No backward responses — possible one-way attack" },
+      { op: "==", value: 0, level: "ok",      text: "Backward replies present — normal two-way connection" },
+    ],
+    description: "Backward traffic present"
+  },
+  "Burstiness": {
+    label: "Burstiness", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "Bursty traffic — irregular burst pattern detected" },
+      { op: "==", value: 0, level: "ok",      text: "Smooth traffic — no burst pattern" },
+    ],
+    description: "Smooth, steady traffic flow"
+  },
+  "Bwd IAT Mean": {
+    label: "Backward IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 500,  level: "danger",  text: "Very low backward IAT — abnormally fast responses" },
+      { op: ">=", value: 80000, level: "warning", text: "High backward IAT — slow or delayed responses" },
+    ],
+    description: "Normal backward inter-arrival time"
+  },
+  "Flow Duration": {
+    label: "Flow Duration", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 500,  level: "warning", text: "Very short flow — possible scan or probe" },
+    ],
+    description: "Normal flow duration — sustained connection"
+  },
+  "Flow IAT Mean": {
+    label: "Flow IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 200, level: "danger", text: "Extremely fast inter-arrivals — possible flood" },
+    ],
+    description: "Normal flow IAT"
+  },
+  "Flow IAT Std": {
+    label: "Flow IAT Std", unit: "µs",
+    thresholds: [
+      { op: ">=", value: 50000, level: "warning", text: "High variance — irregular traffic timing" },
+    ],
+    description: "Normal IAT variance"
+  },
+  "Flow Packets/s": {
+    label: "Flow Packets/s", unit: "pkt/s",
+    thresholds: [
+      { op: ">=", value: 3000, level: "danger",  text: "Extremely high packet rate — likely DDoS" },
+      { op: ">=", value: 1000, level: "warning", text: "Elevated packet rate — monitor closely" },
+    ],
+    description: "Normal packet rate"
+  },
+  "Flow Bytes/s": {
+    label: "Flow Bytes/s", unit: "B/s",
+    thresholds: [
+      { op: ">=", value: 80000, level: "danger",  text: "Very high throughput — possible flood attack" },
+      { op: ">=", value: 40000, level: "warning", text: "Elevated throughput — monitor" },
+    ],
+    description: "Normal throughput"
+  },
+  "Fwd IAT Mean": {
+    label: "Forward IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 200, level: "danger", text: "Near-zero forward IAT — automated high-speed sending" },
+    ],
+    description: "Normal forward inter-arrival time — regular traffic"
+  },
+  "Low Packet Level": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
+  "Port Diversity Level": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "PortDiversityLevel": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "Short Flow Level": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
+  "ShortFlowLevel": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
+  "SynOnlyRatio": {
+    label: "SYN-Only Ratio", unit: "",
+    thresholds: [
+      { op: ">=", value: 0.8, level: "danger",  text: "Very high SYN ratio — suspicious, possible scan or flood" },
+      { op: ">=", value: 0.5, level: "warning", text: "Elevated SYN ratio — monitor" },
+    ],
+    description: "Normal SYN ratio"
+  },
+  "DistinctDestinationPort": {
+    label: "Distinct Destination Ports", unit: "ports",
+    thresholds: [
+      { op: ">=", value: 100, level: "danger",  text: "≥100 unique ports — clear PortScan pattern" },
+      { op: ">=", value: 30,  level: "warning", text: "Elevated port diversity — possible reconnaissance" },
+    ],
+    description: "Low port diversity — normal"
+  },
+  "TrafficIntensity": {
+    label: "Traffic Intensity", unit: "",
+    thresholds: [
+      { op: ">=", value: 2, level: "danger",  text: "High intensity — possible DDoS" },
+      { op: ">=", value: 1, level: "warning", text: "Medium intensity — monitor" },
+      { op: "==", value: 0, level: "ok",      text: "Low intensity — normal" },
+    ],
+    description: "Normal traffic intensity"
+  },
+  "BackwardZeroLevel": {
+    label: "Backward Zero Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "No backward responses — possible one-way attack" },
+      { op: "==", value: 0, level: "ok",      text: "Backward replies present — normal two-way connection" },
+    ],
+    description: "Backward traffic present"
+  },
+  "LowPacketLevel": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
+};
+
+function getMeta(feat) {
+  // Prefer English fallback; only fall back to server META if no EN entry
+  return EN_META[feat] || META[feat] || {};
+}
+
+function evalLevelEn(feat, val) {
+  const m = getMeta(feat);
+  const thr = m.thresholds || [];
+  for (const t of thr) {
+    const match = (t.op===">="&&val>=t.value)||(t.op==="<="&&val<=t.value)
+                ||(t.op===">"&&val>t.value)||(t.op==="<"&&val<t.value)
+                ||(t.op==="=="&&val===t.value);
+    if (match) return { level: t.level, text: t.text };
+  }
+  return { level: "ok", text: m.description || "" };
 }
 
 /* boot */
