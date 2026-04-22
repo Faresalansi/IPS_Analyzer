@@ -345,41 +345,96 @@ function rnd(feat){
   return parseFloat((r.min + Math.random()*(r.max-r.min)).toFixed(r.dec));
 }
 
+function rndBetween(min, max, dec=0){
+  return parseFloat((min + Math.random() * (max - min)).toFixed(dec));
+}
+
+const PROFILES = {
+  BENIGN: () => {
+    const fwd  = rndBetween(10000, 80000);
+    const bwd  = rndBetween(10000, 80000);
+    const iatM = rndBetween(10000, 70000);
+    const iatS = rndBetween(5000,  40000);
+    const dur  = rndBetween(Math.max(fwd, bwd, iatM) + 1, 100000);
+    const wc   = rndBetween(0, 50);
+    return {
+      "Fwd IAT Mean":            fwd,
+      "Bwd IAT Mean":            bwd,
+      "Average Packet Size":     rndBetween(200,  1200, 1),
+      "SynOnlyRatio":            rndBetween(0,    0.1,  3),
+      "Flow Duration":           dur,
+      "Flow IAT Mean":           iatM,
+      "Flow IAT Std":            iatS,
+      "Flow Packets/s":          rndBetween(10,   100,  1),
+      "Flow Bytes/s":            rndBetween(500,  9000),
+      "DistinctDestinationPort": rndBetween(1,    10),
+      "BackwardZeroLevel":       0,
+      "LowPacketLevel":          0,
+      "ShortFlowLevel":          0,
+      "Window_Count":            wc,
+      "Burstiness":              iatM !== 0 ? (iatS / iatM > 0.5 ? 1 : 0) : 0,
+      "WindowLevel":             wc >= 1000 ? 2 : wc >= 100 ? 1 : 0,
+    };
+  },
+  DDoS: () => {
+    const fwd  = rndBetween(0,   500);
+    const bwd  = rndBetween(0,   500);
+    const iatM = rndBetween(0,   500);
+    const iatS = rndBetween(0,   300);
+    const dur  = rndBetween(Math.max(fwd, bwd, iatM) + 1, 20000);
+    const wc   = rndBetween(1000, 5000);
+    return {
+      "Fwd IAT Mean":            fwd,
+      "Bwd IAT Mean":            bwd,
+      "Average Packet Size":     rndBetween(20,   100,  1),
+      "SynOnlyRatio":            rndBetween(0.1,  0.4,  3),
+      "Flow Duration":           dur,
+      "Flow IAT Mean":           iatM,
+      "Flow IAT Std":            iatS,
+      "Flow Packets/s":          rndBetween(1000, 5000, 1),
+      "Flow Bytes/s":            rndBetween(50000, 100000),
+      "DistinctDestinationPort": rndBetween(1,    20),
+      "BackwardZeroLevel":       0,
+      "LowPacketLevel":          1,
+      "ShortFlowLevel":          1,
+      "Window_Count":            wc,
+      "Burstiness":              iatM !== 0 ? (iatS / iatM > 0.5 ? 1 : 0) : 1,
+      "WindowLevel":             2,
+    };
+  },
+  PortScan: () => {
+    const fwd  = rndBetween(100,  2000);
+    const bwd  = rndBetween(0,    500);
+    const iatM = rndBetween(100,  2000);
+    const iatS = rndBetween(50,   1000);
+    const dur  = rndBetween(Math.max(fwd, bwd, iatM) + 1, 5000);
+    const wc   = rndBetween(0,    50);
+    return {
+      "Fwd IAT Mean":            fwd,
+      "Bwd IAT Mean":            bwd,
+      "Average Packet Size":     rndBetween(20,   80,   1),
+      "SynOnlyRatio":            rndBetween(0.8,  1.0,  3),
+      "Flow Duration":           dur,
+      "Flow IAT Mean":           iatM,
+      "Flow IAT Std":            iatS,
+      "Flow Packets/s":          rndBetween(50,   500,  1),
+      "Flow Bytes/s":            rndBetween(500,  5000),
+      "DistinctDestinationPort": rndBetween(100,  500),
+      "BackwardZeroLevel":       1,
+      "LowPacketLevel":          1,
+      "ShortFlowLevel":          1,
+      "Window_Count":            wc,
+      "Burstiness":              iatM !== 0 ? (iatS / iatM > 0.5 ? 1 : 0) : 0,
+      "WindowLevel":             0,
+    };
+  },
+};
+
 function genRandom(){
-  const v={};
-  Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
-
-  // ── CONSTRAINT: Flow Duration must be strictly greater than Fwd IAT Mean, Bwd IAT Mean, and Flow IAT Mean ──
-  const fwdIAT     = v["Fwd IAT Mean"];
-  const bwdIAT     = v["Bwd IAT Mean"];
-  const flowIATMean= v["Flow IAT Mean"];
-  const minIATFloor = Math.max(fwdIAT, bwdIAT, flowIATMean);
-  const maxDuration = RANGES["Flow Duration"].max;
-
-  if (minIATFloor >= maxDuration) {
-    // Edge case: clamp all three IATs down, then set a valid duration above them
-    v["Fwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
-    v["Bwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
-    v["Flow IAT Mean"] = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
-    const newFloor = Math.max(v["Fwd IAT Mean"], v["Bwd IAT Mean"], v["Flow IAT Mean"]);
-    v["Flow Duration"] = parseFloat((newFloor + 1 + Math.random() * (maxDuration - newFloor - 1)).toFixed(0));
-  } else {
-    // Normal case: pick Flow Duration in (minIATFloor, maxDuration]
-    v["Flow Duration"] = parseFloat((minIATFloor + 1 + Math.random() * (maxDuration - minIATFloor - 1)).toFixed(0));
-  }
-
-  // Compute Burstiness from real values instead of random
-  const iatStd  = v["Flow IAT Std"]  || 0;
-  const iatMean = v["Flow IAT Mean"] || 0;
-  v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
-
-  // Compute WindowLevel from Window_Count (mirrors Python logic exactly)
-  const wc = v["Window_Count"] || 0;
-  if      (wc >= 1000) v["WindowLevel"] = 2;
-  else if (wc >= 100)  v["WindowLevel"] = 1;
-  else                 v["WindowLevel"] = 0;
-
-  return v;
+  // Pick a random profile each time
+  const labels = ["BENIGN", "DDoS", "PortScan"];
+  const chosen = labels[Math.floor(Math.random() * labels.length)];
+  return PROFILES[chosen]();
 }
 
 function genFakeIP(){
