@@ -341,48 +341,39 @@ function rnd(feat){
 }
 
 /* ════════════════════════════════════════════════════
-   الـ 30 sample الحقيقية — 10 DDoS + 10 PortScan + 10 Benign
+   genRandom() — based on 30 real samples (range-based)
+   Picks a random type then generates realistic values
    ════════════════════════════════════════════════════ */
-const FIXED_SAMPLES = [
-  // ── DDoS (10) ──
-  { "Flow Packets/s":5200, "Flow Bytes/s":4100000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1400, "WindowLevel":2 },
-  { "Flow Packets/s":4800, "Flow Bytes/s":3900000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1350, "WindowLevel":2 },
-  { "Flow Packets/s":5100, "Flow Bytes/s":4200000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1500, "WindowLevel":2 },
-  { "Flow Packets/s":5300, "Flow Bytes/s":4300000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1550, "WindowLevel":2 },
-  { "Flow Packets/s":4900, "Flow Bytes/s":4000000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1380, "WindowLevel":2 },
-  { "Flow Packets/s":5500, "Flow Bytes/s":4500000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1600, "WindowLevel":2 },
-  { "Flow Packets/s":4700, "Flow Bytes/s":3800000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1320, "WindowLevel":2 },
-  { "Flow Packets/s":5600, "Flow Bytes/s":4600000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1650, "WindowLevel":2 },
-  { "Flow Packets/s":5000, "Flow Bytes/s":4050000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1450, "WindowLevel":2 },
-  { "Flow Packets/s":5400, "Flow Bytes/s":4400000, "DistinctDestinationPort":1, "Burstiness":1, "Window_Count":1580, "WindowLevel":2 },
-  // ── PortScan (10) ──
-  { "Flow Packets/s":60,   "Flow Bytes/s":6000,  "DistinctDestinationPort":120, "Burstiness":0, "Window_Count":250, "WindowLevel":1 },
-  { "Flow Packets/s":55,   "Flow Bytes/s":5500,  "DistinctDestinationPort":130, "Burstiness":0, "Window_Count":270, "WindowLevel":1 },
-  { "Flow Packets/s":70,   "Flow Bytes/s":7000,  "DistinctDestinationPort":140, "Burstiness":0, "Window_Count":300, "WindowLevel":1 },
-  { "Flow Packets/s":65,   "Flow Bytes/s":6500,  "DistinctDestinationPort":150, "Burstiness":0, "Window_Count":320, "WindowLevel":1 },
-  { "Flow Packets/s":50,   "Flow Bytes/s":5000,  "DistinctDestinationPort":110, "Burstiness":0, "Window_Count":230, "WindowLevel":1 },
-  { "Flow Packets/s":75,   "Flow Bytes/s":7500,  "DistinctDestinationPort":160, "Burstiness":0, "Window_Count":340, "WindowLevel":1 },
-  { "Flow Packets/s":58,   "Flow Bytes/s":5800,  "DistinctDestinationPort":125, "Burstiness":0, "Window_Count":260, "WindowLevel":1 },
-  { "Flow Packets/s":68,   "Flow Bytes/s":6800,  "DistinctDestinationPort":135, "Burstiness":0, "Window_Count":290, "WindowLevel":1 },
-  { "Flow Packets/s":72,   "Flow Bytes/s":7200,  "DistinctDestinationPort":145, "Burstiness":0, "Window_Count":310, "WindowLevel":1 },
-  { "Flow Packets/s":66,   "Flow Bytes/s":6600,  "DistinctDestinationPort":155, "Burstiness":0, "Window_Count":330, "WindowLevel":1 },
-  // ── Benign (10) ──
-  { "Flow Packets/s":20,   "Flow Bytes/s":20000, "DistinctDestinationPort":3,   "Burstiness":0, "Window_Count":40,  "WindowLevel":0 },
-  { "Flow Packets/s":18,   "Flow Bytes/s":18000, "DistinctDestinationPort":2,   "Burstiness":0, "Window_Count":35,  "WindowLevel":0 },
-  { "Flow Packets/s":22,   "Flow Bytes/s":22000, "DistinctDestinationPort":4,   "Burstiness":0, "Window_Count":45,  "WindowLevel":0 },
-  { "Flow Packets/s":25,   "Flow Bytes/s":25000, "DistinctDestinationPort":3,   "Burstiness":0, "Window_Count":50,  "WindowLevel":0 },
-  { "Flow Packets/s":19,   "Flow Bytes/s":19000, "DistinctDestinationPort":2,   "Burstiness":0, "Window_Count":38,  "WindowLevel":0 },
-  { "Flow Packets/s":21,   "Flow Bytes/s":21000, "DistinctDestinationPort":3,   "Burstiness":0, "Window_Count":42,  "WindowLevel":0 },
-  { "Flow Packets/s":23,   "Flow Bytes/s":23000, "DistinctDestinationPort":4,   "Burstiness":0, "Window_Count":47,  "WindowLevel":0 },
-  { "Flow Packets/s":17,   "Flow Bytes/s":17000, "DistinctDestinationPort":2,   "Burstiness":0, "Window_Count":33,  "WindowLevel":0 },
-  { "Flow Packets/s":24,   "Flow Bytes/s":24000, "DistinctDestinationPort":3,   "Burstiness":0, "Window_Count":48,  "WindowLevel":0 },
-  { "Flow Packets/s":20,   "Flow Bytes/s":20000, "DistinctDestinationPort":3,   "Burstiness":0, "Window_Count":41,  "WindowLevel":0 },
-];
-
 function genRandom(){
-  // اختار sample عشوائي من الـ 30
-  const sample = FIXED_SAMPLES[Math.floor(Math.random() * FIXED_SAMPLES.length)];
-  const v = { ...sample };
+  const types = ['DDoS', 'PortScan', 'Benign'];
+  const type  = types[Math.floor(Math.random() * types.length)];
+
+  const v = {};
+
+  if (type === 'DDoS') {
+    v["Flow Packets/s"]          = parseFloat((4700 + Math.random() * 900).toFixed(1));
+    v["Flow Bytes/s"]            = parseFloat((3800000 + Math.random() * 800000).toFixed(0));
+    v["DistinctDestinationPort"] = 1;
+    v["Burstiness"]              = 1;
+    v["Window_Count"]            = parseFloat((1320 + Math.random() * 330).toFixed(0));
+    v["WindowLevel"]             = 2;
+
+  } else if (type === 'PortScan') {
+    v["Flow Packets/s"]          = parseFloat((50 + Math.random() * 25).toFixed(1));
+    v["Flow Bytes/s"]            = parseFloat((5000 + Math.random() * 2500).toFixed(0));
+    v["DistinctDestinationPort"] = parseFloat((110 + Math.random() * 50).toFixed(0));
+    v["Burstiness"]              = 0;
+    v["Window_Count"]            = parseFloat((230 + Math.random() * 110).toFixed(0));
+    v["WindowLevel"]             = 1;
+
+  } else {
+    v["Flow Packets/s"]          = parseFloat((17 + Math.random() * 8).toFixed(1));
+    v["Flow Bytes/s"]            = parseFloat((17000 + Math.random() * 8000).toFixed(0));
+    v["DistinctDestinationPort"] = parseFloat((2 + Math.random() * 3).toFixed(0));
+    v["Burstiness"]              = 0;
+    v["Window_Count"]            = parseFloat((33 + Math.random() * 17).toFixed(0));
+    v["WindowLevel"]             = 0;
+  }
 
   // باقي الفيتشرز عشوائية من RANGES
   const remaining = [
