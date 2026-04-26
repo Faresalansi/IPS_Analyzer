@@ -220,7 +220,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     </div>
     <div class="htext">
       <h1>Network Threat Analyzer</h1>
-      <p>IDS · DDoS & PortScan · CIC-IDS2017</p>
+      <p>IPS · DDoS & PortScan · CIC-IDS2017</p>
     </div>
     <div class="live">MODEL ONLINE</div>
   </header>
@@ -244,7 +244,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   </div>
 
   <div class="run-wrap">
-    <button class="run-btn" id="run-btn" onclick="runPredict()">&#9654; &nbsp;Capture & Analyze Flow</button>
+    <button class="run-btn" id="run-btn" onclick="runPredict()">▶ &nbsp;Capture & Analyze Flow</button>
   </div>
 
   <div class="scan-wrap">
@@ -259,6 +259,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   <div class="result-panel" id="result-panel">
     <div class="ptitle">Analysis Result</div>
 
+    <!-- Verdict -->
     <div class="verdict" id="verdict">
       <div class="v-icon"  id="v-icon"></div>
       <div style="flex:1">
@@ -269,6 +270,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       </div>
     </div>
 
+    <!-- ── Attack Explanation ── -->
     <div class="attack-explain" id="attack-explain">
       <div class="ae-header">
         <span class="ae-badge" id="ae-badge"></span>
@@ -298,12 +300,15 @@ const RANGES = {
   "Flow Packets/s":            { min:0,   max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
   "Flow Bytes/s":              { min:0,   max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
   "DistinctDestinationPort":   { min:1,   max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
+
   "BackwardZeroLevel":         { opts:[0,1], unit:"binary", label:"Backward Zero Level"                      },
   "LowPacketLevel":            { opts:[0,1], unit:"binary", label:"Low Packet Level"                         },
   "ShortFlowLevel":            { opts:[0,1], unit:"binary", label:"Short Flow Level"                         },
+
   "Window_Count":              { min:0, max:5000, dec:0, unit:"windows", label:"Window Count"                },
 };
 
+/* ── Attack type descriptions ── */
 const ATTACK_INFO = {
   BENIGN: {
     title: "Normal Traffic — No Threat Detected",
@@ -340,65 +345,39 @@ function rnd(feat){
   return parseFloat((r.min + Math.random()*(r.max-r.min)).toFixed(r.dec));
 }
 
-/* ════════════════════════════════════════════════════
-   genRandom() — based on 30 real samples (range-based)
-   Picks a random type then generates realistic values
-   ════════════════════════════════════════════════════ */
 function genRandom(){
-  const types = ['DDoS', 'PortScan', 'Benign'];
-  const type  = types[Math.floor(Math.random() * types.length)];
+  const v={};
+  Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
 
-  const v = {};
-
-  if (type === 'DDoS') {
-    v["Flow Packets/s"]          = parseFloat((4700 + Math.random() * 900).toFixed(1));
-    v["Flow Bytes/s"]            = parseFloat((3800000 + Math.random() * 800000).toFixed(0));
-    v["DistinctDestinationPort"] = 1;
-    v["Burstiness"]              = 1;
-    v["Window_Count"]            = parseFloat((1320 + Math.random() * 330).toFixed(0));
-    v["WindowLevel"]             = 2;
-
-  } else if (type === 'PortScan') {
-    v["Flow Packets/s"]          = parseFloat((50 + Math.random() * 25).toFixed(1));
-    v["Flow Bytes/s"]            = parseFloat((5000 + Math.random() * 2500).toFixed(0));
-    v["DistinctDestinationPort"] = parseFloat((110 + Math.random() * 50).toFixed(0));
-    v["Burstiness"]              = 0;
-    v["Window_Count"]            = parseFloat((230 + Math.random() * 110).toFixed(0));
-    v["WindowLevel"]             = 1;
-
-  } else {
-    v["Flow Packets/s"]          = parseFloat((17 + Math.random() * 8).toFixed(1));
-    v["Flow Bytes/s"]            = parseFloat((17000 + Math.random() * 8000).toFixed(0));
-    v["DistinctDestinationPort"] = parseFloat((2 + Math.random() * 3).toFixed(0));
-    v["Burstiness"]              = 0;
-    v["Window_Count"]            = parseFloat((33 + Math.random() * 17).toFixed(0));
-    v["WindowLevel"]             = 0;
-  }
-
-  // باقي الفيتشرز عشوائية من RANGES
-  const remaining = [
-    "Fwd IAT Mean","Bwd IAT Mean","Average Packet Size",
-    "SynOnlyRatio","Flow Duration","Flow IAT Mean",
-    "Flow IAT Std","BackwardZeroLevel","LowPacketLevel","ShortFlowLevel"
-  ];
-  remaining.forEach(f => { v[f] = rnd(f); });
-
-  // CONSTRAINT: Flow Duration > Fwd IAT Mean, Bwd IAT Mean, Flow IAT Mean
-  const fwdIAT      = v["Fwd IAT Mean"];
-  const bwdIAT      = v["Bwd IAT Mean"];
-  const flowIATMean = v["Flow IAT Mean"];
+  // ── CONSTRAINT: Flow Duration must be strictly greater than Fwd IAT Mean, Bwd IAT Mean, and Flow IAT Mean ──
+  const fwdIAT     = v["Fwd IAT Mean"];
+  const bwdIAT     = v["Bwd IAT Mean"];
+  const flowIATMean= v["Flow IAT Mean"];
   const minIATFloor = Math.max(fwdIAT, bwdIAT, flowIATMean);
   const maxDuration = RANGES["Flow Duration"].max;
 
   if (minIATFloor >= maxDuration) {
+    // Edge case: clamp all three IATs down, then set a valid duration above them
     v["Fwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
     v["Bwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
     v["Flow IAT Mean"] = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
     const newFloor = Math.max(v["Fwd IAT Mean"], v["Bwd IAT Mean"], v["Flow IAT Mean"]);
     v["Flow Duration"] = parseFloat((newFloor + 1 + Math.random() * (maxDuration - newFloor - 1)).toFixed(0));
   } else {
+    // Normal case: pick Flow Duration in (minIATFloor, maxDuration]
     v["Flow Duration"] = parseFloat((minIATFloor + 1 + Math.random() * (maxDuration - minIATFloor - 1)).toFixed(0));
   }
+
+  // Compute Burstiness from real values instead of random
+  const iatStd  = v["Flow IAT Std"]  || 0;
+  const iatMean = v["Flow IAT Mean"] || 0;
+  v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
+
+  // Compute WindowLevel from Window_Count (mirrors Python logic exactly)
+  const wc = v["Window_Count"] || 0;
+  if      (wc >= 1000) v["WindowLevel"] = 2;
+  else if (wc >= 100)  v["WindowLevel"] = 1;
+  else                 v["WindowLevel"] = 0;
 
   return v;
 }
@@ -415,6 +394,7 @@ function genFakeIP(){
 let currentSourceIP = '';
 let currentDestIP   = '';
 
+/* ── Scan Progress ── */
 let scanTicker=null, scanProg=0;
 const STEPS = ["Collecting flow data...","Computing features...","Running model...","Analyzing results..."];
 
@@ -441,6 +421,7 @@ function endScan(){
   setTimeout(()=>{ fill.style.width='0%'; lbl.textContent=''; },800);
 }
 
+/* ── Run ── */
 let runCount=0;
 
 async function runPredict(){
@@ -470,9 +451,11 @@ async function runPredict(){
   }
 }
 
+/* ── Chips ── */
 function showChips(vals, srcIP, dstIP){
   const strip=document.getElementById('vals-strip');
   strip.innerHTML='';
+  // Source IP chip first
   if(srcIP){
     const ipChip=document.createElement('div');
     ipChip.className='chip';
@@ -481,6 +464,7 @@ function showChips(vals, srcIP, dstIP){
     ipChip.innerHTML=`Source IP: <strong style="color:var(--accent)">${srcIP}</strong>`;
     strip.appendChild(ipChip);
   }
+  // Destination IP chip second
   if(dstIP){
     const dstChip=document.createElement('div');
     dstChip.className='chip';
@@ -497,6 +481,7 @@ function showChips(vals, srcIP, dstIP){
     const c=document.createElement('div');
     c.className='chip';
     c.style.animationDelay=((i+2)*28)+'ms';
+    // Special display for computed features not in RANGES
     if (k === 'WindowLevel') {
       const lvlColor = v === 2 ? 'var(--red)' : v === 1 ? 'var(--yellow)' : 'var(--green)';
       c.innerHTML = `Window Level: <strong style="color:${lvlColor}">${v}</strong> <span style="color:var(--accent);font-size:.58rem">(computed)</span>`;
@@ -511,6 +496,7 @@ function showChips(vals, srcIP, dstIP){
   });
 }
 
+/* ── Render Attack Explanation ── */
 function renderAttackExplain(label, explanations, usedVals){
   const info = ATTACK_INFO[label] || ATTACK_INFO.BENIGN;
   const box  = document.getElementById('attack-explain');
@@ -547,6 +533,7 @@ function renderAttackExplain(label, explanations, usedVals){
   });
 }
 
+/* ── Render Result ── */
 function renderResult(d, srcIP, dstIP){
   const panel=document.getElementById('result-panel');
   panel.className=`result-panel ${d.label}`;
@@ -566,8 +553,10 @@ function renderResult(d, srcIP, dstIP){
     ? `Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>`
     : '';
 
+  /* Attack explanation */
   renderAttackExplain(d.label, d.explanations||{}, d.used_values||{});
 
+  /* Proba */
   const pg=document.getElementById('proba-grid');
   pg.innerHTML='';
   for(const [cls,prob] of Object.entries(d.proba)){
@@ -582,6 +571,7 @@ function renderResult(d, srcIP, dstIP){
     document.querySelectorAll('.p-fill[data-w]').forEach(el=> el.style.width=el.dataset.w+'%');
   });
 
+  /* Feature explanations */
   const grid=document.getElementById('explain-grid');
   grid.innerHTML='';
   const expl=d.explanations||{};
@@ -624,12 +614,13 @@ function renderResult(d, srcIP, dstIP){
     c.className=`ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Port Diversity Level'}</div>
       <div class="ec-val">${pdl} <small style="font-size:.55rem;color:var(--muted)">(${raw} ports)</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(computed: DistinctPort >= 100)</div>
+      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(computed: DistinctPort ≥ 100)</div>
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
 }
 
+/* ── English fallback metadata (overrides any Arabic from backend) ── */
 const EN_META = {
   "Average Packet Size": {
     label: "Average Packet Size", unit: "bytes",
@@ -658,7 +649,7 @@ const EN_META = {
   "Bwd IAT Mean": {
     label: "Backward IAT Mean", unit: "µs",
     thresholds: [
-      { op: "<=", value: 500,   level: "danger",  text: "Very low backward IAT — abnormally fast responses" },
+      { op: "<=", value: 500,  level: "danger",  text: "Very low backward IAT — abnormally fast responses" },
       { op: ">=", value: 80000, level: "warning", text: "High backward IAT — slow or delayed responses" },
     ],
     description: "Normal backward inter-arrival time"
@@ -666,7 +657,7 @@ const EN_META = {
   "Flow Duration": {
     label: "Flow Duration", unit: "µs",
     thresholds: [
-      { op: "<=", value: 500, level: "warning", text: "Very short flow — possible scan or probe" },
+      { op: "<=", value: 500,  level: "warning", text: "Very short flow — possible scan or probe" },
     ],
     description: "Normal flow duration — sustained connection"
   },
@@ -707,11 +698,46 @@ const EN_META = {
     ],
     description: "Normal forward inter-arrival time — regular traffic"
   },
-  "Low Packet Level":   { label: "Low Packet Level",   unit: "", thresholds: [{ op:"==", value:1, level:"warning", text:"Very few packets — typical of short scan flows" },{ op:"==", value:0, level:"ok", text:"Sufficient packets — normal flows" }], description:"Normal packet count" },
-  "Port Diversity Level":{ label: "Port Diversity Level", unit: "", thresholds: [{ op:"==", value:1, level:"danger", text:">=100 distinct ports targeted — clear PortScan pattern" },{ op:"==", value:0, level:"ok", text:"Low port diversity — normal behavior" }], description:"Low port diversity" },
-  "PortDiversityLevel": { label: "Port Diversity Level", unit: "", thresholds: [{ op:"==", value:1, level:"danger", text:">=100 distinct ports targeted — clear PortScan pattern" },{ op:"==", value:0, level:"ok", text:"Low port diversity — normal behavior" }], description:"Low port diversity" },
-  "Short Flow Level":   { label: "Short Flow Level",   unit: "", thresholds: [{ op:"==", value:1, level:"warning", text:"Very short flows — clear attack pattern" },{ op:"==", value:0, level:"ok", text:"Normal flow length" }], description:"Normal flow length" },
-  "ShortFlowLevel":     { label: "Short Flow Level",   unit: "", thresholds: [{ op:"==", value:1, level:"warning", text:"Very short flows — clear attack pattern" },{ op:"==", value:0, level:"ok", text:"Normal flow length" }], description:"Normal flow length" },
+  "Low Packet Level": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
+  "Port Diversity Level": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "PortDiversityLevel": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "Short Flow Level": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
+  "ShortFlowLevel": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
   "SynOnlyRatio": {
     label: "SYN-Only Ratio", unit: "",
     thresholds: [
@@ -723,7 +749,7 @@ const EN_META = {
   "DistinctDestinationPort": {
     label: "Distinct Destination Ports", unit: "ports",
     thresholds: [
-      { op: ">=", value: 100, level: "danger",  text: ">=100 unique ports — clear PortScan pattern" },
+      { op: ">=", value: 100, level: "danger",  text: "≥100 unique ports — clear PortScan pattern" },
       { op: ">=", value: 30,  level: "warning", text: "Elevated port diversity — possible reconnaissance" },
     ],
     description: "Low port diversity — normal"
@@ -737,21 +763,35 @@ const EN_META = {
     ],
     description: "Normal traffic intensity"
   },
-  "BackwardZeroLevel": { label: "Backward Zero Level", unit: "", thresholds: [{ op:"==", value:1, level:"warning", text:"No backward responses — possible one-way attack" },{ op:"==", value:0, level:"ok", text:"Backward replies present — normal two-way connection" }], description:"Backward traffic present" },
-  "LowPacketLevel":    { label: "Low Packet Level",    unit: "", thresholds: [{ op:"==", value:1, level:"warning", text:"Very few packets — typical of short scan flows" },{ op:"==", value:0, level:"ok", text:"Sufficient packets — normal flows" }], description:"Normal packet count" },
+  "BackwardZeroLevel": {
+    label: "Backward Zero Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "No backward responses — possible one-way attack" },
+      { op: "==", value: 0, level: "ok",      text: "Backward replies present — normal two-way connection" },
+    ],
+    description: "Backward traffic present"
+  },
+  "LowPacketLevel": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
   "Window_Count": {
     label: "Window Count", unit: "windows",
     thresholds: [
-      { op: ">=", value: 1000, level: "danger",  text: ">=1000 windows — very high window activity, possible DDoS" },
-      { op: ">=", value: 100,  level: "warning", text: ">=100 windows — elevated window count, monitor closely" },
+      { op: ">=", value: 1000, level: "danger",  text: "≥1000 windows — very high window activity, possible DDoS" },
+      { op: ">=", value: 100,  level: "warning", text: "≥100 windows — elevated window count, monitor closely" },
     ],
     description: "Normal window count — healthy flow"
   },
   "WindowLevel": {
     label: "Window Level", unit: "",
     thresholds: [
-      { op: "==", value: 2, level: "danger",  text: "Level 2 — Window_Count >= 1000, high threat indicator" },
-      { op: "==", value: 1, level: "warning", text: "Level 1 — Window_Count >= 100, elevated activity" },
+      { op: "==", value: 2, level: "danger",  text: "Level 2 — Window_Count ≥ 1000, high threat indicator" },
+      { op: "==", value: 1, level: "warning", text: "Level 1 — Window_Count ≥ 100, elevated activity" },
       { op: "==", value: 0, level: "ok",      text: "Level 0 — Window_Count < 100, normal behavior" },
     ],
     description: "Normal window level"
@@ -774,6 +814,7 @@ function evalLevel(feat, val) {
   return { level: "ok", text: m.description || "" };
 }
 
+/* boot */
 loadMeta();
 </script>
 </body>
