@@ -227,6 +227,167 @@ def compute_derived(data: dict) -> dict:
     return d
 
 
+# ── Causal Attribution Rules ──────────────────────────────────────────
+# Each rule has:
+#   label     — human-readable name of the feature / interaction
+#   condition — lambda(enriched_dict) → bool: does this rule fire?
+#   score     — causal attribution score from the causal AI analysis
+#   features  — which features are involved (for reference)
+#
+# Rules are evaluated against the enriched feature dict AFTER compute_derived().
+# Only returned when the model predicts the matching attack class.
+
+CAUSAL_RULES = {
+    "PortScan": [
+        # ── Single features ───────────────────────────────────────────
+        {
+            "label":    "ShortFlowLevel",
+            "features": ["ShortFlowLevel"],
+            "score":    +0.9133,
+            "condition": lambda e: e.get("ShortFlowLevel", 0) == 1,
+        },
+        {
+            "label":    "LowPacketLevel",
+            "features": ["LowPacketLevel"],
+            "score":    +0.8500,
+            "condition": lambda e: e.get("LowPacketLevel", 0) == 1,
+        },
+        {
+            "label":    "PortDiversityLevel",
+            "features": ["PortDiversityLevel"],
+            "score":    +0.8721,
+            "condition": lambda e: e.get("PortDiversityLevel", 0) == 1,
+        },
+        # ── Two-way interactions ──────────────────────────────────────
+        {
+            "label":    "ShortFlowLevel × LowPacketLevel",
+            "features": ["ShortFlowLevel", "LowPacketLevel"],
+            "score":    +0.9190,
+            "condition": lambda e: (
+                e.get("ShortFlowLevel", 0) == 1 and
+                e.get("LowPacketLevel", 0) == 1
+            ),
+        },
+        {
+            "label":    "PortDiversityLevel × ShortFlowLevel",
+            "features": ["PortDiversityLevel", "ShortFlowLevel"],
+            "score":    +0.9963,
+            "condition": lambda e: (
+                e.get("PortDiversityLevel", 0) == 1 and
+                e.get("ShortFlowLevel", 0) == 1
+            ),
+        },
+        # ── Three-way interaction ─────────────────────────────────────
+        {
+            "label":    "PortDiversityLevel × ShortFlowLevel × LowPacketLevel",
+            "features": ["PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel"],
+            "score":    +0.9977,
+            "condition": lambda e: (
+                e.get("PortDiversityLevel", 0) == 1 and
+                e.get("ShortFlowLevel", 0) == 1 and
+                e.get("LowPacketLevel", 0) == 1
+            ),
+        },
+        # ── Nullifying combinations (score = 0 → causal signal cancelled) ──
+        {
+            "label":    "LowPacketLevel × ShortFlowLevel × PortDiversityLevel × BackwardZeroLevel",
+            "features": ["LowPacketLevel", "ShortFlowLevel", "PortDiversityLevel", "BackwardZeroLevel"],
+            "score":    0.0,
+            "condition": lambda e: (
+                e.get("LowPacketLevel", 0) == 1 and
+                e.get("ShortFlowLevel", 0) == 1 and
+                e.get("PortDiversityLevel", 0) == 1 and
+                e.get("BackwardZeroLevel", 0) == 1
+            ),
+        },
+        {
+            "label":    "SynOnlyLevel × ShortFlowLevel × LowPacketLevel × PortDiversityLevel",
+            "features": ["SynOnlyRatio", "ShortFlowLevel", "LowPacketLevel", "PortDiversityLevel"],
+            "score":    0.0,
+            "condition": lambda e: (
+                float(e.get("SynOnlyRatio", 0)) >= 0.9 and
+                e.get("ShortFlowLevel", 0) == 1 and
+                e.get("LowPacketLevel", 0) == 1 and
+                e.get("PortDiversityLevel", 0) == 1
+            ),
+        },
+    ],
+
+    "DDoS": [
+        # ── Single features ───────────────────────────────────────────
+        {
+            "label":    "TrafficIntensity",
+            "features": ["TrafficIntensity"],
+            "score":    -0.1254,
+            "condition": lambda e: float(e.get("TrafficIntensity", 0)) > 0,
+        },
+        {
+            "label":    "Burstiness",
+            "features": ["Burstiness"],
+            "score":    +0.5317,
+            "condition": lambda e: e.get("Burstiness", 0) == 1,
+        },
+        {
+            "label":    "WindowLevel",
+            "features": ["WindowLevel"],
+            "score":    +0.5390,
+            "condition": lambda e: float(e.get("WindowLevel", 0)) > 0,
+        },
+        # ── Two-way interactions ──────────────────────────────────────
+        {
+            "label":    "TrafficIntensity × Burstiness",
+            "features": ["TrafficIntensity", "Burstiness"],
+            "score":    -0.0159,
+            "condition": lambda e: (
+                float(e.get("TrafficIntensity", 0)) > 0 and
+                e.get("Burstiness", 0) == 1
+            ),
+        },
+        {
+            "label":    "WindowLevel × TrafficIntensity",
+            "features": ["WindowLevel", "TrafficIntensity"],
+            "score":    +0.1072,
+            "condition": lambda e: (
+                float(e.get("WindowLevel", 0)) > 0 and
+                float(e.get("TrafficIntensity", 0)) > 0
+            ),
+        },
+        # ── Three-way interaction ─────────────────────────────────────
+        {
+            "label":    "Burstiness × TrafficIntensity × WindowLevel",
+            "features": ["Burstiness", "TrafficIntensity", "WindowLevel"],
+            "score":    +0.1227,
+            "condition": lambda e: (
+                e.get("Burstiness", 0) == 1 and
+                float(e.get("TrafficIntensity", 0)) > 0 and
+                float(e.get("WindowLevel", 0)) > 0
+            ),
+        },
+    ],
+}
+
+
+def compute_causal_attributions(label: str, enriched: dict) -> list:
+    """
+    Evaluates all causal rules for the predicted attack label against the
+    enriched feature dict. Returns only the rules whose condition is True,
+    sorted by absolute score descending (strongest causal signal first).
+
+    Returns [] for labels that have no causal rules (e.g. Benign).
+    """
+    rules = CAUSAL_RULES.get(label, [])
+    matched = []
+    for rule in rules:
+        if rule["condition"](enriched):
+            matched.append({
+                "label":    rule["label"],
+                "score":    rule["score"],
+                "features": rule["features"],
+            })
+    matched.sort(key=lambda x: abs(x["score"]), reverse=True)
+    return matched
+
+
 @app.route("/")
 def index():
     return send_from_directory(".", "index.html")
@@ -286,12 +447,17 @@ def predict():
                 break
         explanations[feat] = {"value": val, "level": level, "text": text}
 
+    # ── Causal attributions ───────────────────────────────────────────
+    # Only populated when label is PortScan or DDoS; empty list otherwise.
+    causal = compute_causal_attributions(label, enriched)
+
     return jsonify({
-        "label":  label,
-        "ips":    ips,
-        "proba":  {cls: float(p) for cls, p in zip(le_label.classes_, proba)},
-        "explanations": explanations,
-        "used_values":  enriched,
+        "label":               label,
+        "ips":                 ips,
+        "proba":               {cls: float(p) for cls, p in zip(le_label.classes_, proba)},
+        "explanations":        explanations,
+        "used_values":         enriched,
+        "causal_attributions": causal,
     })
 
 
