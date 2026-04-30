@@ -446,24 +446,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-rule">else        → 0 ○</span>
             </div>
           </div>
-          <div class="cp-row">
-            <div class="cp-badge raw-blue">
-              <span class="cb-label">SYN Flag Count</span>
-              <span class="cb-rule">≥ 1</span>
-            </div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-blue">
-              <span class="cb-label">SYN-Only Level</span>
-              <span class="cb-rule">SYN≥1 &amp; ACK=0</span>
-              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
-              <span class="cb-rule">else        → 0 ○</span>
-            </div>
-            <div class="cp-arrow">←</div>
-            <div class="cp-badge raw-blue">
-              <span class="cb-label">ACK Flag Count</span>
-              <span class="cb-rule">= 0</span>
-            </div>
-          </div>
+
           <div class="cp-row">
             <div class="cp-badge raw-purple"><span class="cb-label">Window Count</span><span class="cb-rule">shared raw feature</span></div>
             <div class="cp-arrow">→</div>
@@ -478,7 +461,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <span>ShortFlow</span><span>─ ─ co-occur ─ ─</span>
             <span>LowPacket</span><span>─ ─ reinforces ─ ─</span>
             <span>PortDiversity</span><span>─ ─ amplifies ─ ─</span>
-            <span>SynOnly</span><span>─ ─ confirms ─ ─</span>
             <span>WindowLevel</span>
           </div>
           <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port + SYN-only signals firing together</div>
