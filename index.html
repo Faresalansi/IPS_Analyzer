@@ -193,17 +193,12 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .cp-badge .cb-label { font-weight: 700; font-size: .7rem; }
 .cp-badge .cb-rule  { font-size: .62rem; margin-top: 2px; opacity: .75; }
 
-/* DDoS raw = coral tones */
 .cp-badge.raw-coral   { background: rgba(255,61,113,.08); border-color: rgba(255,61,113,.4); color: #ffb3c6; }
-/* DDoS derived = slightly brighter border */
 .cp-badge.drv-coral   { background: rgba(255,61,113,.14); border-color: rgba(255,61,113,.7); color: #ffcdd8; border-width: 1.5px; }
-/* DDoS timing = amber */
 .cp-badge.raw-amber   { background: rgba(255,170,0,.08);  border-color: rgba(255,170,0,.4);  color: #ffd480; }
 .cp-badge.drv-amber   { background: rgba(255,170,0,.14);  border-color: rgba(255,170,0,.75); color: #ffe5a0; border-width: 1.5px; }
-/* PortScan raw = blue */
 .cp-badge.raw-blue    { background: rgba(41,121,255,.08); border-color: rgba(41,121,255,.4); color: #90b8ff; }
 .cp-badge.drv-blue    { background: rgba(41,121,255,.14); border-color: rgba(41,121,255,.75);color: #bdd1ff; border-width: 1.5px; }
-/* shared window = purple */
 .cp-badge.raw-purple  { background: rgba(127,119,221,.08);border-color: rgba(127,119,221,.4);color: #c0bbff; }
 .cp-badge.drv-purple  { background: rgba(127,119,221,.14);border-color: rgba(127,119,221,.75);color: #d8d4ff; border-width: 1.5px; }
 
@@ -336,31 +331,80 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       <div class="cp-wrap" id="cp-wrap" style="display:none">
         <div class="cp-section-title">Causal Path — How Derived Features Are Computed</div>
 
-        <!-- DDoS path -->
+        <!-- DDoS path — thresholds from code -->
         <div id="cp-ddos" style="display:none">
+
+          <!-- Row 1: PacketLevel -->
           <div class="cp-row">
-            <div class="cp-badge raw-coral"><span class="cb-label">Flow Packets/s</span><span class="cb-rule">≥ 3000 → HIGH</span></div>
+            <div class="cp-badge raw-coral">
+              <span class="cb-label">Flow Packets/s</span>
+              <span class="cb-rule">≥ 1000 → level 2</span>
+              <span class="cb-rule">≥ 100  → level 1</span>
+              <span class="cb-rule">else   → level 0</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-coral">
+              <span class="cb-label">Packet Level</span>
+              <span class="cb-rule">0 / 1 / 2</span>
+            </div>
+          </div>
+
+          <!-- Row 2: ByteLevel -->
+          <div class="cp-row">
+            <div class="cp-badge raw-coral">
+              <span class="cb-label">Flow Bytes/s</span>
+              <span class="cb-rule">≥ 100 000 → level 2</span>
+              <span class="cb-rule">≥ 10 000  → level 1</span>
+              <span class="cb-rule">else      → level 0</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-coral">
+              <span class="cb-label">Byte Level</span>
+              <span class="cb-rule">0 / 1 / 2</span>
+            </div>
+          </div>
+
+          <!-- Row 3: TrafficIntensity = max(PacketLevel, ByteLevel) -->
+          <div class="cp-row">
+            <div class="cp-badge raw-coral"><span class="cb-label">Packet Level</span></div>
             <div class="cp-arrow">→</div>
             <div class="cp-badge drv-coral">
               <span class="cb-label">Traffic Intensity</span>
-              <span class="cb-rule">both HIGH → 2 ●</span>
-              <span class="cb-rule">one HIGH  → 1 ◐</span>
-              <span class="cb-rule">else      → 0 ○</span>
+              <span class="cb-rule">max(PacketLvl, ByteLvl)</span>
+              <span class="cb-rule">2 = HIGH ●</span>
+              <span class="cb-rule">1 = MED  ◐</span>
+              <span class="cb-rule">0 = LOW  ○</span>
             </div>
             <div class="cp-arrow">←</div>
-            <div class="cp-badge raw-coral"><span class="cb-label">Flow Bytes/s</span><span class="cb-rule">≥ 80 000 → HIGH</span></div>
+            <div class="cp-badge raw-coral"><span class="cb-label">Byte Level</span></div>
           </div>
+
+          <!-- Row 4: Burstiness -->
           <div class="cp-row">
-            <div class="cp-badge raw-amber"><span class="cb-label">Flow IAT Std</span><span class="cb-rule">high variance</span></div>
+            <div class="cp-badge raw-amber">
+              <span class="cb-label">Flow IAT Std</span>
+              <span class="cb-rule">numerator</span>
+            </div>
             <div class="cp-arrow">→</div>
             <div class="cp-badge drv-amber">
               <span class="cb-label">Burstiness</span>
-              <span class="cb-rule">IAT Std ≥ thr → 1</span>
-              <span class="cb-rule">else         → 0</span>
+              <span class="cb-rule">IAT Std / IAT Mean</span>
+              <span class="cb-rule">&gt; 0.5 → 1 ●</span>
+              <span class="cb-rule">else  → 0 ○</span>
+            </div>
+            <div class="cp-arrow">←</div>
+            <div class="cp-badge raw-amber">
+              <span class="cb-label">Flow IAT Mean</span>
+              <span class="cb-rule">denominator</span>
             </div>
           </div>
+
+          <!-- Row 5: WindowLevel -->
           <div class="cp-row">
-            <div class="cp-badge raw-amber"><span class="cb-label">Window Count</span><span class="cb-rule">raw count</span></div>
+            <div class="cp-badge raw-amber">
+              <span class="cb-label">Window Count</span>
+              <span class="cb-rule">raw count</span>
+            </div>
             <div class="cp-arrow">→</div>
             <div class="cp-badge drv-amber">
               <span class="cb-label">Window Level</span>
@@ -369,7 +413,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-rule">else   → 0 ○</span>
             </div>
           </div>
-          <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness &nbsp;+&nbsp; WindowLevel firing together</div>
+
+          <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness (ratio &gt; 0.5) &nbsp;+&nbsp; WindowLevel firing together</div>
         </div>
 
         <!-- PortScan path -->
@@ -379,17 +424,17 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <div class="cp-arrow">→</div>
             <div class="cp-badge drv-blue">
               <span class="cb-label">Short Flow Level</span>
-              <span class="cb-rule">≤ 500 µs → 1 ●</span>
-              <span class="cb-rule">else     → 0 ○</span>
+              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
+              <span class="cb-rule">else        → 0 ○</span>
             </div>
           </div>
           <div class="cp-row">
-            <div class="cp-badge raw-blue"><span class="cb-label">Total Packets</span><span class="cb-rule">fwd + bwd</span></div>
+            <div class="cp-badge raw-blue"><span class="cb-label">Total Packets</span><span class="cb-rule">fwd + bwd ≤ 3</span></div>
             <div class="cp-arrow">→</div>
             <div class="cp-badge drv-blue">
               <span class="cb-label">Low Packet Level</span>
-              <span class="cb-rule">few pkts → 1 ●</span>
-              <span class="cb-rule">else     → 0 ○</span>
+              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
+              <span class="cb-rule">else        → 0 ○</span>
             </div>
           </div>
           <div class="cp-row">
@@ -399,6 +444,24 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-label">Port Diversity Level</span>
               <span class="cb-rule">≥ 100 ports → 1 ●</span>
               <span class="cb-rule">else        → 0 ○</span>
+            </div>
+          </div>
+          <div class="cp-row">
+            <div class="cp-badge raw-blue">
+              <span class="cb-label">SYN Flag Count</span>
+              <span class="cb-rule">≥ 1</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-blue">
+              <span class="cb-label">SYN-Only Level</span>
+              <span class="cb-rule">SYN≥1 &amp; ACK=0</span>
+              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
+              <span class="cb-rule">else        → 0 ○</span>
+            </div>
+            <div class="cp-arrow">←</div>
+            <div class="cp-badge raw-blue">
+              <span class="cb-label">ACK Flag Count</span>
+              <span class="cb-rule">= 0</span>
             </div>
           </div>
           <div class="cp-row">
@@ -415,6 +478,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <span>ShortFlow</span><span>─ ─ co-occur ─ ─</span>
             <span>LowPacket</span><span>─ ─ reinforces ─ ─</span>
             <span>PortDiversity</span><span>─ ─ amplifies ─ ─</span>
+            <span>SynOnly</span><span>─ ─ confirms ─ ─</span>
             <span>WindowLevel</span>
           </div>
           <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port + SYN-only signals firing together</div>
@@ -763,22 +827,22 @@ function renderResult(d, srcIP, dstIP){
 /* ── English metadata ── */
 const EN_META = {
   "Average Packet Size":     { label:"Average Packet Size", unit:"bytes", description:"Normal packet size — healthy flow", thresholds:[{op:"<=",value:100,level:"warning",text:"Very small packets — possible flooding pattern"},{op:">=",value:1400,level:"warning",text:"Near-max size — possible bulk data transfer"}] },
-  "Burstiness":              { label:"Burstiness", unit:"", description:"Smooth, steady traffic flow", thresholds:[{op:"==",value:1,level:"danger",text:"Bursty traffic — irregular burst pattern detected"},{op:"==",value:0,level:"ok",text:"Smooth traffic — no burst pattern"}] },
+  "Burstiness":              { label:"Burstiness", unit:"", description:"Smooth, steady traffic flow", thresholds:[{op:"==",value:1,level:"danger",text:"Bursty traffic — IAT Std / IAT Mean > 0.5"},{op:"==",value:0,level:"ok",text:"Smooth traffic — IAT Std / IAT Mean ≤ 0.5"}] },
   "Bwd IAT Mean":            { label:"Backward IAT Mean", unit:"µs", description:"Normal backward inter-arrival time", thresholds:[{op:"<=",value:500,level:"danger",text:"Very low backward IAT — abnormally fast responses"},{op:">=",value:80000,level:"warning",text:"High backward IAT — slow or delayed responses"}] },
   "Flow Duration":           { label:"Flow Duration", unit:"µs", description:"Normal flow duration — sustained connection", thresholds:[{op:"<=",value:500,level:"warning",text:"Very short flow — possible scan or probe"}] },
   "Flow IAT Mean":           { label:"Flow IAT Mean", unit:"µs", description:"Normal flow IAT", thresholds:[{op:"<=",value:200,level:"danger",text:"Extremely fast inter-arrivals — possible flood"}] },
   "Flow IAT Std":            { label:"Flow IAT Std", unit:"µs", description:"Normal IAT variance", thresholds:[{op:">=",value:50000,level:"warning",text:"High variance — irregular traffic timing"}] },
-  "Flow Packets/s":          { label:"Flow Packets/s", unit:"pkt/s", description:"Normal packet rate", thresholds:[{op:">=",value:3000,level:"danger",text:"Extremely high packet rate — likely DDoS"},{op:">=",value:1000,level:"warning",text:"Elevated packet rate — monitor closely"}] },
-  "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:80000,level:"danger",text:"Very high throughput — possible flood attack"},{op:">=",value:40000,level:"warning",text:"Elevated throughput — monitor"}] },
+  "Flow Packets/s":          { label:"Flow Packets/s", unit:"pkt/s", description:"Normal packet rate", thresholds:[{op:">=",value:1000,level:"danger",text:"≥ 1000 pkt/s — PacketLevel 2, likely DDoS"},{op:">=",value:100,level:"warning",text:"≥ 100 pkt/s — PacketLevel 1, monitor closely"}] },
+  "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:100000,level:"danger",text:"≥ 100 000 B/s — ByteLevel 2, possible flood attack"},{op:">=",value:10000,level:"warning",text:"≥ 10 000 B/s — ByteLevel 1, elevated throughput"}] },
   "Fwd IAT Mean":            { label:"Forward IAT Mean", unit:"µs", description:"Normal forward inter-arrival time — regular traffic", thresholds:[{op:"<=",value:200,level:"danger",text:"Near-zero forward IAT — automated high-speed sending"}] },
   "SynOnlyRatio":            { label:"SYN-Only Ratio", unit:"", description:"Normal SYN ratio", thresholds:[{op:">=",value:0.8,level:"danger",text:"Very high SYN ratio — suspicious, possible scan or flood"},{op:">=",value:0.5,level:"warning",text:"Elevated SYN ratio — monitor"}] },
   "DistinctDestinationPort": { label:"Distinct Destination Ports", unit:"ports", description:"Low port diversity — normal", thresholds:[{op:">=",value:100,level:"danger",text:"≥100 unique ports — clear PortScan pattern"},{op:">=",value:30,level:"warning",text:"Elevated port diversity — possible reconnaissance"}] },
-  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"High intensity — possible DDoS"},{op:">=",value:1,level:"warning",text:"Medium intensity — monitor"},{op:"==",value:0,level:"ok",text:"Low intensity — normal"}] },
+  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Level 2 — max(PacketLevel,ByteLevel)=2, high DDoS signal"},{op:">=",value:1,level:"warning",text:"Level 1 — medium intensity, monitor"},{op:"==",value:0,level:"ok",text:"Level 0 — normal intensity"}] },
   "BackwardZeroLevel":       { label:"Backward Zero Level", unit:"", description:"Backward traffic present", thresholds:[{op:"==",value:1,level:"warning",text:"No backward responses — possible one-way attack"},{op:"==",value:0,level:"ok",text:"Backward replies present — normal two-way connection"}] },
-  "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
-  "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
+  "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets (≤3 total) — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
+  "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — ratio ≥ 0.9, clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
   "PortDiversityLevel":      { label:"Port Diversity Level", unit:"", description:"Low port diversity", thresholds:[{op:"==",value:1,level:"danger",text:"≥100 distinct ports targeted — clear PortScan pattern"},{op:"==",value:0,level:"ok",text:"Low port diversity — normal behavior"}] },
-  "Window_Count":            { label:"Window Count", unit:"windows", description:"Normal window count — healthy flow", thresholds:[{op:">=",value:1000,level:"danger",text:"≥1000 windows — very high window activity, possible DDoS"},{op:">=",value:100,level:"warning",text:"≥100 windows — elevated window count, monitor closely"}] },
+  "Window_Count":            { label:"Window Count", unit:"windows", description:"Normal window count — healthy flow", thresholds:[{op:">=",value:1000,level:"danger",text:"≥1000 windows — WindowLevel 2, very high activity"},{op:">=",value:100,level:"warning",text:"≥100 windows — WindowLevel 1, elevated activity"}] },
   "WindowLevel":             { label:"Window Level", unit:"", description:"Normal window level", thresholds:[{op:"==",value:2,level:"danger",text:"Level 2 — Window_Count ≥ 1000, high threat indicator"},{op:"==",value:1,level:"warning",text:"Level 1 — Window_Count ≥ 100, elevated activity"},{op:"==",value:0,level:"ok",text:"Level 0 — Window_Count < 100, normal behavior"}] },
 };
 
