@@ -464,12 +464,12 @@ const ATTACK_INFO = {
   DDoS: {
     title: "Distributed Denial of Service Attack (DDoS)",
     desc: "A DDoS attack aims to overwhelm the target server with massive request volumes to render it unavailable. It is characterized by extremely high traffic density, small repetitive automated packets, and a continuous high-speed flood from multiple sources.",
-    keyFeats: ["TrafficIntensity", "Flow Packets/s", "Flow Bytes/s", "Burstiness", "Fwd IAT Mean", "WindowLevel"],
+    keyFeats: ["TrafficIntensity", "Burstiness", "WindowLevel"],
   },
   PortScan: {
     title: "Port Scanning Attack (PortScan)",
     desc: "A PortScan attack is used to probe open ports on a target in order to discover vulnerabilities. It is characterized by very short flows targeting different ports, a high SYN ratio without ACK, and near-total absence of backward responses.",
-    keyFeats: ["SynOnlyRatio", "PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel", "BackwardZeroLevel"],
+    keyFeats: ["PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel"],
   },
 };
 
