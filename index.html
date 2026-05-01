@@ -582,6 +582,12 @@ function endScan(){
   setTimeout(()=>{ fill.style.width='0%'; lbl.textContent=''; },800);
 }
 
+function computeTrafficIntensity(pktPerSec, bytesPerSec) {
+  const pktLevel  = pktPerSec  >= 1000 ? 2 : pktPerSec  >= 100 ? 1 : 0;
+  const byteLevel = bytesPerSec >= 100000 ? 2 : bytesPerSec >= 10000 ? 1 : 0;
+  return Math.max(pktLevel, byteLevel);
+}
+
 async function runPredict(){
   if(demoIndex >= DEMO_SAMPLES.length){
     document.getElementById('run-info').textContent = '✅ All 30 samples analyzed! Reload to restart.';
@@ -598,8 +604,13 @@ async function runPredict(){
 
   const vals = {};
   for(const [k,v] of Object.entries(sample)){
-    if(k !== 'true_label' && k !== '_id') vals[k] = v;
+    if(k !== 'true_label' && k !== '_id' && k !== 'TrafficIntensity') vals[k] = v;
   }
+  // حساب TrafficIntensity تلقائياً من Flow Packets/s و Flow Bytes/s
+  vals['TrafficIntensity'] = computeTrafficIntensity(
+    vals['Flow Packets/s'] ?? 0,
+    vals['Flow Bytes/s']   ?? 0
+  );
 
   currentSourceIP = genFakeIP();
   do { currentDestIP = genFakeIP(); } while (currentDestIP === currentSourceIP);
