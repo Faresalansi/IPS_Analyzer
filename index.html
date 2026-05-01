@@ -34,6 +34,7 @@ html, body {
   min-height: 100vh;
   overflow-x: hidden;
 }
+
 .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
 
 /* ── Header ── */
@@ -45,13 +46,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .live { margin-left: auto; font-size: .72rem; font-family: var(--mono); color: var(--green); display: flex; align-items: center; gap: .4rem; }
 .live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
-
-/* ── Accuracy Banner ── */
-.acc-banner {
-  font-family: var(--mono); font-size: .72rem; color: var(--muted);
-  text-align: center; margin-bottom: 1rem; min-height: 1.1rem;
-  letter-spacing: .5px;
-}
 
 /* ── Demo Description Banner ── */
 .demo-banner {
@@ -77,7 +71,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   border-bottom: 1px solid rgba(0,229,255,.15);
   padding-bottom: .65rem;
 }
-.demo-banner-title::before { content: ''; opacity: .45; }
+.demo-banner-title::before { content: '// '; opacity: .45; }
 
 /* ── Run button ── */
 .run-wrap { display: flex; justify-content: center; margin-bottom: 2rem; }
@@ -104,20 +98,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 /* ── Run counter ── */
 .run-info { text-align: center; font-size: .72rem; font-family: var(--mono); color: var(--muted); margin-bottom: 1.25rem; min-height: 1.1rem; }
 
-/* ── True label badge ── */
-.true-label-row { text-align:center; margin-bottom: 1.1rem; font-size: .78rem; font-family: var(--mono); color: var(--muted); }
-.true-label-row .tl-badge {
-  display: inline-block; padding: .2rem .7rem; border-radius: 5px; font-weight: 700; font-size: .72rem; letter-spacing: 1px;
-  margin-left: .4rem;
-}
-.tl-badge.BENIGN   { background: rgba(0,224,150,.15); color: var(--green); border: 1px solid rgba(0,224,150,.35); }
-.tl-badge.DDoS     { background: rgba(255,61,113,.15); color: var(--red);   border: 1px solid rgba(255,61,113,.35); }
-.tl-badge.PortScan { background: rgba(255,170,0,.15);  color: var(--yellow);border: 1px solid rgba(255,170,0,.35); }
-
-.correct-badge { display:inline-block; padding:.15rem .5rem; border-radius:4px; font-size:.68rem; margin-left:.5rem; }
-.correct-badge.yes { background:rgba(0,224,150,.15); color:var(--green); }
-.correct-badge.no  { background:rgba(255,61,113,.15); color:var(--red); }
-
 /* ── Chips ── */
 .vals-strip { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; margin-bottom: 2rem; min-height: 1.8rem; }
 .chip { font-family: var(--mono); font-size: .65rem; padding: .2rem .55rem; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); background: var(--panel); animation: fadeUp .3s ease both; }
@@ -133,7 +113,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .result-panel.BENIGN::after   { background: linear-gradient(90deg,transparent,var(--green),transparent); }
 
 .ptitle { font-size: .68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-family: var(--mono); margin-bottom: 1.25rem; }
-.ptitle::before { content: ''; opacity: .45; }
+.ptitle::before { content: '// '; opacity: .45; }
 
 /* ── Verdict ── */
 .verdict { display: flex; align-items: center; gap: 1.25rem; padding: 1.1rem 1.4rem; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
@@ -147,24 +127,42 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .ips-ALLOW      { background: rgba(0,224,150,.2);  color: var(--green); }
 .ips-BLOCK      { background: rgba(255,61,113,.2); color: var(--red); }
 .ips-RATE-LIMIT { background: rgba(255,170,0,.2);  color: var(--yellow); }
-.v-src-ip { font-size: .75rem; font-family: var(--mono); color: var(--muted); margin-top: .3rem; }
-.v-src-ip .ip-val { color: var(--accent); font-weight: 700; letter-spacing: .5px; }
 
 /* ── Attack Explanation Box ── */
-.attack-explain { border-radius: 10px; padding: 1.1rem 1.4rem; margin-bottom: 1.5rem; border: 1px solid var(--border); animation: fadeUp .4s ease both; }
+.attack-explain {
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  animation: fadeUp .4s ease both;
+}
 .attack-explain.BENIGN   { border-color: rgba(0,224,150,.3);  background: rgba(0,224,150,.04); }
 .attack-explain.DDoS     { border-color: rgba(255,61,113,.35); background: rgba(255,61,113,.04); }
 .attack-explain.PortScan { border-color: rgba(255,170,0,.35);  background: rgba(255,170,0,.04); }
+
 .ae-header { display: flex; align-items: center; gap: .65rem; margin-bottom: .85rem; }
-.ae-badge { font-size: .6rem; font-family: var(--mono); letter-spacing: 1.5px; padding: .2rem .6rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+.ae-badge {
+  font-size: .6rem; font-family: var(--mono); letter-spacing: 1.5px;
+  padding: .2rem .6rem; border-radius: 4px; font-weight: 700; text-transform: uppercase;
+}
 .ae-badge.BENIGN   { background: rgba(0,224,150,.15); color: var(--green); }
 .ae-badge.DDoS     { background: rgba(255,61,113,.15); color: var(--red); }
 .ae-badge.PortScan { background: rgba(255,170,0,.15);  color: var(--yellow); }
 .ae-title { font-size: .85rem; font-weight: 700; color: #fff; }
+
 .ae-desc { font-size: .82rem; color: #ffffff; line-height: 1.65; margin-bottom: 1rem; }
-.ae-features-title { font-size: .62rem; font-family: var(--mono); letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: .6rem; }
+
+.ae-features-title {
+  font-size: .62rem; font-family: var(--mono); letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .6rem;
+}
 .ae-features { display: flex; flex-wrap: wrap; gap: .45rem; }
-.ae-feat { display: flex; align-items: center; gap: .5rem; background: rgba(4,10,20,.6); border: 1px solid var(--border); border-radius: 6px; padding: .4rem .85rem; font-size: .78rem; font-family: var(--mono); }
+.ae-feat {
+  display: flex; align-items: center; gap: .5rem;
+  background: rgba(4,10,20,.6); border: 1px solid var(--border);
+  border-radius: 6px; padding: .4rem .85rem;
+  font-size: .78rem; font-family: var(--mono);
+}
 .ae-feat.danger  { border-color: rgba(255,61,113,.4);  }
 .ae-feat.warning { border-color: rgba(255,170,0,.4);   }
 .ae-feat.safe    { border-color: rgba(41,121,255,.3);  }
@@ -176,50 +174,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .ae-feat-dot.ok      { background: var(--green);  box-shadow: 0 0 6px var(--green); }
 .ae-feat-name { color: #ffffff; font-weight: 600; }
 .ae-feat-val  { color: var(--accent); font-weight: 700; margin-left: .3rem; }
-
-/* ── Causal Path ── */
-.cp-wrap { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.06); }
-.cp-section-title {
-  font-size: .6rem; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--muted); margin-bottom: .9rem; font-family: var(--mono);
-}
-.cp-row { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: .65rem; }
-.cp-badge {
-  display: inline-flex; flex-direction: column; align-items: center;
-  border-radius: 7px; padding: 6px 12px; font-size: .68rem;
-  border-width: 1px; border-style: solid; min-width: 108px; text-align: center;
-  line-height: 1.45; font-family: var(--mono);
-}
-.cp-badge .cb-label { font-weight: 700; font-size: .7rem; }
-.cp-badge .cb-rule  { font-size: .62rem; margin-top: 2px; opacity: .75; }
-
-.cp-badge.raw-coral   { background: rgba(255,61,113,.08); border-color: rgba(255,61,113,.4); color: #ffb3c6; }
-.cp-badge.drv-coral   { background: rgba(255,61,113,.14); border-color: rgba(255,61,113,.7); color: #ffcdd8; border-width: 1.5px; }
-.cp-badge.raw-amber   { background: rgba(255,170,0,.08);  border-color: rgba(255,170,0,.4);  color: #ffd480; }
-.cp-badge.drv-amber   { background: rgba(255,170,0,.14);  border-color: rgba(255,170,0,.75); color: #ffe5a0; border-width: 1.5px; }
-.cp-badge.raw-blue    { background: rgba(41,121,255,.08); border-color: rgba(41,121,255,.4); color: #90b8ff; }
-.cp-badge.drv-blue    { background: rgba(41,121,255,.14); border-color: rgba(41,121,255,.75);color: #bdd1ff; border-width: 1.5px; }
-.cp-badge.raw-purple  { background: rgba(127,119,221,.08);border-color: rgba(127,119,221,.4);color: #c0bbff; }
-.cp-badge.drv-purple  { background: rgba(127,119,221,.14);border-color: rgba(127,119,221,.75);color: #d8d4ff; border-width: 1.5px; }
-
-.cp-arrow { display: flex; align-items: center; color: var(--muted); font-size: 1rem; padding-top: 12px; flex-shrink: 0; }
-.cp-verdict {
-  border-radius: 7px; padding: 8px 14px; font-size: .68rem; font-weight: 700;
-  text-align: center; border-width: 1px; border-style: solid;
-  font-family: var(--mono); letter-spacing: .8px; width: 100%; margin-top: .5rem;
-}
-.cp-verdict.ddos { background: rgba(255,61,113,.1); border-color: rgba(255,61,113,.5); color: #ffb3c6; }
-.cp-verdict.ps   { background: rgba(41,121,255,.1); border-color: rgba(41,121,255,.5);  color: #bdd1ff; }
-.cp-cooccur {
-  width: 100%; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
-  font-size: .6rem; color: var(--muted); font-family: var(--mono);
-  margin: .35rem 0; justify-content: center;
-}
-.cp-cooccur span { opacity: .55; }
-.cp-shared-note {
-  text-align: center; font-size: .6rem; color: var(--muted);
-  font-family: var(--mono); margin-top: .75rem; opacity: .7;
-}
 
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
@@ -235,6 +189,9 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .p-fill.BENIGN   { background: var(--green); }
 .p-fill.DDoS     { background: var(--red); }
 .p-fill.PortScan { background: var(--yellow); }
+
+.v-src-ip { font-size: .75rem; font-family: var(--mono); color: var(--muted); margin-top: .3rem; }
+.v-src-ip .ip-val { color: var(--accent); font-weight: 700; letter-spacing: .5px; }
 
 .sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
@@ -255,6 +212,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 </style>
 </head>
 <body>
+
 <div class="wrap">
   <header>
     <div class="logo">
@@ -262,12 +220,10 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     </div>
     <div class="htext">
       <h1>Network Threat Analyzer</h1>
-      <p>IPS · DDoS & PortScan · CIC-IDS2017</p>
+      <p>IDS · DDoS & PortScan · CIC-IDS2017</p>
     </div>
     <div class="live">MODEL ONLINE</div>
   </header>
-
-  <div class="acc-banner" id="accuracy-banner">30 demo samples ready — press the button to begin</div>
 
   <div class="demo-banner">
     <div class="demo-banner-title">About This System</div>
@@ -281,8 +237,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="db-item">
       <div class="db-icon">📊</div>
       <div class="db-text">
-        <h3>Demo Mode — 30 Samples</h3>
-        <p>Each press loads the next pre-built sample (10 DDoS · 10 PortScan · 10 BENIGN). The true label is shown alongside the model prediction so you can track accuracy in real time.</p>
+        <h3>What does the result mean?</h3>
+        <p>The system displays probability scores for each class, interprets each feature by severity level, then recommends an IPS decision: Allow, Block, or Rate Limit.</p>
       </div>
     </div>
   </div>
@@ -296,17 +252,14 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="scan-bar"><div class="scan-fill" id="scan-fill"></div></div>
   </div>
 
-  <div class="run-info" id="run-info">— 30 demo samples loaded. Press to start —</div>
-
-  <div class="true-label-row" id="true-label-row" style="display:none">
-    True Label: <span class="tl-badge" id="tl-badge"></span>
-    <span class="correct-badge" id="correct-badge"></span>
-  </div>
+  <div class="run-info" id="run-info">— Press to analyze a random packet —</div>
 
   <div class="vals-strip" id="vals-strip"></div>
 
   <div class="result-panel" id="result-panel">
     <div class="ptitle">Analysis Result</div>
+
+    <!-- Verdict -->
     <div class="verdict" id="verdict">
       <div class="v-icon"  id="v-icon"></div>
       <div style="flex:1">
@@ -317,7 +270,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       </div>
     </div>
 
-    <!-- Attack explanation + causal path -->
+    <!-- ── Attack Explanation ── -->
     <div class="attack-explain" id="attack-explain">
       <div class="ae-header">
         <span class="ae-badge" id="ae-badge"></span>
@@ -326,142 +279,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       <div class="ae-desc" id="ae-desc"></div>
       <div class="ae-features-title">Key Features Influencing the Decision</div>
       <div class="ae-features" id="ae-features"></div>
-
-      <!-- ── Causal Path (shown only for DDoS / PortScan) ── -->
-      <div class="cp-wrap" id="cp-wrap" style="display:none">
-        <div class="cp-section-title">Causal Path — How Derived Features Are Computed</div>
-
-        <!-- DDoS path -->
-        <div id="cp-ddos" style="display:none">
-
-          <!-- Row 1: PacketLevel -->
-          <div class="cp-row">
-            <div class="cp-badge raw-coral">
-              <span class="cb-label">Flow Packets/s</span>
-              <span class="cb-rule">≥ 1000 → level 2</span>
-              <span class="cb-rule">≥ 100  → level 1</span>
-              <span class="cb-rule">else   → level 0</span>
-            </div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-coral">
-              <span class="cb-label">Packet Level</span>
-              <span class="cb-rule">0 / 1 / 2</span>
-            </div>
-          </div>
-
-          <!-- Row 2: ByteLevel -->
-          <div class="cp-row">
-            <div class="cp-badge raw-coral">
-              <span class="cb-label">Flow Bytes/s</span>
-              <span class="cb-rule">≥ 100 000 → level 2</span>
-              <span class="cb-rule">≥ 10 000  → level 1</span>
-              <span class="cb-rule">else      → level 0</span>
-            </div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-coral">
-              <span class="cb-label">Byte Level</span>
-              <span class="cb-rule">0 / 1 / 2</span>
-            </div>
-          </div>
-
-          <!-- Row 3: TrafficIntensity = max(PacketLevel, ByteLevel) -->
-          <div class="cp-row">
-            <div class="cp-badge raw-coral"><span class="cb-label">Packet Level</span></div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-coral">
-              <span class="cb-label">Traffic Intensity</span>
-              <span class="cb-rule">max(PacketLvl, ByteLvl)</span>
-              <span class="cb-rule">2 = HIGH ●</span>
-              <span class="cb-rule">1 = MED  ◐</span>
-              <span class="cb-rule">0 = LOW  ○</span>
-            </div>
-            <div class="cp-arrow">←</div>
-            <div class="cp-badge raw-coral"><span class="cb-label">Byte Level</span></div>
-          </div>
-
-          <!-- Row 4: Burstiness -->
-          <div class="cp-row">
-            <div class="cp-badge raw-amber">
-              <span class="cb-label">Flow IAT Std</span>
-              <span class="cb-rule">numerator</span>
-            </div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-amber">
-              <span class="cb-label">Burstiness</span>
-              <span class="cb-rule">IAT Std / IAT Mean</span>
-              <span class="cb-rule">&gt; 0.5 → 1 ●</span>
-              <span class="cb-rule">else  → 0 ○</span>
-            </div>
-            <div class="cp-arrow">←</div>
-            <div class="cp-badge raw-amber">
-              <span class="cb-label">Flow IAT Mean</span>
-              <span class="cb-rule">denominator</span>
-            </div>
-          </div>
-
-          <!-- Final label row: derived features → DDoS Label -->
-          <div class="cp-row" style="justify-content:center; margin-top:.5rem;">
-            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
-              <div class="cp-badge drv-coral" style="min-width:140px;"><span class="cb-label">Traffic Intensity</span></div>
-              <div class="cp-badge drv-amber" style="min-width:140px;"><span class="cb-label">Burstiness</span></div>
-            </div>
-            <div class="cp-arrow" style="font-size:1.6rem; padding-top:0; align-self:center;">→</div>
-            <div class="cp-badge drv-coral" style="min-width:110px; align-self:center; padding:14px 16px; border-color:rgba(255,61,113,.9); background:rgba(255,61,113,.2);">
-              <span class="cb-label" style="font-size:.8rem; letter-spacing:1px;">DDoS</span>
-              <span class="cb-rule" style="opacity:.9;">Label</span>
-            </div>
-          </div>
-          <div class="cp-verdict ddos" style="margin-top:1rem;">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness (ratio &gt; 0.5) firing together</div>
-        </div>
-
-        <!-- PortScan path -->
-        <div id="cp-ps" style="display:none">
-          <div class="cp-row">
-            <div class="cp-badge raw-blue"><span class="cb-label">Flow Duration</span><span class="cb-rule">µs</span></div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-blue">
-              <span class="cb-label">Short Flow Level</span>
-              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
-              <span class="cb-rule">else        → 0 ○</span>
-            </div>
-          </div>
-          <div class="cp-row">
-            <div class="cp-badge raw-blue"><span class="cb-label">Total Packets</span><span class="cb-rule">fwd + bwd ≤ 3</span></div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-blue">
-              <span class="cb-label">Low Packet Level</span>
-              <span class="cb-rule">ratio ≥ 0.9 → 1 ●</span>
-              <span class="cb-rule">else        → 0 ○</span>
-            </div>
-          </div>
-          <div class="cp-row">
-            <div class="cp-badge raw-blue"><span class="cb-label">Distinct Dest. Ports</span><span class="cb-rule">unique count</span></div>
-            <div class="cp-arrow">→</div>
-            <div class="cp-badge drv-blue">
-              <span class="cb-label">Port Diversity Level</span>
-              <span class="cb-rule">≥ 100 ports → 1 ●</span>
-              <span class="cb-rule">else        → 0 ○</span>
-            </div>
-          </div>
-
-          <!-- Final label row: derived features → PortScan Label -->
-          <div class="cp-row" style="justify-content:center; margin-top:.5rem;">
-            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
-              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Short Flow Level</span></div>
-              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Low Packet Level</span></div>
-              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Port Diversity Level</span></div>
-            </div>
-            <div class="cp-arrow" style="font-size:1.6rem; padding-top:0; align-self:center;">→</div>
-            <div class="cp-badge drv-blue" style="min-width:110px; align-self:center; padding:14px 16px; border-color:rgba(41,121,255,.9); background:rgba(41,121,255,.2);">
-              <span class="cb-label" style="font-size:.8rem; letter-spacing:1px;">PORTSCAN</span>
-              <span class="cb-rule" style="opacity:.9;">Label</span>
-            </div>
-          </div>
-          <div class="cp-verdict ps" style="margin-top:1rem;">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals firing together</div>
-        </div>
-
-      </div><!-- /cp-wrap -->
-    </div><!-- /attack-explain -->
+    </div>
 
     <div class="proba-grid"   id="proba-grid"></div>
     <hr class="sep">
@@ -471,28 +289,26 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 </div>
 
 <script>
-/* ── 30 Pre-built Demo Samples (Window_Count removed) ── */
-const DEMO_SAMPLES = [{"true_label":"DDoS","Fwd IAT Mean":798.3,"Bwd IAT Mean":718.4,"Average Packet Size":46.9,"SynOnlyRatio":0.208,"Flow Duration":46425.0,"Flow IAT Mean":798.3,"Flow IAT Std":1045.0,"Flow Packets/s":3920.6,"Flow Bytes/s":169666.0,"DistinctDestinationPort":3,"BackwardZeroLevel":0.05,"LowPacketLevel":0.0,"ShortFlowLevel":0.1},{"true_label":"BENIGN","Fwd IAT Mean":20508.0,"Bwd IAT Mean":22797.0,"Average Packet Size":343.9,"SynOnlyRatio":0.006,"Flow Duration":40357.0,"Flow IAT Mean":20508.0,"Flow IAT Std":22427.0,"Flow Packets/s":76.7,"Flow Bytes/s":4195.0,"DistinctDestinationPort":1,"BackwardZeroLevel":0.08,"LowPacketLevel":0.05,"ShortFlowLevel":0.0},{"true_label":"PortScan","Fwd IAT Mean":2001.7,"Bwd IAT Mean":0.0,"Average Packet Size":67.5,"SynOnlyRatio":0.968,"Flow Duration":60.2,"Flow IAT Mean":2001.7,"Flow IAT Std":294.8,"Flow Packets/s":120.1,"Flow Bytes/s":5796.0,"DistinctDestinationPort":367,"BackwardZeroLevel":0.98,"LowPacketLevel":0.91,"ShortFlowLevel":0.91},{"true_label":"DDoS","Fwd IAT Mean":635.6,"Bwd IAT Mean":572.0,"Average Packet Size":80.9,"SynOnlyRatio":0.143,"Flow Duration":27289.0,"Flow IAT Mean":635.6,"Flow IAT Std":1559.7,"Flow Packets/s":2071.6,"Flow Bytes/s":208621.0,"DistinctDestinationPort":3,"BackwardZeroLevel":0.1,"LowPacketLevel":0.0,"ShortFlowLevel":0.1},{"true_label":"BENIGN","Fwd IAT Mean":63925.0,"Bwd IAT Mean":54574.0,"Average Packet Size":1079.6,"SynOnlyRatio":0.07,"Flow Duration":87043.0,"Flow IAT Mean":63925.0,"Flow IAT Std":229475.0,"Flow Packets/s":39.7,"Flow Bytes/s":3191.0,"DistinctDestinationPort":5,"BackwardZeroLevel":0.05,"LowPacketLevel":0.01,"ShortFlowLevel":0.06},{"true_label":"PortScan","Fwd IAT Mean":4307.6,"Bwd IAT Mean":0.0,"Average Packet Size":95.2,"SynOnlyRatio":0.795,"Flow Duration":76.1,"Flow IAT Mean":4307.6,"Flow IAT Std":126.9,"Flow Packets/s":144.4,"Flow Bytes/s":801.0,"DistinctDestinationPort":465,"BackwardZeroLevel":0.97,"LowPacketLevel":0.94,"ShortFlowLevel":0.93},{"true_label":"DDoS","Fwd IAT Mean":675.0,"Bwd IAT Mean":607.5,"Average Packet Size":60.6,"SynOnlyRatio":0.205,"Flow Duration":35818.0,"Flow IAT Mean":675.0,"Flow IAT Std":1465.5,"Flow Packets/s":4866.0,"Flow Bytes/s":228339.0,"DistinctDestinationPort":4,"BackwardZeroLevel":0.05,"LowPacketLevel":0.0,"ShortFlowLevel":0.1},{"true_label":"BENIGN","Fwd IAT Mean":57340.0,"Bwd IAT Mean":60832.0,"Average Packet Size":435.3,"SynOnlyRatio":0.049,"Flow Duration":77856.0,"Flow IAT Mean":57340.0,"Flow IAT Std":219840.0,"Flow Packets/s":60.2,"Flow Bytes/s":2347.0,"DistinctDestinationPort":2,"BackwardZeroLevel":0.03,"LowPacketLevel":0.04,"ShortFlowLevel":0.07},{"true_label":"PortScan","Fwd IAT Mean":4848.6,"Bwd IAT Mean":0.0,"Average Packet Size":72.8,"SynOnlyRatio":0.775,"Flow Duration":78.8,"Flow IAT Mean":4848.6,"Flow IAT Std":981.6,"Flow Packets/s":77.1,"Flow Bytes/s":7844.0,"DistinctDestinationPort":433,"BackwardZeroLevel":0.98,"LowPacketLevel":0.92,"ShortFlowLevel":0.95},{"true_label":"DDoS","Fwd IAT Mean":350.6,"Bwd IAT Mean":315.6,"Average Packet Size":114.9,"SynOnlyRatio":0.002,"Flow Duration":26485.0,"Flow IAT Mean":350.6,"Flow IAT Std":1036.5,"Flow Packets/s":2534.3,"Flow Bytes/s":189347.0,"DistinctDestinationPort":3,"BackwardZeroLevel":0.05,"LowPacketLevel":0.05,"ShortFlowLevel":0.1},{"true_label":"BENIGN","Fwd IAT Mean":52897.0,"Bwd IAT Mean":44520.0,"Average Packet Size":1151.0,"SynOnlyRatio":0.044,"Flow Duration":74504.0,"Flow IAT Mean":52897.0,"Flow IAT Std":98072.0,"Flow Packets/s":42.9,"Flow Bytes/s":5431.0,"DistinctDestinationPort":9,"BackwardZeroLevel":0.1,"LowPacketLevel":0.04,"ShortFlowLevel":0.04},{"true_label":"PortScan","Fwd IAT Mean":4093.3,"Bwd IAT Mean":0.0,"Average Packet Size":56.3,"SynOnlyRatio":0.846,"Flow Duration":184.9,"Flow IAT Mean":4093.3,"Flow IAT Std":686.2,"Flow Packets/s":129.1,"Flow Bytes/s":7299.0,"DistinctDestinationPort":432,"BackwardZeroLevel":0.99,"LowPacketLevel":0.92,"ShortFlowLevel":0.91},{"true_label":"DDoS","Fwd IAT Mean":330.0,"Bwd IAT Mean":297.0,"Average Packet Size":86.0,"SynOnlyRatio":0.106,"Flow Duration":31839.0,"Flow IAT Mean":330.0,"Flow IAT Std":505.6,"Flow Packets/s":2946.7,"Flow Bytes/s":207476.0,"DistinctDestinationPort":2,"BackwardZeroLevel":0.1,"LowPacketLevel":0.0,"ShortFlowLevel":0.05},{"true_label":"BENIGN","Fwd IAT Mean":48909.0,"Bwd IAT Mean":47948.0,"Average Packet Size":414.7,"SynOnlyRatio":0.047,"Flow Duration":76825.0,"Flow IAT Mean":48909.0,"Flow IAT Std":219218.0,"Flow Packets/s":58.4,"Flow Bytes/s":2014.0,"DistinctDestinationPort":8,"BackwardZeroLevel":0.01,"LowPacketLevel":0.03,"ShortFlowLevel":0.06},{"true_label":"PortScan","Fwd IAT Mean":777.1,"Bwd IAT Mean":0.0,"Average Packet Size":90.6,"SynOnlyRatio":0.887,"Flow Duration":103.1,"Flow IAT Mean":777.1,"Flow IAT Std":281.2,"Flow Packets/s":53.9,"Flow Bytes/s":6763.0,"DistinctDestinationPort":383,"BackwardZeroLevel":0.96,"LowPacketLevel":0.92,"ShortFlowLevel":0.96},{"true_label":"DDoS","Fwd IAT Mean":337.1,"Bwd IAT Mean":303.4,"Average Packet Size":115.9,"SynOnlyRatio":0.093,"Flow Duration":35558.0,"Flow IAT Mean":337.1,"Flow IAT Std":691.9,"Flow Packets/s":4052.3,"Flow Bytes/s":214784.0,"DistinctDestinationPort":5,"BackwardZeroLevel":0.05,"LowPacketLevel":0.05,"ShortFlowLevel":0.05},{"true_label":"BENIGN","Fwd IAT Mean":70415.0,"Bwd IAT Mean":62495.0,"Average Packet Size":785.2,"SynOnlyRatio":0.005,"Flow Duration":92071.0,"Flow IAT Mean":70415.0,"Flow IAT Std":57485.0,"Flow Packets/s":32.7,"Flow Bytes/s":821.0,"DistinctDestinationPort":4,"BackwardZeroLevel":0.05,"LowPacketLevel":0.08,"ShortFlowLevel":0.04},{"true_label":"PortScan","Fwd IAT Mean":4523.6,"Bwd IAT Mean":0.0,"Average Packet Size":88.0,"SynOnlyRatio":0.919,"Flow Duration":173.6,"Flow IAT Mean":4523.6,"Flow IAT Std":933.4,"Flow Packets/s":96.8,"Flow Bytes/s":1522.0,"DistinctDestinationPort":487,"BackwardZeroLevel":0.94,"LowPacketLevel":0.99,"ShortFlowLevel":0.92},{"true_label":"DDoS","Fwd IAT Mean":176.9,"Bwd IAT Mean":159.3,"Average Packet Size":83.4,"SynOnlyRatio":0.16,"Flow Duration":46260.0,"Flow IAT Mean":176.9,"Flow IAT Std":313.5,"Flow Packets/s":1234.9,"Flow Bytes/s":106765.0,"DistinctDestinationPort":1,"BackwardZeroLevel":0.1,"LowPacketLevel":0.0,"ShortFlowLevel":0.0},{"true_label":"BENIGN","Fwd IAT Mean":33824.0,"Bwd IAT Mean":40096.0,"Average Packet Size":269.0,"SynOnlyRatio":0.062,"Flow Duration":74454.0,"Flow IAT Mean":33824.0,"Flow IAT Std":166545.0,"Flow Packets/s":18.1,"Flow Bytes/s":4208.0,"DistinctDestinationPort":1,"BackwardZeroLevel":0.02,"LowPacketLevel":0.07,"ShortFlowLevel":0.08},{"true_label":"PortScan","Fwd IAT Mean":4061.5,"Bwd IAT Mean":0.0,"Average Packet Size":66.1,"SynOnlyRatio":0.999,"Flow Duration":189.6,"Flow IAT Mean":4061.5,"Flow IAT Std":716.6,"Flow Packets/s":97.8,"Flow Bytes/s":7590.0,"DistinctDestinationPort":232,"BackwardZeroLevel":0.93,"LowPacketLevel":0.97,"ShortFlowLevel":0.98},{"true_label":"DDoS","Fwd IAT Mean":323.2,"Bwd IAT Mean":290.9,"Average Packet Size":100.2,"SynOnlyRatio":0.196,"Flow Duration":32477.0,"Flow IAT Mean":323.2,"Flow IAT Std":946.1,"Flow Packets/s":1936.0,"Flow Bytes/s":147834.0,"DistinctDestinationPort":4,"BackwardZeroLevel":0.0,"LowPacketLevel":0.05,"ShortFlowLevel":0.1},{"true_label":"BENIGN","Fwd IAT Mean":73843.0,"Bwd IAT Mean":79860.0,"Average Packet Size":825.6,"SynOnlyRatio":0.066,"Flow Duration":74886.0,"Flow IAT Mean":73843.0,"Flow IAT Std":326355.0,"Flow Packets/s":67.6,"Flow Bytes/s":2475.0,"DistinctDestinationPort":9,"BackwardZeroLevel":0.06,"LowPacketLevel":0.04,"ShortFlowLevel":0.04},{"true_label":"PortScan","Fwd IAT Mean":2931.9,"Bwd IAT Mean":0.0,"Average Packet Size":81.0,"SynOnlyRatio":0.762,"Flow Duration":72.5,"Flow IAT Mean":2931.9,"Flow IAT Std":594.9,"Flow Packets/s":23.9,"Flow Bytes/s":7163.0,"DistinctDestinationPort":335,"BackwardZeroLevel":0.9,"LowPacketLevel":0.99,"ShortFlowLevel":0.92},{"true_label":"DDoS","Fwd IAT Mean":330.8,"Bwd IAT Mean":297.8,"Average Packet Size":70.2,"SynOnlyRatio":0.02,"Flow Duration":46270.0,"Flow IAT Mean":330.8,"Flow IAT Std":554.7,"Flow Packets/s":4856.6,"Flow Bytes/s":274911.0,"DistinctDestinationPort":2,"BackwardZeroLevel":0.1,"LowPacketLevel":0.05,"ShortFlowLevel":0.0},{"true_label":"BENIGN","Fwd IAT Mean":73783.0,"Bwd IAT Mean":64461.0,"Average Packet Size":1207.4,"SynOnlyRatio":0.012,"Flow Duration":88395.0,"Flow IAT Mean":73783.0,"Flow IAT Std":122166.0,"Flow Packets/s":7.2,"Flow Bytes/s":2890.0,"DistinctDestinationPort":7,"BackwardZeroLevel":0.1,"LowPacketLevel":0.03,"ShortFlowLevel":0.07},{"true_label":"PortScan","Fwd IAT Mean":4337.7,"Bwd IAT Mean":0.0,"Average Packet Size":87.1,"SynOnlyRatio":0.95,"Flow Duration":53.2,"Flow IAT Mean":4337.7,"Flow IAT Std":995.8,"Flow Packets/s":50.3,"Flow Bytes/s":6148.0,"DistinctDestinationPort":295,"BackwardZeroLevel":0.94,"LowPacketLevel":1.0,"ShortFlowLevel":1.0},{"true_label":"DDoS","Fwd IAT Mean":235.6,"Bwd IAT Mean":212.1,"Average Packet Size":98.0,"SynOnlyRatio":0.028,"Flow Duration":47183.0,"Flow IAT Mean":235.6,"Flow IAT Std":297.3,"Flow Packets/s":4237.9,"Flow Bytes/s":183848.0,"DistinctDestinationPort":1,"BackwardZeroLevel":0.0,"LowPacketLevel":0.0,"ShortFlowLevel":0.0},{"true_label":"BENIGN","Fwd IAT Mean":23874.0,"Bwd IAT Mean":20082.0,"Average Packet Size":276.6,"SynOnlyRatio":0.07,"Flow Duration":80949.0,"Flow IAT Mean":23874.0,"Flow IAT Std":89406.0,"Flow Packets/s":46.1,"Flow Bytes/s":698.0,"DistinctDestinationPort":7,"BackwardZeroLevel":0.05,"LowPacketLevel":0.1,"ShortFlowLevel":0.01},{"true_label":"PortScan","Fwd IAT Mean":107.2,"Bwd IAT Mean":0.0,"Average Packet Size":46.2,"SynOnlyRatio":0.882,"Flow Duration":142.1,"Flow IAT Mean":107.2,"Flow IAT Std":43.9,"Flow Packets/s":43.3,"Flow Bytes/s":4682.0,"DistinctDestinationPort":130,"BackwardZeroLevel":1.0,"LowPacketLevel":0.91,"ShortFlowLevel":0.93}];
-
-let demoIndex = 0;
-let totalRuns = 0, correctRuns = 0;
-
 const RANGES = {
-  "Fwd IAT Mean":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
-  "Bwd IAT Mean":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
-  "Average Packet Size":     { min:20,  max:1500,   dec:1, unit:"bytes", label:"Average Packet Size"       },
-  "SynOnlyRatio":            { min:0,   max:1,      dec:3, unit:"ratio", label:"SYN-Only Ratio"            },
-  "Flow Duration":           { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow Duration"             },
-  "Flow IAT Mean":           { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Mean"             },
-  "Flow IAT Std":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Std"              },
-  "Flow Packets/s":          { min:0,   max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
-  "Flow Bytes/s":            { min:0,   max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
-  "DistinctDestinationPort": { min:1,   max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
-  "BackwardZeroLevel":       { opts:[0,1], unit:"binary", label:"Backward Zero Level" },
-  "LowPacketLevel":          { opts:[0,1], unit:"binary", label:"Low Packet Level"    },
-  "ShortFlowLevel":          { opts:[0,1], unit:"binary", label:"Short Flow Level"    },
+  "Fwd IAT Mean":              { min:0,   max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
+  "Bwd IAT Mean":              { min:0,   max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
+  "Average Packet Size":       { min:20,  max:1500,   dec:1, unit:"bytes", label:"Average Packet Size"       },
+  "SynOnlyRatio":              { min:0,   max:1,      dec:3, unit:"ratio", label:"SYN-Only Ratio"            },
+  "Flow Duration":             { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow Duration"             },
+  "Flow IAT Mean":             { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Mean"             },
+  "Flow IAT Std":              { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Std"              },
+  "Flow Packets/s":            { min:0,   max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
+  "Flow Bytes/s":              { min:0,   max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
+  "DistinctDestinationPort":   { min:1,   max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
+
+  "BackwardZeroLevel":         { opts:[0,1], unit:"binary", label:"Backward Zero Level"                      },
+  "LowPacketLevel":            { opts:[0,1], unit:"binary", label:"Low Packet Level"                         },
+  "ShortFlowLevel":            { opts:[0,1], unit:"binary", label:"Short Flow Level"                         },
+
+  "Window_Count":              { min:0, max:5000, dec:0, unit:"windows", label:"Window Count"                },
 };
 
+/* ── Attack type descriptions ── */
 const ATTACK_INFO = {
   BENIGN: {
     title: "Normal Traffic — No Threat Detected",
@@ -502,12 +318,12 @@ const ATTACK_INFO = {
   DDoS: {
     title: "Distributed Denial of Service Attack (DDoS)",
     desc: "A DDoS attack aims to overwhelm the target server with massive request volumes to render it unavailable. It is characterized by extremely high traffic density, small repetitive automated packets, and a continuous high-speed flood from multiple sources.",
-    keyFeats: ["TrafficIntensity", "Burstiness"],
+    keyFeats: ["TrafficIntensity", "Flow Packets/s", "Flow Bytes/s", "Burstiness", "Fwd IAT Mean", "WindowLevel"],
   },
   PortScan: {
     title: "Port Scanning Attack (PortScan)",
     desc: "A PortScan attack is used to probe open ports on a target in order to discover vulnerabilities. It is characterized by very short flows targeting different ports, a high SYN ratio without ACK, and near-total absence of backward responses.",
-    keyFeats: ["PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel"],
+    keyFeats: ["SynOnlyRatio", "PortDiversityLevel", "ShortFlowLevel", "LowPacketLevel", "BackwardZeroLevel"],
   },
 };
 
@@ -522,6 +338,50 @@ function fmtNum(n){
   return String(n);
 }
 
+function rnd(feat){
+  const r = RANGES[feat];
+  if(!r) return 0;
+  if(r.opts) return r.opts[Math.floor(Math.random()*r.opts.length)];
+  return parseFloat((r.min + Math.random()*(r.max-r.min)).toFixed(r.dec));
+}
+
+function genRandom(){
+  const v={};
+  Object.keys(RANGES).forEach(f=> v[f]=rnd(f));
+
+  // ── CONSTRAINT: Flow Duration must be strictly greater than Fwd IAT Mean, Bwd IAT Mean, and Flow IAT Mean ──
+  const fwdIAT     = v["Fwd IAT Mean"];
+  const bwdIAT     = v["Bwd IAT Mean"];
+  const flowIATMean= v["Flow IAT Mean"];
+  const minIATFloor = Math.max(fwdIAT, bwdIAT, flowIATMean);
+  const maxDuration = RANGES["Flow Duration"].max;
+
+  if (minIATFloor >= maxDuration) {
+    // Edge case: clamp all three IATs down, then set a valid duration above them
+    v["Fwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    v["Bwd IAT Mean"]  = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    v["Flow IAT Mean"] = parseFloat((Math.random() * (maxDuration * 0.3)).toFixed(0));
+    const newFloor = Math.max(v["Fwd IAT Mean"], v["Bwd IAT Mean"], v["Flow IAT Mean"]);
+    v["Flow Duration"] = parseFloat((newFloor + 1 + Math.random() * (maxDuration - newFloor - 1)).toFixed(0));
+  } else {
+    // Normal case: pick Flow Duration in (minIATFloor, maxDuration]
+    v["Flow Duration"] = parseFloat((minIATFloor + 1 + Math.random() * (maxDuration - minIATFloor - 1)).toFixed(0));
+  }
+
+  // Compute Burstiness from real values instead of random
+  const iatStd  = v["Flow IAT Std"]  || 0;
+  const iatMean = v["Flow IAT Mean"] || 0;
+  v["Burstiness"] = iatMean !== 0 ? (iatStd / iatMean > 0.5 ? 1 : 0) : 0;
+
+  // Compute WindowLevel from Window_Count (mirrors Python logic exactly)
+  const wc = v["Window_Count"] || 0;
+  if      (wc >= 1000) v["WindowLevel"] = 2;
+  else if (wc >= 100)  v["WindowLevel"] = 1;
+  else                 v["WindowLevel"] = 0;
+
+  return v;
+}
+
 function genFakeIP(){
   const seg = () => Math.floor(Math.random()*254)+1;
   const ranges = [
@@ -534,16 +394,7 @@ function genFakeIP(){
 let currentSourceIP = '';
 let currentDestIP   = '';
 
-function updateAccuracyBanner(trueLabel, predLabel){
-  totalRuns++;
-  if(trueLabel === predLabel) correctRuns++;
-  const pct = (correctRuns/totalRuns*100).toFixed(1);
-  const el = document.getElementById('accuracy-banner');
-  if(!el) return;
-  const color = parseFloat(pct) >= 80 ? 'var(--green)' : parseFloat(pct) >= 60 ? 'var(--yellow)' : 'var(--red)';
-  el.innerHTML = `MODEL ACCURACY ON DEMO SET &nbsp;·&nbsp; <span style="color:${color};font-weight:700">${correctRuns}/${totalRuns} = ${pct}%</span> &nbsp;·&nbsp; ${30-demoIndex} samples remaining`;
-}
-
+/* ── Scan Progress ── */
 let scanTicker=null, scanProg=0;
 const STEPS = ["Collecting flow data...","Computing features...","Running model...","Analyzing results..."];
 
@@ -570,90 +421,71 @@ function endScan(){
   setTimeout(()=>{ fill.style.width='0%'; lbl.textContent=''; },800);
 }
 
-async function runPredict(){
-  if(demoIndex >= DEMO_SAMPLES.length){
-    document.getElementById('run-info').textContent = '✅ All 30 samples analyzed! Reload to restart.';
-    return;
-  }
+/* ── Run ── */
+let runCount=0;
 
+async function runPredict(){
   const btn=document.getElementById('run-btn');
   btn.classList.add('loading');
   btn.textContent='⏳  Capturing...';
   startScan();
 
-  const sample = DEMO_SAMPLES[demoIndex++];
-  const trueLabel = sample.true_label;
-
-  const vals = {};
-  for(const [k,v] of Object.entries(sample)){
-    if(k !== 'true_label' && k !== '_id') vals[k] = v;
-  }
-
+  const vals=genRandom();
   currentSourceIP = genFakeIP();
   do { currentDestIP = genFakeIP(); } while (currentDestIP === currentSourceIP);
-  showChips(vals, currentSourceIP, currentDestIP, trueLabel);
+  showChips(vals, currentSourceIP, currentDestIP);
 
   try {
     const r=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({features:vals})});
     const d=await r.json();
     endScan();
-    const isCorrect = d.label === trueLabel;
-    document.getElementById('run-info').textContent=`SAMPLE ${demoIndex}/30  ·  True: ${trueLabel}  ·  Pred: ${d.label}  ·  ${isCorrect?'✓ CORRECT':'✗ WRONG'}`;
-    updateAccuracyBanner(trueLabel, d.label);
-    showTrueLabelBadge(trueLabel, d.label);
+    runCount++;
+    document.getElementById('run-info').textContent=`RUN #${runCount}  ·  ${new Date().toLocaleTimeString('en')}`;
     renderResult(d, currentSourceIP, currentDestIP);
   } catch(e){
     endScan();
-    alert("Make sure the server is running on :10000\n"+e.message);
+    alert("Make sure the server is running on :5000\n"+e.message);
   } finally {
     btn.classList.remove('loading');
-    btn.textContent = demoIndex < DEMO_SAMPLES.length ? '▶  Next Sample →' : '✅  All Done';
+    btn.textContent='▶  Capture & Analyze Flow';
   }
 }
 
-function showTrueLabelBadge(trueLabel, predLabel){
-  const row = document.getElementById('true-label-row');
-  const badge = document.getElementById('tl-badge');
-  const correct = document.getElementById('correct-badge');
-  row.style.display = 'block';
-  badge.className = `tl-badge ${trueLabel}`;
-  badge.textContent = trueLabel;
-  const ok = predLabel === trueLabel;
-  correct.className = `correct-badge ${ok ? 'yes' : 'no'}`;
-  correct.textContent = ok ? '✓ Correct' : '✗ Wrong';
-}
-
-function showChips(vals, srcIP, dstIP, trueLabel){
+/* ── Chips ── */
+function showChips(vals, srcIP, dstIP){
   const strip=document.getElementById('vals-strip');
   strip.innerHTML='';
+  // Source IP chip first
   if(srcIP){
-    const c=document.createElement('div');
-    c.className='chip'; c.style.animationDelay='0ms'; c.style.borderColor='rgba(0,229,255,.35)';
-    c.innerHTML=`Source IP: <strong style="color:var(--accent)">${srcIP}</strong>`;
-    strip.appendChild(c);
+    const ipChip=document.createElement('div');
+    ipChip.className='chip';
+    ipChip.style.animationDelay='0ms';
+    ipChip.style.borderColor='rgba(0,229,255,.35)';
+    ipChip.innerHTML=`Source IP: <strong style="color:var(--accent)">${srcIP}</strong>`;
+    strip.appendChild(ipChip);
   }
+  // Destination IP chip second
   if(dstIP){
-    const c=document.createElement('div');
-    c.className='chip'; c.style.animationDelay='28ms'; c.style.borderColor='rgba(255,170,0,.35)';
-    c.innerHTML=`Dest IP: <strong style="color:var(--yellow)">${dstIP}</strong>`;
-    strip.appendChild(c);
-  }
-  if(trueLabel){
-    const c=document.createElement('div');
-    c.className='chip'; c.style.animationDelay='56ms';
-    const clr = trueLabel==='BENIGN'?'var(--green)':trueLabel==='DDoS'?'var(--red)':'var(--yellow)';
-    c.innerHTML=`True Label: <strong style="color:${clr}">${trueLabel}</strong>`;
-    strip.appendChild(c);
+    const dstChip=document.createElement('div');
+    dstChip.className='chip';
+    dstChip.style.animationDelay='28ms';
+    dstChip.style.borderColor='rgba(255,170,0,.35)';
+    dstChip.innerHTML=`Dest IP: <strong style="color:var(--yellow)">${dstIP}</strong>`;
+    strip.appendChild(dstChip);
   }
   Object.entries(vals).forEach(([k,v],i)=>{
     const r = RANGES[k];
     const isBinary = r && !!r.opts;
-    const displayVal = Number.isInteger(v) ? v : (typeof v === 'number' ? v.toFixed(2) : v);
+    const displayVal = Number.isInteger(v) ? v : v.toFixed(2);
     const unit = r ? r.unit : '';
     const c=document.createElement('div');
     c.className='chip';
-    c.style.animationDelay=((i+3)*28)+'ms';
-    if (k === 'Burstiness') {
+    c.style.animationDelay=((i+2)*28)+'ms';
+    // Special display for computed features not in RANGES
+    if (k === 'WindowLevel') {
+      const lvlColor = v === 2 ? 'var(--red)' : v === 1 ? 'var(--yellow)' : 'var(--green)';
+      c.innerHTML = `Window Level: <strong style="color:${lvlColor}">${v}</strong> <span style="color:var(--accent);font-size:.58rem">(computed)</span>`;
+    } else if (k === 'Burstiness') {
       c.innerHTML = `Burstiness: <strong>${displayVal}</strong> <span style="color:var(--accent);font-size:.58rem">(computed)</span>`;
     } else {
       c.innerHTML = isBinary
@@ -664,17 +496,7 @@ function showChips(vals, srcIP, dstIP, trueLabel){
   });
 }
 
-/* ── Causal Path toggle ── */
-function renderCausalPath(label) {
-  const wrap  = document.getElementById('cp-wrap');
-  const ddos  = document.getElementById('cp-ddos');
-  const ps    = document.getElementById('cp-ps');
-  const show  = label === 'DDoS' || label === 'PortScan';
-  wrap.style.display  = show ? 'block' : 'none';
-  ddos.style.display  = label === 'DDoS'      ? 'block' : 'none';
-  ps.style.display    = label === 'PortScan'  ? 'block' : 'none';
-}
-
+/* ── Render Attack Explanation ── */
 function renderAttackExplain(label, explanations, usedVals){
   const info = ATTACK_INFO[label] || ATTACK_INFO.BENIGN;
   const box  = document.getElementById('attack-explain');
@@ -709,10 +531,9 @@ function renderAttackExplain(label, explanations, usedVals){
       <span class="ae-feat-val">${displayVal}${unit ? ' '+unit : ''}</span>`;
     featsEl.appendChild(el);
   });
-
-  renderCausalPath(label);
 }
 
+/* ── Render Result ── */
 function renderResult(d, srcIP, dstIP){
   const panel=document.getElementById('result-panel');
   panel.className=`result-panel ${d.label}`;
@@ -725,11 +546,17 @@ function renderResult(d, srcIP, dstIP){
   document.getElementById('v-label').textContent=d.label;
   const ipsCls={'ALLOW':'ips-ALLOW','BLOCK':'ips-BLOCK','RATE LIMIT':'ips-RATE-LIMIT'}[d.ips]||'ips-ALLOW';
   document.getElementById('v-ips').innerHTML=`IPS Decision: <span class="${ipsCls}">${d.ips}</span>`;
-  document.getElementById('v-src-ip').innerHTML=srcIP?`Source IP: <span class="ip-val">${srcIP}</span>`:'';
-  document.getElementById('v-dst-ip').innerHTML=dstIP?`Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>`:'';
+  document.getElementById('v-src-ip').innerHTML=srcIP
+    ? `Source IP: <span class="ip-val">${srcIP}</span>`
+    : '';
+  document.getElementById('v-dst-ip').innerHTML=dstIP
+    ? `Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>`
+    : '';
 
+  /* Attack explanation */
   renderAttackExplain(d.label, d.explanations||{}, d.used_values||{});
 
+  /* Proba */
   const pg=document.getElementById('proba-grid');
   pg.innerHTML='';
   for(const [cls,prob] of Object.entries(d.proba)){
@@ -744,6 +571,7 @@ function renderResult(d, srcIP, dstIP){
     document.querySelectorAll('.p-fill[data-w]').forEach(el=> el.style.width=el.dataset.w+'%');
   });
 
+  /* Feature explanations */
   const grid=document.getElementById('explain-grid');
   grid.innerHTML='';
   const expl=d.explanations||{};
@@ -792,27 +620,187 @@ function renderResult(d, srcIP, dstIP){
   }
 }
 
-/* ── English metadata ── */
+/* ── English fallback metadata (overrides any Arabic from backend) ── */
 const EN_META = {
-  "Average Packet Size":     { label:"Average Packet Size", unit:"bytes", description:"Normal packet size — healthy flow", thresholds:[{op:"<=",value:100,level:"warning",text:"Very small packets — possible flooding pattern"},{op:">=",value:1400,level:"warning",text:"Near-max size — possible bulk data transfer"}] },
-  "Burstiness":              { label:"Burstiness", unit:"", description:"Smooth, steady traffic flow", thresholds:[{op:"==",value:1,level:"danger",text:"Bursty traffic — IAT Std / IAT Mean > 0.5"},{op:"==",value:0,level:"ok",text:"Smooth traffic — IAT Std / IAT Mean ≤ 0.5"}] },
-  "Bwd IAT Mean":            { label:"Backward IAT Mean", unit:"µs", description:"Normal backward inter-arrival time", thresholds:[{op:"<=",value:500,level:"danger",text:"Very low backward IAT — abnormally fast responses"},{op:">=",value:80000,level:"warning",text:"High backward IAT — slow or delayed responses"}] },
-  "Flow Duration":           { label:"Flow Duration", unit:"µs", description:"Normal flow duration — sustained connection", thresholds:[{op:"<=",value:500,level:"warning",text:"Very short flow — possible scan or probe"}] },
-  "Flow IAT Mean":           { label:"Flow IAT Mean", unit:"µs", description:"Normal flow IAT", thresholds:[{op:"<=",value:200,level:"danger",text:"Extremely fast inter-arrivals — possible flood"}] },
-  "Flow IAT Std":            { label:"Flow IAT Std", unit:"µs", description:"Normal IAT variance", thresholds:[{op:">=",value:50000,level:"warning",text:"High variance — irregular traffic timing"}] },
-  "Flow Packets/s":          { label:"Flow Packets/s", unit:"pkt/s", description:"Normal packet rate", thresholds:[{op:">=",value:1000,level:"danger",text:"≥ 1000 pkt/s — PacketLevel 2, likely DDoS"},{op:">=",value:100,level:"warning",text:"≥ 100 pkt/s — PacketLevel 1, monitor closely"}] },
-  "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:100000,level:"danger",text:"≥ 100 000 B/s — ByteLevel 2, possible flood attack"},{op:">=",value:10000,level:"warning",text:"≥ 10 000 B/s — ByteLevel 1, elevated throughput"}] },
-  "Fwd IAT Mean":            { label:"Forward IAT Mean", unit:"µs", description:"Normal forward inter-arrival time — regular traffic", thresholds:[{op:"<=",value:200,level:"danger",text:"Near-zero forward IAT — automated high-speed sending"}] },
-  "SynOnlyRatio":            { label:"SYN-Only Ratio", unit:"", description:"Normal SYN ratio", thresholds:[{op:">=",value:0.8,level:"danger",text:"Very high SYN ratio — suspicious, possible scan or flood"},{op:">=",value:0.5,level:"warning",text:"Elevated SYN ratio — monitor"}] },
-  "DistinctDestinationPort": { label:"Distinct Destination Ports", unit:"ports", description:"Low port diversity — normal", thresholds:[{op:">=",value:100,level:"danger",text:"≥100 unique ports — clear PortScan pattern"},{op:">=",value:30,level:"warning",text:"Elevated port diversity — possible reconnaissance"}] },
-  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Level 2 — max(PacketLevel,ByteLevel)=2, high DDoS signal"},{op:">=",value:1,level:"warning",text:"Level 1 — medium intensity, monitor"},{op:"==",value:0,level:"ok",text:"Level 0 — normal intensity"}] },
-  "BackwardZeroLevel":       { label:"Backward Zero Level", unit:"", description:"Backward traffic present", thresholds:[{op:"==",value:1,level:"warning",text:"No backward responses — possible one-way attack"},{op:"==",value:0,level:"ok",text:"Backward replies present — normal two-way connection"}] },
-  "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets (≤3 total) — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
-  "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — ratio ≥ 0.9, clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
-  "PortDiversityLevel":      { label:"Port Diversity Level", unit:"", description:"Low port diversity", thresholds:[{op:"==",value:1,level:"danger",text:"≥100 distinct ports targeted — clear PortScan pattern"},{op:"==",value:0,level:"ok",text:"Low port diversity — normal behavior"}] },
+  "Average Packet Size": {
+    label: "Average Packet Size", unit: "bytes",
+    thresholds: [
+      { op: "<=", value: 100,  level: "warning", text: "Very small packets — possible flooding pattern" },
+      { op: ">=", value: 1400, level: "warning", text: "Near-max size — possible bulk data transfer" },
+    ],
+    description: "Normal packet size — healthy flow"
+  },
+  "Backward Zero Level": {
+    label: "Backward Zero Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "No backward responses — possible one-way attack" },
+      { op: "==", value: 0, level: "ok",      text: "Backward replies present — normal two-way connection" },
+    ],
+    description: "Backward traffic present"
+  },
+  "Burstiness": {
+    label: "Burstiness", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "Bursty traffic — irregular burst pattern detected" },
+      { op: "==", value: 0, level: "ok",      text: "Smooth traffic — no burst pattern" },
+    ],
+    description: "Smooth, steady traffic flow"
+  },
+  "Bwd IAT Mean": {
+    label: "Backward IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 500,  level: "danger",  text: "Very low backward IAT — abnormally fast responses" },
+      { op: ">=", value: 80000, level: "warning", text: "High backward IAT — slow or delayed responses" },
+    ],
+    description: "Normal backward inter-arrival time"
+  },
+  "Flow Duration": {
+    label: "Flow Duration", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 500,  level: "warning", text: "Very short flow — possible scan or probe" },
+    ],
+    description: "Normal flow duration — sustained connection"
+  },
+  "Flow IAT Mean": {
+    label: "Flow IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 200, level: "danger", text: "Extremely fast inter-arrivals — possible flood" },
+    ],
+    description: "Normal flow IAT"
+  },
+  "Flow IAT Std": {
+    label: "Flow IAT Std", unit: "µs",
+    thresholds: [
+      { op: ">=", value: 50000, level: "warning", text: "High variance — irregular traffic timing" },
+    ],
+    description: "Normal IAT variance"
+  },
+  "Flow Packets/s": {
+    label: "Flow Packets/s", unit: "pkt/s",
+    thresholds: [
+      { op: ">=", value: 3000, level: "danger",  text: "Extremely high packet rate — likely DDoS" },
+      { op: ">=", value: 1000, level: "warning", text: "Elevated packet rate — monitor closely" },
+    ],
+    description: "Normal packet rate"
+  },
+  "Flow Bytes/s": {
+    label: "Flow Bytes/s", unit: "B/s",
+    thresholds: [
+      { op: ">=", value: 80000, level: "danger",  text: "Very high throughput — possible flood attack" },
+      { op: ">=", value: 40000, level: "warning", text: "Elevated throughput — monitor" },
+    ],
+    description: "Normal throughput"
+  },
+  "Fwd IAT Mean": {
+    label: "Forward IAT Mean", unit: "µs",
+    thresholds: [
+      { op: "<=", value: 200, level: "danger", text: "Near-zero forward IAT — automated high-speed sending" },
+    ],
+    description: "Normal forward inter-arrival time — regular traffic"
+  },
+  "Low Packet Level": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
+  "Port Diversity Level": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "PortDiversityLevel": {
+    label: "Port Diversity Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "danger",  text: "≥100 distinct ports targeted — clear PortScan pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Low port diversity — normal behavior" },
+    ],
+    description: "Low port diversity"
+  },
+  "Short Flow Level": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
+  "ShortFlowLevel": {
+    label: "Short Flow Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very short flows — clear attack pattern" },
+      { op: "==", value: 0, level: "ok",      text: "Normal flow length" },
+    ],
+    description: "Normal flow length"
+  },
+  "SynOnlyRatio": {
+    label: "SYN-Only Ratio", unit: "",
+    thresholds: [
+      { op: ">=", value: 0.8, level: "danger",  text: "Very high SYN ratio — suspicious, possible scan or flood" },
+      { op: ">=", value: 0.5, level: "warning", text: "Elevated SYN ratio — monitor" },
+    ],
+    description: "Normal SYN ratio"
+  },
+  "DistinctDestinationPort": {
+    label: "Distinct Destination Ports", unit: "ports",
+    thresholds: [
+      { op: ">=", value: 100, level: "danger",  text: "≥100 unique ports — clear PortScan pattern" },
+      { op: ">=", value: 30,  level: "warning", text: "Elevated port diversity — possible reconnaissance" },
+    ],
+    description: "Low port diversity — normal"
+  },
+  "TrafficIntensity": {
+    label: "Traffic Intensity", unit: "",
+    thresholds: [
+      { op: ">=", value: 2, level: "danger",  text: "High intensity — possible DDoS" },
+      { op: ">=", value: 1, level: "warning", text: "Medium intensity — monitor" },
+      { op: "==", value: 0, level: "ok",      text: "Low intensity — normal" },
+    ],
+    description: "Normal traffic intensity"
+  },
+  "BackwardZeroLevel": {
+    label: "Backward Zero Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "No backward responses — possible one-way attack" },
+      { op: "==", value: 0, level: "ok",      text: "Backward replies present — normal two-way connection" },
+    ],
+    description: "Backward traffic present"
+  },
+  "LowPacketLevel": {
+    label: "Low Packet Level", unit: "",
+    thresholds: [
+      { op: "==", value: 1, level: "warning", text: "Very few packets — typical of short scan flows" },
+      { op: "==", value: 0, level: "ok",      text: "Sufficient packets — normal flows" },
+    ],
+    description: "Normal packet count"
+  },
+  "Window_Count": {
+    label: "Window Count", unit: "windows",
+    thresholds: [
+      { op: ">=", value: 1000, level: "danger",  text: "≥1000 windows — very high window activity, possible DDoS" },
+      { op: ">=", value: 100,  level: "warning", text: "≥100 windows — elevated window count, monitor closely" },
+    ],
+    description: "Normal window count — healthy flow"
+  },
+  "WindowLevel": {
+    label: "Window Level", unit: "",
+    thresholds: [
+      { op: "==", value: 2, level: "danger",  text: "Level 2 — Window_Count ≥ 1000, high threat indicator" },
+      { op: "==", value: 1, level: "warning", text: "Level 1 — Window_Count ≥ 100, elevated activity" },
+      { op: "==", value: 0, level: "ok",      text: "Level 0 — Window_Count < 100, normal behavior" },
+    ],
+    description: "Normal window level"
+  },
 };
 
-function getMeta(feat) { return EN_META[feat] || META[feat] || {}; }
+function getMeta(feat) {
+  return EN_META[feat] || META[feat] || {};
+}
 
 function evalLevel(feat, val) {
   const m = getMeta(feat);
@@ -826,6 +814,7 @@ function evalLevel(feat, val) {
   return { level: "ok", text: m.description || "" };
 }
 
+/* boot */
 loadMeta();
 </script>
 </body>
