@@ -184,19 +184,28 @@ def compute_derived(data: dict) -> dict:
     elif fb >= 10000: bl = 1
     d["TrafficIntensity"] = max(pl, bl)
 
-    # ── Burstiness: أخذ القيمة من الـ sample مباشرة إذا موجودة ──
-    if "Burstiness" in data and data["Burstiness"] is not None:
-        d["Burstiness"] = int(float(data["Burstiness"]))
-    else:
-        iat_std  = float(d.get("Flow IAT Std",  0))
-        iat_mean = float(d.get("Flow IAT Mean", 0))
-        ratio    = (iat_std / iat_mean) if iat_mean != 0 else 0
-        d["Burstiness"] = int(ratio > 0.5)
+    # ── كل الـ binary flags تأخذ قيمتها مباشرة من الـ sample ──
 
-    # Level flags (binary flags)
-    d["BackwardZeroLevel"] = int(float(d.get("BackwardZeroLevel", 0)) >= 0.9)
-    d["LowPacketLevel"]    = int(float(d.get("LowPacketLevel",    0)) >= 0.9)
-    d["ShortFlowLevel"]    = int(float(d.get("ShortFlowLevel",    0)) >= 0.9)
+    # Burstiness — تأخذ القيمة مباشرة من الـ sample
+    d["Burstiness"] = int(float(data.get("Burstiness", 0)))
+
+    # BackwardZeroLevel
+    if "BackwardZeroLevel" in data and data["BackwardZeroLevel"] is not None:
+        d["BackwardZeroLevel"] = int(float(data["BackwardZeroLevel"]))
+    else:
+        d["BackwardZeroLevel"] = 0
+
+    # LowPacketLevel
+    if "LowPacketLevel" in data and data["LowPacketLevel"] is not None:
+        d["LowPacketLevel"] = int(float(data["LowPacketLevel"]))
+    else:
+        d["LowPacketLevel"] = 0
+
+    # ShortFlowLevel
+    if "ShortFlowLevel" in data and data["ShortFlowLevel"] is not None:
+        d["ShortFlowLevel"] = int(float(data["ShortFlowLevel"]))
+    else:
+        d["ShortFlowLevel"] = 0
 
     # PortDiversityLevel — based on DistinctDestinationPort >= 100
     d["PortDiversityLevel"] = int(float(d.get("DistinctDestinationPort", 0)) >= 100)
