@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import pickle, numpy as np, os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=".")
 
 # ── Load model and tools ──────────────────────────────────
 BASE = os.path.dirname(__file__)
@@ -203,7 +203,7 @@ def compute_derived(data: dict) -> dict:
 
 @app.route("/")
 def index():
-    return send_from_directory(".", "index.html")
+    return app.send_static_file("index.html")
 
 
 @app.route("/meta")
