@@ -174,17 +174,17 @@ def compute_derived(data: dict) -> dict:
     d = dict(data)
 
     # TrafficIntensity
-    fp  = float(d.get("Flow Packets/s", 0))
-    fb  = float(d.get("Flow Bytes/s",   0))
-    pl  = 0
+    fp = float(d.get("Flow Packets/s", 0))
+    fb = float(d.get("Flow Bytes/s",   0))
+    pl = 0
     if fp >= 1000: pl = 2
     elif fp >= 100: pl = 1
-    bl  = 0
+    bl = 0
     if fb >= 100000: bl = 2
     elif fb >= 10000: bl = 1
     d["TrafficIntensity"] = max(pl, bl)
 
-    # ── Burstiness: تاخذ القيمة من الـ sample إذا موجودة، وإلا تحسبها ──
+    # ── Burstiness: أخذ القيمة من الـ sample مباشرة إذا موجودة ──
     if "Burstiness" in data and data["Burstiness"] is not None:
         d["Burstiness"] = int(float(data["Burstiness"]))
     else:
@@ -193,10 +193,10 @@ def compute_derived(data: dict) -> dict:
         ratio    = (iat_std / iat_mean) if iat_mean != 0 else 0
         d["Burstiness"] = int(ratio > 0.5)
 
-    # Level flags (binary flags — ratio-based)
-    d["BackwardZeroLevel"]  = int(float(d.get("BackwardZeroLevel",  0)) >= 0.9)
-    d["LowPacketLevel"]     = int(float(d.get("LowPacketLevel",     0)) >= 0.9)
-    d["ShortFlowLevel"]     = int(float(d.get("ShortFlowLevel",     0)) >= 0.9)
+    # Level flags (binary flags)
+    d["BackwardZeroLevel"] = int(float(d.get("BackwardZeroLevel", 0)) >= 0.9)
+    d["LowPacketLevel"]    = int(float(d.get("LowPacketLevel",    0)) >= 0.9)
+    d["ShortFlowLevel"]    = int(float(d.get("ShortFlowLevel",    0)) >= 0.9)
 
     # PortDiversityLevel — based on DistinctDestinationPort >= 100
     d["PortDiversityLevel"] = int(float(d.get("DistinctDestinationPort", 0)) >= 100)
@@ -235,17 +235,17 @@ def predict():
         val = 0 if (np.isnan(val) or np.isinf(val)) else val
         vec.append(val)
 
-    X       = np.array([vec])
-    pred    = model.predict(X)[0]
-    proba   = model.predict_proba(X)[0]
-    label   = le_label.inverse_transform([pred])[0]
-    ips     = attack_severity.get(label, "RATE LIMIT")
+    X     = np.array([vec])
+    pred  = model.predict(X)[0]
+    proba = model.predict_proba(X)[0]
+    label = le_label.inverse_transform([pred])[0]
+    ips   = attack_severity.get(label, "RATE LIMIT")
 
     # Explain each feature
     explanations = {}
     for feat in features:
-        val   = enriched.get(feat, 0)
-        meta  = FEATURE_META.get(feat, {})
+        val  = enriched.get(feat, 0)
+        meta = FEATURE_META.get(feat, {})
         level = "ok"
         text  = ""
         for thr in meta.get("thresholds", []):
@@ -264,9 +264,9 @@ def predict():
         explanations[feat] = {"value": val, "level": level, "text": text}
 
     return jsonify({
-        "label":  label,
-        "ips":    ips,
-        "proba":  {cls: float(p) for cls, p in zip(le_label.classes_, proba)},
+        "label":        label,
+        "ips":          ips,
+        "proba":        {cls: float(p) for cls, p in zip(le_label.classes_, proba)},
         "explanations": explanations,
         "used_values":  enriched,
     })
