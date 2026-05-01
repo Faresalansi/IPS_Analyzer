@@ -380,10 +380,52 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-rule">denominator</span>
             </div>
           </div>
+          <!-- Fwd IAT Mean causal row -->
+          <div class="cp-row">
+            <div class="cp-badge raw-purple">
+              <span class="cb-label">Fwd IAT Mean</span>
+              <span class="cb-rule">µs between fwd pkts</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-purple">
+              <span class="cb-label">Fwd IAT Signal</span>
+              <span class="cb-rule">≤ 200µs → rapid flood</span>
+              <span class="cb-rule">causal → DDoS ●</span>
+            </div>
+          </div>
+          <!-- Bwd IAT Mean causal row -->
+          <div class="cp-row">
+            <div class="cp-badge raw-purple">
+              <span class="cb-label">Bwd IAT Mean</span>
+              <span class="cb-rule">µs between bwd pkts</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-purple">
+              <span class="cb-label">Bwd IAT Signal</span>
+              <span class="cb-rule">≤ 500µs → flood echo</span>
+              <span class="cb-rule">causal → DDoS ●</span>
+            </div>
+          </div>
+          <!-- Flow Duration causal row -->
+          <div class="cp-row">
+            <div class="cp-badge raw-purple">
+              <span class="cb-label">Flow Duration</span>
+              <span class="cb-rule">µs total flow length</span>
+            </div>
+            <div class="cp-arrow">→</div>
+            <div class="cp-badge drv-purple">
+              <span class="cb-label">Duration Signal</span>
+              <span class="cb-rule">long sustained flow</span>
+              <span class="cb-rule">causal → DDoS ●</span>
+            </div>
+          </div>
           <div class="cp-row" style="justify-content:center; margin-top:.5rem;">
             <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
               <div class="cp-badge drv-coral" style="min-width:140px;"><span class="cb-label">Traffic Intensity</span></div>
               <div class="cp-badge drv-amber" style="min-width:140px;"><span class="cb-label">Burstiness</span></div>
+              <div class="cp-badge drv-purple" style="min-width:140px;"><span class="cb-label">Fwd IAT Signal</span></div>
+              <div class="cp-badge drv-purple" style="min-width:140px;"><span class="cb-label">Bwd IAT Signal</span></div>
+              <div class="cp-badge drv-purple" style="min-width:140px;"><span class="cb-label">Duration Signal</span></div>
             </div>
             <div class="cp-arrow" style="font-size:1.6rem; padding-top:0; align-self:center;">→</div>
             <div class="cp-badge drv-coral" style="min-width:110px; align-self:center; padding:14px 16px; border-color:rgba(255,61,113,.9); background:rgba(255,61,113,.2);">
@@ -391,7 +433,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-rule" style="opacity:.9;">Label</span>
             </div>
           </div>
-          <div class="cp-verdict ddos" style="margin-top:1rem;">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness (ratio &gt; 0.5) firing together</div>
+          <div class="cp-verdict ddos" style="margin-top:1rem;">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Mean + Flow Duration (causal signals) firing together</div>
         </div>
 
         <!-- PortScan path -->
@@ -514,7 +556,7 @@ const ATTACK_INFO = {
   DDoS: {
     title: "Distributed Denial of Service Attack (DDoS)",
     desc: "A DDoS attack aims to overwhelm the target server with massive request volumes to render it unavailable. It is characterized by extremely high traffic density, small repetitive automated packets, and a continuous high-speed flood from multiple sources.",
-    keyFeats: ["TrafficIntensity", "Burstiness"],
+    keyFeats: ["TrafficIntensity", "Burstiness", "Fwd IAT Mean", "Bwd IAT Mean", "Flow Duration"],
   },
   PortScan: {
     title: "Port Scanning Attack (PortScan)",
