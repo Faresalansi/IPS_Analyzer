@@ -414,7 +414,20 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             </div>
           </div>
 
-          <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness (ratio &gt; 0.5) &nbsp;+&nbsp; WindowLevel firing together</div>
+          <!-- Final label row: all derived features → DDoS Label -->
+          <div class="cp-row" style="justify-content:center; margin-top:.5rem;">
+            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+              <div class="cp-badge drv-coral" style="min-width:140px;"><span class="cb-label">Traffic Intensity</span></div>
+              <div class="cp-badge drv-amber" style="min-width:140px;"><span class="cb-label">Burstiness</span></div>
+              <div class="cp-badge drv-amber" style="min-width:140px;"><span class="cb-label">Window Level</span></div>
+            </div>
+            <div class="cp-arrow" style="font-size:1.6rem; padding-top:0; align-self:center;">→</div>
+            <div class="cp-badge drv-coral" style="min-width:110px; align-self:center; padding:14px 16px; border-color:rgba(255,61,113,.9); background:rgba(255,61,113,.2);">
+              <span class="cb-label" style="font-size:.8rem; letter-spacing:1px;">DDoS</span>
+              <span class="cb-rule" style="opacity:.9;">Label</span>
+            </div>
+          </div>
+          <div class="cp-verdict ddos" style="margin-top:1rem;">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity ≥ 1 &nbsp;+&nbsp; Burstiness (ratio &gt; 0.5) &nbsp;+&nbsp; WindowLevel firing together</div>
         </div>
 
         <!-- PortScan path -->
@@ -457,13 +470,21 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <span class="cb-rule">else   → 0 ○</span>
             </div>
           </div>
-          <div class="cp-cooccur">
-            <span>ShortFlow</span><span>─ ─ co-occur ─ ─</span>
-            <span>LowPacket</span><span>─ ─ reinforces ─ ─</span>
-            <span>PortDiversity</span><span>─ ─ amplifies ─ ─</span>
-            <span>WindowLevel</span>
+          <!-- Final label row: all derived features → PortScan Label -->
+          <div class="cp-row" style="justify-content:center; margin-top:.5rem;">
+            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Short Flow Level</span></div>
+              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Low Packet Level</span></div>
+              <div class="cp-badge drv-blue" style="min-width:140px;"><span class="cb-label">Port Diversity Level</span></div>
+              <div class="cp-badge drv-purple" style="min-width:140px;"><span class="cb-label">Window Level</span></div>
+            </div>
+            <div class="cp-arrow" style="font-size:1.6rem; padding-top:0; align-self:center;">→</div>
+            <div class="cp-badge drv-blue" style="min-width:110px; align-self:center; padding:14px 16px; border-color:rgba(41,121,255,.9); background:rgba(41,121,255,.2);">
+              <span class="cb-label" style="font-size:.8rem; letter-spacing:1px;">PORTSCAN</span>
+              <span class="cb-rule" style="opacity:.9;">Label</span>
+            </div>
           </div>
-          <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port + high flows/min from same source signals firing together</div>
+          <div class="cp-verdict ps" style="margin-top:1rem;">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port + high flows/min from same source signals firing together</div>
           <div class="cp-shared-note">Window Count feeds WindowLevel for both DDoS and PortScan — surrounding context separates them.</div>
         </div>
 
