@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import pickle, numpy as np, os
 
-app = Flask(__name__, static_folder=".")
+app = Flask(__name__)
 
 # ── Load model and tools ──────────────────────────────────
 BASE = os.path.dirname(__file__)
