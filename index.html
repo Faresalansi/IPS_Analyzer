@@ -483,12 +483,13 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
           <span class="field-unit">unique ports</span>
         </div>
         <div class="field-group">
-          <div class="field-label">Window Count</div>
-          <div class="field-row">
-            <input type="range" id="m_wc" min="0" max="5000" step="1" value="20" oninput="syncM('wc',this.value)">
-            <span class="field-val" id="mv_wc">20</span>
+          <div class="field-label">Window Level <span style="color:var(--accent);font-size:.55rem">(computed)</span></div>
+          <div class="binary-toggle" style="gap:.4rem">
+            <div class="bin-opt active" id="mwl0" onclick="setMBin('wl',0)" style="flex:1">0 — Low</div>
+            <div class="bin-opt"        id="mwl1" onclick="setMBin('wl',1)" style="flex:1">1 — Med</div>
+            <div class="bin-opt"        id="mwl2" onclick="setMBin('wl',2)" style="flex:1">2 — High</div>
           </div>
-          <span class="field-unit">windows</span>
+          <span class="field-unit">0 = &lt;100 · 1 = ≥100 · 2 = ≥1000 windows</span>
         </div>
       </div>
     </div>
@@ -696,7 +697,7 @@ function switchMode(mode) {
 /* ════════════════════════════════════════
    MANUAL INPUT
 ════════════════════════════════════════ */
-const mBin = { bz:0, lp:0, sf:0 };
+const mBin = { bz:0, lp:0, sf:0, wl:0 };
 
 function syncM(key, raw) {
   const v = parseFloat(raw);
@@ -707,14 +708,18 @@ function syncM(key, raw) {
 
 function setMBin(key, val) {
   mBin[key] = val;
-  document.getElementById('m'+key+'0').classList.toggle('active', val===0);
-  document.getElementById('m'+key+'1').classList.toggle('active', val===1);
+  if (key === 'wl') {
+    [0,1,2].forEach(i => document.getElementById('mwl'+i).classList.toggle('active', i===val));
+  } else {
+    document.getElementById('m'+key+'0').classList.toggle('active', val===0);
+    document.getElementById('m'+key+'1').classList.toggle('active', val===1);
+  }
 }
 
 const M_PRESETS = {
-  ddos:   { fps:3920, fbs:169666, fiatm:798,   biatm:718,   flowiatm:798,   fiats:1045, fdur:46425, aps:47,  syn:0.208, ddp:3,   wc:2478, bz:0, lp:0, sf:0 },
-  ps:     { fps:120,  fbs:5796,   fiatm:2002,  biatm:0,     flowiatm:2002,  fiats:295,  fdur:60,    aps:68,  syn:0.968, ddp:367, wc:2820, bz:1, lp:1, sf:1 },
-  benign: { fps:77,   fbs:4195,   fiatm:20508, biatm:22797, flowiatm:20508, fiats:22427,fdur:40357,  aps:344, syn:0.006, ddp:1,   wc:9,    bz:0, lp:0, sf:0 },
+  ddos:   { fps:3920, fbs:169666, fiatm:798,   biatm:718,   flowiatm:798,   fiats:1045, fdur:46425, aps:47,  syn:0.208, ddp:3,   wl:2, bz:0, lp:0, sf:0 },
+  ps:     { fps:120,  fbs:5796,   fiatm:2002,  biatm:0,     flowiatm:2002,  fiats:295,  fdur:60,    aps:68,  syn:0.968, ddp:367, wl:2, bz:1, lp:1, sf:1 },
+  benign: { fps:77,   fbs:4195,   fiatm:20508, biatm:22797, flowiatm:20508, fiats:22427,fdur:40357,  aps:344, syn:0.006, ddp:1,   wl:0, bz:0, lp:0, sf:0 },
 };
 
 function loadPreset(name) {
@@ -726,15 +731,15 @@ function loadPreset(name) {
       flowiatm:Math.floor(Math.random()*90000), fiats:Math.floor(Math.random()*80000),
       fdur:Math.floor(Math.random()*90000), aps:Math.floor(20+Math.random()*1400),
       syn:parseFloat(Math.random().toFixed(3)), ddp:Math.floor(1+Math.random()*480),
-      wc:Math.floor(Math.random()*4900),
+      wl:Math.floor(Math.random()*3),
       bz:Math.random()>.5?1:0, lp:Math.random()>.5?1:0, sf:Math.random()>.5?1:0
     };
   }
-  ['fps','fbs','fiatm','biatm','flowiatm','fiats','fdur','aps','syn','ddp','wc'].forEach(k=>{
+  ['fps','fbs','fiatm','biatm','flowiatm','fiats','fdur','aps','syn','ddp'].forEach(k=>{
     const el = document.getElementById('m_'+k);
     if(el){ el.value = p[k]; syncM(k, p[k]); }
   });
-  setMBin('bz',p.bz); setMBin('lp',p.lp); setMBin('sf',p.sf);
+  setMBin('wl',p.wl); setMBin('bz',p.bz); setMBin('lp',p.lp); setMBin('sf',p.sf);
   document.getElementById('result-panel').classList.remove('show');
 }
 
@@ -750,7 +755,7 @@ function getManualValues() {
     'Average Packet Size':     parseFloat(document.getElementById('m_aps').value),
     'SynOnlyRatio':            parseFloat(document.getElementById('m_syn').value),
     'DistinctDestinationPort': parseFloat(document.getElementById('m_ddp').value),
-    'Window_Count':            parseFloat(document.getElementById('m_wc').value),
+    'WindowLevel':             mBin.wl,
     'BackwardZeroLevel':       mBin.bz,
     'LowPacketLevel':          mBin.lp,
     'ShortFlowLevel':          mBin.sf,
@@ -769,7 +774,7 @@ function localClassify(v) {
   const byteLevel   = fbs>=100000?2:fbs>=10000?1:0;
   const trafficInt  = Math.max(packetLevel, byteLevel);
   const burstiness  = iatMean>0?(iatStd/iatMean>0.5?1:0):0;
-  const windowLevel = wc>=1000?2:wc>=100?1:0;
+  const windowLevel = (v['WindowLevel'] !== undefined) ? v['WindowLevel'] : (wc>=1000?2:wc>=100?1:0);
   const portDivLvl  = ddp>=100?1:0;
 
   const ddosScore = trafficInt + burstiness + (windowLevel>=1?1:0);
@@ -808,7 +813,7 @@ function localClassify(v) {
   expl['Flow Bytes/s']=ev('fbs',fbs,[{op:'>=',v:100000,level:'danger',text:'≥100,000 B/s — ByteLevel 2, high flood risk'},{op:'>=',v:10000,level:'warning',text:'≥10,000 B/s — ByteLevel 1, elevated throughput'},{op:'<',v:10000,level:'ok',text:'Normal throughput'}]);
   expl['SYN-Only Ratio']=ev('syn',syn,[{op:'>=',v:0.8,level:'danger',text:'Very high SYN ratio — possible scan or flood'},{op:'>=',v:0.5,level:'warning',text:'Elevated SYN ratio — monitor closely'},{op:'<',v:0.5,level:'ok',text:'Normal SYN ratio'}]);
   expl['Distinct Dest. Ports']=ev('ddp',ddp,[{op:'>=',v:100,level:'danger',text:'≥100 unique ports — clear PortScan pattern'},{op:'>=',v:30,level:'warning',text:'Elevated port diversity — possible recon'},{op:'<',v:30,level:'ok',text:'Low port diversity — normal'}]);
-  expl['Window Count']=ev('wc',wc,[{op:'>=',v:1000,level:'danger',text:'≥1000 windows — WindowLevel 2, very high activity'},{op:'>=',v:100,level:'warning',text:'≥100 windows — WindowLevel 1, elevated'},{op:'<',v:100,level:'ok',text:'Normal window count'}]);
+  expl['Window Level']=ev('wl',windowLevel,[{op:'>=',v:2,level:'danger',text:'Level 2 — ≥1000 windows, high threat indicator'},{op:'>=',v:1,level:'warning',text:'Level 1 — ≥100 windows, elevated activity'},{op:'<',v:1,level:'ok',text:'Level 0 — normal window activity'}]);
   expl['Flow Duration']=ev('fdur',dur,[{op:'<=',v:500,level:'warning',text:'Very short flow — possible probe or scan'},{op:'>',v:500,level:'ok',text:'Normal flow duration'}]);
   expl['Avg Packet Size']=ev('aps',v['Average Packet Size'],[{op:'<=',v:80,level:'warning',text:'Very small packets — possible flooding'},{op:'>=',v:1400,level:'warning',text:'Near-max size — bulk transfer'},{op:'>',v:80,level:'ok',text:'Normal packet size'}]);
 
