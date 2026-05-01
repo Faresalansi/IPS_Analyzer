@@ -184,11 +184,14 @@ def compute_derived(data: dict) -> dict:
     elif fb >= 10000: bl = 1
     d["TrafficIntensity"] = max(pl, bl)
 
-    # Burstiness
-    iat_std  = float(d.get("Flow IAT Std",  0))
-    iat_mean = float(d.get("Flow IAT Mean", 0))
-    ratio    = (iat_std / iat_mean) if iat_mean != 0 else 0
-    d["Burstiness"] = int(ratio > 0.5)
+    # ── Burstiness: تاخذ القيمة من الـ sample إذا موجودة، وإلا تحسبها ──
+    if "Burstiness" in data and data["Burstiness"] is not None:
+        d["Burstiness"] = int(float(data["Burstiness"]))
+    else:
+        iat_std  = float(d.get("Flow IAT Std",  0))
+        iat_mean = float(d.get("Flow IAT Mean", 0))
+        ratio    = (iat_std / iat_mean) if iat_mean != 0 else 0
+        d["Burstiness"] = int(ratio > 0.5)
 
     # Level flags (binary flags — ratio-based)
     d["BackwardZeroLevel"]  = int(float(d.get("BackwardZeroLevel",  0)) >= 0.9)
