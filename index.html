@@ -303,7 +303,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
         <!-- DDoS SVG Flow Diagram -->
         <div id="cp-ddos" style="display:none">
-          <svg class="cp-svg" viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+          <svg class="cp-svg" viewBox="0 0 860 510" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
             <defs>
               <marker id="arr-coral" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                 <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,100,130,.8)"/>
@@ -313,6 +313,9 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               </marker>
               <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                 <path d="M0,0 L0,6 L8,3 z" fill="rgba(160,140,255,.8)"/>
+              </marker>
+              <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="rgba(0,180,120,.8)"/>
               </marker>
               <marker id="arr-final" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                 <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
@@ -352,6 +355,11 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <text x="78" y="359" text-anchor="middle" fill="#d8d4ff" font-size="10" font-weight="700">Bwd IAT Mean</text>
             <text x="78" y="374" text-anchor="middle" fill="#d8d4ff" font-size="9" opacity=".7">µs between bwd pkts</text>
 
+            <!-- Avg Packet Size (new) -->
+            <rect x="4" y="404" width="148" height="42" rx="7" fill="rgba(0,180,120,.08)" stroke="rgba(0,180,120,.4)" stroke-width="1"/>
+            <text x="78" y="421" text-anchor="middle" fill="#6fcfb3" font-size="10" font-weight="700">Avg Packet Size</text>
+            <text x="78" y="436" text-anchor="middle" fill="#6fcfb3" font-size="9" opacity=".7">bytes per packet</text>
+
             <!-- ── COL 2: Derived features ── -->
             <!-- Traffic Intensity -->
             <rect x="240" y="24" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
@@ -375,13 +383,21 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <text x="319" y="354" text-anchor="middle" fill="#e8e4ff" font-size="10" font-weight="700">Bwd IAT Signal</text>
             <text x="319" y="370" text-anchor="middle" fill="#e8e4ff" font-size="9" opacity=".8">≤500µs → flood echo</text>
 
-            <!-- ── COL 3: Aggregator node ── -->
-            <rect x="490" y="148" width="148" height="112" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
-            <text x="564" y="172" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">SIGNALS</text>
-            <text x="564" y="188" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
-            <text x="564" y="205" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
-            <text x="564" y="222" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
-            <text x="564" y="239" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bwd IAT Signal</text>
+            <!-- Pkt Size Signal (new) -->
+            <rect x="240" y="398" width="158" height="52" rx="7" fill="rgba(0,180,120,.15)" stroke="rgba(0,180,120,.75)" stroke-width="1.5"/>
+            <text x="319" y="417" text-anchor="middle" fill="#a0ffe0" font-size="10" font-weight="700">Pkt Size Signal</text>
+            <text x="319" y="431" text-anchor="middle" fill="#a0ffe0" font-size="9" opacity=".8">&lt;100B → micro-flood ●</text>
+            <text x="319" y="445" text-anchor="middle" fill="#a0ffe0" font-size="9" opacity=".7">≥1400B → bulk flood ●</text>
+
+            <!-- ── COL 3: Aggregator node — extended height for 5 signals ── -->
+            <rect x="490" y="130" width="148" height="148" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <text x="564" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">SIGNALS</text>
+            <text x="564" y="171" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
+            <text x="564" y="189" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
+            <text x="564" y="207" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
+            <text x="564" y="225" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bwd IAT Signal</text>
+            <text x="564" y="243" text-anchor="middle" fill="#a0ffe0" font-size="9.5">Pkt Size Signal</text>
+            <text x="564" y="266" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">all firing → DDoS</text>
 
             <!-- ── COL 4: DDoS label ── -->
             <rect x="730" y="168" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
@@ -390,33 +406,27 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             <text x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
 
             <!-- ── Arrows col1 → col2 ── -->
-            <!-- Packets/s → Traffic Intensity (top) -->
             <path d="M152,36 L240,50" stroke="rgba(255,100,130,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-coral)"/>
-            <!-- Bytes/s → Traffic Intensity (bottom) -->
             <path d="M152,104 L240,62" stroke="rgba(255,100,130,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-coral)"/>
-            <!-- IAT Std → Burstiness -->
             <path d="M152,179 L240,185" stroke="rgba(255,170,0,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-amber)"/>
-            <!-- IAT Mean → Burstiness -->
             <path d="M152,239 L240,200" stroke="rgba(255,170,0,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-amber)"/>
-            <!-- Fwd IAT → Fwd Signal -->
             <path d="M152,303 L240,297" stroke="rgba(160,140,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
-            <!-- Bwd IAT → Bwd Signal -->
             <path d="M152,363 L240,357" stroke="rgba(160,140,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
+            <!-- Avg Pkt Size → Pkt Size Signal -->
+            <path d="M152,425 L240,424" stroke="rgba(0,180,120,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
 
             <!-- ── Arrows col2 → aggregator ── -->
-            <!-- Traffic Intensity → agg -->
-            <path d="M398,50 C440,50 480,165 490,175" stroke="rgba(255,100,130,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-coral)"/>
-            <!-- Burstiness → agg -->
-            <path d="M398,188 L490,200" stroke="rgba(255,170,0,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-amber)"/>
-            <!-- Fwd Signal → agg -->
-            <path d="M398,297 C450,297 480,228 490,222" stroke="rgba(160,140,255,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
-            <!-- Bwd Signal → agg -->
-            <path d="M398,357 C450,357 480,245 490,240" stroke="rgba(160,140,255,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
+            <path d="M398,50 C440,50 480,148 490,158" stroke="rgba(255,100,130,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-coral)"/>
+            <path d="M398,188 L490,189" stroke="rgba(255,170,0,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-amber)"/>
+            <path d="M398,297 C450,297 480,215 490,212" stroke="rgba(160,140,255,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
+            <path d="M398,357 C450,357 480,232 490,228" stroke="rgba(160,140,255,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)"/>
+            <!-- Pkt Size Signal → aggregator -->
+            <path d="M398,424 C450,424 480,252 490,248" stroke="rgba(0,180,120,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
 
             <!-- ── Arrow aggregator → DDoS ── -->
             <path d="M638,204 L730,204" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-final)"/>
           </svg>
-          <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal firing together</div>
+          <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
         </div>
 
         <!-- PortScan SVG Flow Diagram -->
