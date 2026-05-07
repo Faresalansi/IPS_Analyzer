@@ -289,6 +289,16 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       <div class="ae-features" id="ae-features"></div>
 
       <div class="cp-wrap" id="cp-wrap" style="display:none">
+        <button id="cp-toggle-btn" onclick="toggleCausalPath()" style="
+          background:transparent; border:1px solid rgba(0,229,255,.3); border-radius:7px;
+          color:var(--accent); font-family:var(--mono); font-size:.68rem; letter-spacing:1px;
+          padding:.45rem 1.1rem; cursor:pointer; margin-bottom:.85rem;
+          display:inline-flex; align-items:center; gap:.5rem; transition:background .2s, border-color .2s;">
+          <span id="cp-toggle-icon" style="font-size:.55rem;">▶</span>
+          <span id="cp-toggle-label">Show Causal Path</span>
+        </button>
+
+        <div id="cp-inner" style="display:none">
         <div class="cp-section-title">Causal Path — How Derived Features Are Computed</div>
 
         <!-- DDoS SVG Flow Diagram -->
@@ -486,6 +496,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
           <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
         </div>
 
+        </div><!-- /cp-inner -->
       </div>
     </div>
 
@@ -1015,6 +1026,19 @@ function evalLevel(feat, val) {
     if (match) return { level: t.level, text: t.text };
   }
   return { level: "ok", text: m.description || "" };
+}
+
+function toggleCausalPath() {
+  const inner = document.getElementById('cp-inner');
+  const icon  = document.getElementById('cp-toggle-icon');
+  const label = document.getElementById('cp-toggle-label');
+  const btn   = document.getElementById('cp-toggle-btn');
+  const open  = inner.style.display === 'none';
+  inner.style.display = open ? 'block' : 'none';
+  icon.textContent    = open ? '▼' : '▶';
+  label.textContent   = open ? 'Hide Causal Path' : 'Show Causal Path';
+  btn.style.borderColor = open ? 'rgba(0,229,255,.6)' : 'rgba(0,229,255,.3)';
+  btn.style.background  = open ? 'rgba(0,229,255,.07)' : 'transparent';
 }
 
 loadMeta();
