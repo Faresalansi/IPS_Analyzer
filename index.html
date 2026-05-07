@@ -390,6 +390,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
           </div>
           <div class="cp-verdict ps" style="margin-top:1rem;">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals firing together</div>
         </div>
+
       </div>
     </div>
 
@@ -402,65 +403,65 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
 <script>
 /* ─────────────────────────────────────────────
-   RANDOM SAMPLE GENERATOR — 10 DDoS · 10 PortScan · 10 BENIGN
-   Generated fresh every page load, interleaved: DDoS, BENIGN, PortScan
+   RANDOM SAMPLE GENERATOR
+   Generates 30 samples (10 DDoS · 10 PortScan · 10 BENIGN)
+   every page load — shuffled randomly
    ───────────────────────────────────────────── */
-function rnd(min, max, dec = 2) {
-  return parseFloat((Math.random() * (max - min) + min).toFixed(dec));
-}
-function ri(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+
+function rnd(min, max, dec=0) {
+  const v = Math.random() * (max - min) + min;
+  return dec === 0 ? Math.round(v) : parseFloat(v.toFixed(dec));
 }
 
-function makeDDoS() {
-  const pktPerSec   = rnd(0.1, 50000, 4);
-  const bytesPerSec = rnd(0.1, 2000000, 4);
-  const pktLevel    = pktPerSec  >= 1000  ? 2 : pktPerSec  >= 100   ? 1 : 0;
+function genDDoS() {
+  const fwdIAT      = rnd(100, 20000000, 4);
+  const bwdIAT      = rnd(5000, 600000, 4);
+  const flowDur     = rnd(30000, 120000000, 4);
+  const pktPerSec   = rnd(0.1, 250, 4);
+  const bytesPerSec = rnd(50, 400000, 4);
+  const flowIATMean = rnd(1000, 15000000, 4);
+  const flowIATStd  = rnd(flowIATMean * 0.6, flowIATMean * 5, 4);
+  const burstiness  = flowIATStd / flowIATMean > 0.5 ? 1 : 0;
+  const pktLevel    = pktPerSec >= 1000 ? 2 : pktPerSec >= 100 ? 1 : 0;
   const byteLevel   = bytesPerSec >= 100000 ? 2 : bytesPerSec >= 10000 ? 1 : 0;
-  const ti          = Math.max(pktLevel, byteLevel);
-  const iatMean     = rnd(100, 20000000, 4);
-  const iatStd      = parseFloat((iatMean * rnd(0.6, 3.5, 4)).toFixed(4));
   return {
     true_label: "DDoS",
-    "Fwd IAT Mean":            rnd(0, 20000000, 4),
-    "Bwd IAT Mean":            rnd(0, 600000, 4),
-    "Average Packet Size":     rnd(300, 1500, 4),
+    "Fwd IAT Mean":            fwdIAT,
+    "Bwd IAT Mean":            bwdIAT,
+    "Average Packet Size":     rnd(600, 1500, 4),
     "SynOnlyRatio":            0.0,
-    "Flow Duration":           rnd(5000, 120000000, 4),
-    "Flow IAT Mean":           iatMean,
-    "Flow IAT Std":            iatStd,
+    "Flow Duration":           flowDur,
+    "Flow IAT Mean":           flowIATMean,
+    "Flow IAT Std":            flowIATStd,
     "Flow Packets/s":          pktPerSec,
     "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": ri(1, 12),
+    "DistinctDestinationPort": rnd(1, 12),
     "BackwardZeroLevel":       0,
     "LowPacketLevel":          0,
     "ShortFlowLevel":          0,
-    "TrafficIntensity":        ti,
-    "Burstiness":              1,
+    "TrafficIntensity":        Math.max(pktLevel, byteLevel),
+    "Burstiness":              burstiness,
     "PortDiversityLevel":      0
   };
 }
 
-function makePortScan() {
-  const pktPerSec   = rnd(15000, 200000, 4);
-  const bytesPerSec = parseFloat((pktPerSec * rnd(2.5, 8, 2)).toFixed(4));
-  const dur         = rnd(5, 200, 4);
-  const iatMean     = parseFloat((dur * rnd(0.85, 1.1, 4)).toFixed(4));
+function genPortScan() {
+  const flowDur = rnd(5, 120, 4);
+  const ports   = rnd(100, 600);
+  const pktPerSec   = rnd(10000, 200000, 4);
+  const bytesPerSec = rnd(30000, 600000, 4);
   return {
     true_label: "PortScan",
     "Fwd IAT Mean":            0.0,
     "Bwd IAT Mean":            0.0,
-    "Average Packet Size":     rnd(2.5, 6, 4),
+    "Average Packet Size":     rnd(2.5, 6.0, 4),
     "SynOnlyRatio":            0.0,
-    "Flow Duration":           dur,
-    "Flow IAT Mean":           iatMean,
+    "Flow Duration":           flowDur,
+    "Flow IAT Mean":           rnd(flowDur * 0.8, flowDur * 1.2, 4),
     "Flow IAT Std":            0.0,
     "Flow Packets/s":          pktPerSec,
     "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": ri(120, 550),
+    "DistinctDestinationPort": ports,
     "BackwardZeroLevel":       0,
     "LowPacketLevel":          1,
     "ShortFlowLevel":          1,
@@ -470,48 +471,58 @@ function makePortScan() {
   };
 }
 
-function makeBenign() {
-  const iatMean     = rnd(10, 10000000, 4);
-  const iatStd      = parseFloat((iatMean * rnd(0.4, 2.5, 4)).toFixed(4));
+function genBENIGN() {
+  const fwdIAT      = rnd(0, 10000000, 4);
+  const bwdIAT      = rnd(0, 10000000, 4);
   const pktPerSec   = rnd(0.1, 25000, 4);
-  const bytesPerSec = rnd(0, 2000000, 4);
-  const pktLevel    = pktPerSec  >= 1000  ? 2 : pktPerSec  >= 100   ? 1 : 0;
+  const bytesPerSec = rnd(0, 1700000, 4);
+  const flowIATMean = rnd(10, 5000000, 4);
+  const flowIATStd  = rnd(0, flowIATMean * 6, 4);
+  const burstiness  = flowIATStd / Math.max(flowIATMean, 0.001) > 0.5 ? 1 : 0;
+  const pktLevel    = pktPerSec >= 1000 ? 2 : pktPerSec >= 100 ? 1 : 0;
   const byteLevel   = bytesPerSec >= 100000 ? 2 : bytesPerSec >= 10000 ? 1 : 0;
-  const ti          = Math.max(pktLevel, byteLevel);
-  const burstiness  = (iatMean > 0 && iatStd / iatMean > 0.5) ? 1 : 0;
+  const ports       = rnd(1, 20);
   return {
     true_label: "BENIGN",
-    "Fwd IAT Mean":            rnd(0, 10000000, 4),
-    "Bwd IAT Mean":            rnd(0, 10000000, 4),
-    "Average Packet Size":     rnd(5, 200, 4),
+    "Fwd IAT Mean":            fwdIAT,
+    "Bwd IAT Mean":            bwdIAT,
+    "Average Packet Size":     rnd(10, 200, 4),
     "SynOnlyRatio":            0.0,
-    "Flow Duration":           rnd(100, 150000000, 4),
-    "Flow IAT Mean":           iatMean,
-    "Flow IAT Std":            iatStd,
+    "Flow Duration":           rnd(100, 130000000, 4),
+    "Flow IAT Mean":           flowIATMean,
+    "Flow IAT Std":            flowIATStd,
     "Flow Packets/s":          pktPerSec,
     "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": ri(2, 18),
-    "BackwardZeroLevel":       pick([0, 0, 0, 1]),
-    "LowPacketLevel":          pick([0, 0, 1]),
+    "DistinctDestinationPort": ports,
+    "BackwardZeroLevel":       bwdIAT < 1 ? 1 : 0,
+    "LowPacketLevel":          rnd(0, 10) <= 2 ? 1 : 0,
     "ShortFlowLevel":          0,
-    "TrafficIntensity":        ti,
+    "TrafficIntensity":        Math.max(pktLevel, byteLevel),
     "Burstiness":              burstiness,
-    "PortDiversityLevel":      0
+    "PortDiversityLevel":      ports >= 100 ? 1 : 0
   };
 }
 
-// Label order: DDoS, BENIGN, PortScan, DDoS, BENIGN, PortScan, ...
-const LABEL_ORDER = [];
-for (let i = 0; i < 10; i++) LABEL_ORDER.push("DDoS", "BENIGN", "PortScan");
-
-// Each press generates a FRESH random sample for that label
-function getNextSample(index) {
-  const label = LABEL_ORDER[index];
-  if (label === "DDoS")     return makeDDoS();
-  if (label === "PortScan") return makePortScan();
-  return makeBenign();
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
+function buildSamples() {
+  const raw = [];
+  for (let i = 0; i < 10; i++) raw.push(genDDoS());
+  for (let i = 0; i < 10; i++) raw.push(genPortScan());
+  for (let i = 0; i < 10; i++) raw.push(genBENIGN());
+  return shuffle(raw);
+}
+
+/* Generate fresh 30 samples on every page load */
+const DEMO_SAMPLES = buildSamples();
+
+/* ─── rest of the app ─── */
 let demoIndex = 0;
 let totalRuns = 0, correctRuns = 0;
 
@@ -615,7 +626,7 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
 }
 
 async function runPredict(){
-  if(demoIndex >= LABEL_ORDER.length){
+  if(demoIndex >= DEMO_SAMPLES.length){
     document.getElementById('run-info').textContent = '✅ All 30 samples analyzed! Reload to restart.';
     return;
   }
@@ -625,7 +636,7 @@ async function runPredict(){
   btn.textContent='⏳  Capturing...';
   startScan();
 
-  const sample = getNextSample(demoIndex++);
+  const sample = DEMO_SAMPLES[demoIndex++];
   const trueLabel = sample.true_label;
 
   const vals = {};
