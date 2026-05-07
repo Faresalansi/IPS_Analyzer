@@ -255,8 +255,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="db-item">
       <div class="db-icon">📊</div>
       <div class="db-text">
-        <h3>Demo Mode — 30 Samples</h3>
-        <p>Each press loads the next pre-built sample (10 DDoS · 10 PortScan · 10 BENIGN). The true label is shown alongside the model prediction so you can track accuracy in real time.</p>
+        <h3>Demo Mode — 30 Random Samples</h3>
+        <p>Each batch is freshly generated (10 DDoS · 10 PortScan · 10 BENIGN) using statistical distributions from the real CIC-IDS2017 dataset. Every run produces a unique set. The true label is shown alongside the model prediction so you can track accuracy in real time.</p>
       </div>
     </div>
   </div>
@@ -270,7 +270,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="scan-bar"><div class="scan-fill" id="scan-fill"></div></div>
   </div>
 
-  <div class="run-info" id="run-info">— 30 demo samples loaded. Press to start —</div>
+  <div class="run-info" id="run-info">— 30 random samples will be generated. Press to start —</div>
 
   <div class="true-label-row" id="true-label-row" style="display:none">
     True Label: <span class="tl-badge" id="tl-badge"></span>
@@ -403,140 +403,168 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
 <script>
 /* ─────────────────────────────────────────────
-   RANDOM SAMPLE GENERATOR
-   Generates 30 samples (10 DDoS · 10 PortScan · 10 BENIGN)
-   every page load — shuffled randomly
+   STATISTICAL SAMPLE GENERATOR
+   Distributions derived from real CIC-IDS2017 data
+   10 BENIGN · 10 DDoS · 10 PortScan per batch
    ───────────────────────────────────────────── */
 
-function rnd(min, max, dec=0) {
-  const v = Math.random() * (max - min) + min;
-  return dec === 0 ? Math.round(v) : parseFloat(v.toFixed(dec));
+function rng(min, max) { return Math.random() * (max - min) + min; }
+function rngInt(min, max) { return Math.floor(rng(min, max + 1)); }
+function lognorm(mu, sigma) {
+  let u = 0, v = 0;
+  while (!u) u = Math.random();
+  while (!v) v = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  return Math.exp(mu + sigma * z);
 }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-function genDDoS() {
-  const fwdIAT      = rnd(100, 20000000, 4);
-  const bwdIAT      = rnd(5000, 600000, 4);
-  const flowDur     = rnd(30000, 120000000, 4);
-  const pktPerSec   = rnd(0.1, 250, 4);
-  const bytesPerSec = rnd(50, 400000, 4);
-  const flowIATMean = rnd(1000, 15000000, 4);
-  const flowIATStd  = rnd(flowIATMean * 0.6, flowIATMean * 5, 4);
-  const burstiness  = flowIATStd / flowIATMean > 0.5 ? 1 : 0;
-  const pktLevel    = pktPerSec >= 1000 ? 2 : pktPerSec >= 100 ? 1 : 0;
-  const byteLevel   = bytesPerSec >= 100000 ? 2 : bytesPerSec >= 10000 ? 1 : 0;
-  return {
-    true_label: "DDoS",
-    "Fwd IAT Mean":            fwdIAT,
-    "Bwd IAT Mean":            bwdIAT,
-    "Average Packet Size":     rnd(600, 1500, 4),
-    "SynOnlyRatio":            0.0,
-    "Flow Duration":           flowDur,
-    "Flow IAT Mean":           flowIATMean,
-    "Flow IAT Std":            flowIATStd,
-    "Flow Packets/s":          pktPerSec,
-    "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": rnd(1, 12),
-    "BackwardZeroLevel":       0,
-    "LowPacketLevel":          0,
-    "ShortFlowLevel":          0,
-    "TrafficIntensity":        Math.max(pktLevel, byteLevel),
-    "Burstiness":              burstiness,
-    "PortDiversityLevel":      0
-  };
-}
+const DISTS = {
+  BENIGN: () => {
+    const variant = Math.random();
+    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, bwl = 0, lpl = 0, pdl = 0;
+    if (variant < 0.33) {
+      fwdIAT = rng(0, 100); bwdIAT = rng(0, 100);
+      dur    = rngInt(100, 300000);
+      pktSz  = rng(40, 150);
+      pps    = clamp(1e6 / dur * rng(3, 20), 1, 50000);
+      bps    = pps * pktSz;
+      fiatM  = rng(30, 80000);
+      fiatS  = fiatM * rng(0.5, 2);
+    } else if (variant < 0.66) {
+      fwdIAT = clamp(lognorm(Math.log(3e6), 1), 5e5, 2e7);
+      bwdIAT = clamp(lognorm(Math.log(3e6), 1), 5e5, 2e7);
+      dur    = clamp(lognorm(Math.log(5e7), 0.8), 5e6, 2e8);
+      pktSz  = rng(5, 140);
+      pps    = clamp(10 / (dur / 1e6), 0.05, 5);
+      bps    = pps * pktSz;
+      fiatM  = dur / rng(8, 16);
+      fiatS  = fiatM * rng(0.8, 1.5);
+      pdl    = Math.random() < 0.2 ? 1 : 0;
+    } else {
+      fwdIAT = rng(3000, 10000); bwdIAT = 0;
+      dur    = rngInt(5000, 50000);
+      pktSz  = rng(5, 20);
+      pps    = clamp(1e6 / dur * rng(2, 5), 50, 500);
+      bps    = pps * pktSz;
+      fiatM  = fwdIAT;
+      fiatS  = fiatM * rng(0.8, 1.6);
+      bwl    = Math.random() < 0.4 ? 1 : 0;
+      lpl    = Math.random() < 0.4 ? 1 : 0;
+    }
+    const burst = (fiatM > 0 && fiatS / fiatM > 0.5) ? 1 : 0;
+    const ti    = bps >= 1e5 ? 2 : bps >= 1e4 ? 1 : 0;
+    return {
+      true_label: 'BENIGN',
+      "Fwd IAT Mean": +fwdIAT.toFixed(4), "Bwd IAT Mean": +bwdIAT.toFixed(4),
+      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
+      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
+      "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
+      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(1, 20),
+      "BackwardZeroLevel": bwl, "LowPacketLevel": lpl, "ShortFlowLevel": 0,
+      "TrafficIntensity": ti, "Burstiness": burst, "PortDiversityLevel": pdl
+    };
+  },
 
-function genPortScan() {
-  const flowDur = rnd(5, 120, 4);
-  const ports   = rnd(100, 600);
-  const pktPerSec   = rnd(10000, 200000, 4);
-  const bytesPerSec = rnd(30000, 600000, 4);
-  return {
-    true_label: "PortScan",
-    "Fwd IAT Mean":            0.0,
-    "Bwd IAT Mean":            0.0,
-    "Average Packet Size":     rnd(2.5, 6.0, 4),
-    "SynOnlyRatio":            0.0,
-    "Flow Duration":           flowDur,
-    "Flow IAT Mean":           rnd(flowDur * 0.8, flowDur * 1.2, 4),
-    "Flow IAT Std":            0.0,
-    "Flow Packets/s":          pktPerSec,
-    "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": ports,
-    "BackwardZeroLevel":       0,
-    "LowPacketLevel":          1,
-    "ShortFlowLevel":          1,
-    "TrafficIntensity":        2,
-    "Burstiness":              0,
-    "PortDiversityLevel":      1
-  };
-}
+  DDoS: () => {
+    const subtype = Math.random();
+    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, ti;
+    if (subtype < 0.4) {
+      fwdIAT = clamp(lognorm(Math.log(8e6), 1.2), 5e5, 2e7);
+      bwdIAT = clamp(lognorm(Math.log(3e4), 1.5), 1e3, 5e5);
+      dur    = clamp(lognorm(Math.log(6e7), 0.7), 1e7, 1.5e8);
+      pktSz  = rng(700, 1100);
+      pps    = clamp(0.18 * rng(0.5, 2), 0.05, 1);
+      bps    = pps * pktSz;
+      fiatM  = dur / rng(10, 16);
+      fiatS  = fiatM * rng(2, 4);
+      ti     = 0;
+    } else if (subtype < 0.7) {
+      fwdIAT = rng(200, 600);
+      bwdIAT = rng(8000, 180000);
+      dur    = rngInt(30000, 2000000);
+      pktSz  = rng(1100, 1750);
+      pps    = clamp(1e6 / dur * rng(5, 20), 2, 250);
+      bps    = pps * pktSz;
+      fiatM  = dur / rng(6, 12);
+      fiatS  = fiatM * rng(2.5, 4);
+      ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
+    } else {
+      fwdIAT = rng(280, 520);
+      bwdIAT = rng(9000, 20000);
+      dur    = rngInt(30000, 110000);
+      pktSz  = rng(1200, 1800);
+      pps    = clamp(rng(80, 220), 50, 300);
+      bps    = pps * pktSz;
+      fiatM  = dur / rng(7, 11);
+      fiatS  = fiatM * rng(2, 3.5);
+      ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
+    }
+    return {
+      true_label: 'DDoS',
+      "Fwd IAT Mean": +fwdIAT.toFixed(4), "Bwd IAT Mean": +bwdIAT.toFixed(4),
+      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
+      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
+      "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
+      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(2, 12),
+      "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0,
+      "TrafficIntensity": ti, "Burstiness": 1, "PortDiversityLevel": 0
+    };
+  },
 
-function genBENIGN() {
-  const fwdIAT      = rnd(0, 10000000, 4);
-  const bwdIAT      = rnd(0, 10000000, 4);
-  const pktPerSec   = rnd(0.1, 25000, 4);
-  const bytesPerSec = rnd(0, 1700000, 4);
-  const flowIATMean = rnd(10, 5000000, 4);
-  const flowIATStd  = rnd(0, flowIATMean * 6, 4);
-  const burstiness  = flowIATStd / Math.max(flowIATMean, 0.001) > 0.5 ? 1 : 0;
-  const pktLevel    = pktPerSec >= 1000 ? 2 : pktPerSec >= 100 ? 1 : 0;
-  const byteLevel   = bytesPerSec >= 100000 ? 2 : bytesPerSec >= 10000 ? 1 : 0;
-  const ports       = rnd(1, 20);
-  return {
-    true_label: "BENIGN",
-    "Fwd IAT Mean":            fwdIAT,
-    "Bwd IAT Mean":            bwdIAT,
-    "Average Packet Size":     rnd(10, 200, 4),
-    "SynOnlyRatio":            0.0,
-    "Flow Duration":           rnd(100, 130000000, 4),
-    "Flow IAT Mean":           flowIATMean,
-    "Flow IAT Std":            flowIATStd,
-    "Flow Packets/s":          pktPerSec,
-    "Flow Bytes/s":            bytesPerSec,
-    "DistinctDestinationPort": ports,
-    "BackwardZeroLevel":       bwdIAT < 1 ? 1 : 0,
-    "LowPacketLevel":          rnd(0, 10) <= 2 ? 1 : 0,
-    "ShortFlowLevel":          0,
-    "TrafficIntensity":        Math.max(pktLevel, byteLevel),
-    "Burstiness":              burstiness,
-    "PortDiversityLevel":      ports >= 100 ? 1 : 0
-  };
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  PortScan: () => {
+    const dur   = rngInt(10, 100);
+    const fiatM = dur * rng(0.9, 1.1);
+    const pps   = clamp(1e6 / dur * rng(0.9, 1.1), 5000, 200000);
+    const pktSz = rng(2.5, 5.5);
+    const bps   = pps * pktSz;
+    const ports = rngInt(100, 600);
+    return {
+      true_label: 'PortScan',
+      "Fwd IAT Mean": 0, "Bwd IAT Mean": 0,
+      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
+      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
+      "Flow IAT Std": 0, "Flow Packets/s": +pps.toFixed(4),
+      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": ports,
+      "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1,
+      "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1
+    };
   }
-  return arr;
+};
+
+function generateBatch() {
+  const batch = [];
+  ['BENIGN', 'DDoS', 'PortScan'].forEach(lbl => {
+    for (let i = 0; i < 10; i++) batch.push(DISTS[lbl]());
+  });
+  // Fisher-Yates shuffle
+  for (let i = batch.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [batch[i], batch[j]] = [batch[j], batch[i]];
+  }
+  return batch;
 }
 
-function buildSamples() {
-  const raw = [];
-  for (let i = 0; i < 10; i++) raw.push(genDDoS());
-  for (let i = 0; i < 10; i++) raw.push(genPortScan());
-  for (let i = 0; i < 10; i++) raw.push(genBENIGN());
-  return shuffle(raw);
-}
-
-/* Generate fresh 30 samples on every page load */
-const DEMO_SAMPLES = buildSamples();
-
-/* ─── rest of the app ─── */
+/* ── State ── */
+let DEMO_SAMPLES = [];
 let demoIndex = 0;
 let totalRuns = 0, correctRuns = 0;
 
+// Generate first batch on load
+DEMO_SAMPLES = generateBatch();
+
+/* ── Feature metadata ── */
 const RANGES = {
-  "Fwd IAT Mean":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
-  "Bwd IAT Mean":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
-  "Average Packet Size":     { min:20,  max:1500,   dec:1, unit:"bytes", label:"Average Packet Size"       },
-  "SynOnlyRatio":            { min:0,   max:1,      dec:3, unit:"ratio", label:"SYN-Only Ratio"            },
-  "Flow Duration":           { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow Duration"             },
-  "Flow IAT Mean":           { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Mean"             },
-  "Flow IAT Std":            { min:0,   max:100000, dec:0, unit:"µs",    label:"Flow IAT Std"              },
-  "Flow Packets/s":          { min:0,   max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
-  "Flow Bytes/s":            { min:0,   max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
-  "DistinctDestinationPort": { min:1,   max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
+  "Fwd IAT Mean":            { min:0, max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
+  "Bwd IAT Mean":            { min:0, max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
+  "Average Packet Size":     { min:20, max:1500,  dec:1, unit:"bytes", label:"Average Packet Size"       },
+  "SynOnlyRatio":            { min:0, max:1,      dec:3, unit:"ratio", label:"SYN-Only Ratio"            },
+  "Flow Duration":           { min:0, max:100000, dec:0, unit:"µs",    label:"Flow Duration"             },
+  "Flow IAT Mean":           { min:0, max:100000, dec:0, unit:"µs",    label:"Flow IAT Mean"             },
+  "Flow IAT Std":            { min:0, max:100000, dec:0, unit:"µs",    label:"Flow IAT Std"              },
+  "Flow Packets/s":          { min:0, max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
+  "Flow Bytes/s":            { min:0, max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
+  "DistinctDestinationPort": { min:1, max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
   "BackwardZeroLevel":       { opts:[0,1], unit:"binary", label:"Backward Zero Level" },
   "LowPacketLevel":          { opts:[0,1], unit:"binary", label:"Low Packet Level"    },
   "ShortFlowLevel":          { opts:[0,1], unit:"binary", label:"Short Flow Level"    },
@@ -590,7 +618,8 @@ function updateAccuracyBanner(trueLabel, predLabel){
   const el = document.getElementById('accuracy-banner');
   if(!el) return;
   const color = parseFloat(pct) >= 80 ? 'var(--green)' : parseFloat(pct) >= 60 ? 'var(--yellow)' : 'var(--red)';
-  el.innerHTML = `MODEL ACCURACY ON DEMO SET &nbsp;·&nbsp; <span style="color:${color};font-weight:700">${correctRuns}/${totalRuns} = ${pct}%</span> &nbsp;·&nbsp; ${30-demoIndex} samples remaining`;
+  const remaining = 30 - demoIndex;
+  el.innerHTML = `MODEL ACCURACY ON DEMO SET &nbsp;·&nbsp; <span style="color:${color};font-weight:700">${correctRuns}/${totalRuns} = ${pct}%</span> &nbsp;·&nbsp; ${remaining} samples remaining`;
 }
 
 let scanTicker=null, scanProg=0;
@@ -626,8 +655,15 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
 }
 
 async function runPredict(){
+  // When all 30 done, generate a fresh batch and restart
   if(demoIndex >= DEMO_SAMPLES.length){
-    document.getElementById('run-info').textContent = '✅ All 30 samples analyzed! Reload to restart.';
+    DEMO_SAMPLES = generateBatch();
+    demoIndex = 0;
+    totalRuns = 0;
+    correctRuns = 0;
+    document.getElementById('accuracy-banner').textContent = '30 new random samples generated — starting fresh batch';
+    document.getElementById('run-info').textContent = '— New batch ready. Press to continue —';
+    document.getElementById('run-btn').textContent = '▶ &nbsp;Capture & Analyze Flow';
     return;
   }
 
@@ -666,7 +702,11 @@ async function runPredict(){
     alert("Make sure the server is running on :10000\n"+e.message);
   } finally {
     btn.classList.remove('loading');
-    btn.textContent = demoIndex < DEMO_SAMPLES.length ? '▶  Next Sample →' : '✅  All Done';
+    if(demoIndex < DEMO_SAMPLES.length){
+      btn.textContent = '▶  Next Sample →';
+    } else {
+      btn.textContent = '🔄  Generate New Batch';
+    }
   }
 }
 
@@ -759,7 +799,6 @@ function renderAttackExplain(label, explanations, usedVals){
       ? (Number.isInteger(val) ? val : val.toFixed(2))
       : val;
     const unit = isBin ? '' : (m.unit || '');
-
     const el = document.createElement('div');
     el.className = `ae-feat ${level}`;
     el.innerHTML = `<span class="ae-feat-dot ${level}"></span>
