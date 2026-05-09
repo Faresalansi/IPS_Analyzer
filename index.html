@@ -183,6 +183,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 /* ── Most Probable Cause ── */
 .mpc-box {
   display: none;
+  margin-top: 1.25rem;
   margin-bottom: 1.25rem;
   padding: .9rem 1.2rem;
   border-radius: 8px;
@@ -313,22 +314,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   <div class="result-panel" id="result-panel">
     <div class="ptitle">Analysis Result</div>
 
-    <!-- ★ Most Probable Cause — shown above verdict ★ -->
-    <div class="mpc-box ddos" id="mpc-ddos">
-      <div class="mpc-label">Most Probable Cause</div>
-      <div class="mpc-title">Burstiness + Avg Packet Size</div>
-      <div class="mpc-desc">
-        IAT variance surge (Std/Mean &gt; 0.5) combined with micro-flood (&lt;100B) or bulk-flood (≥1400B) packet sizes — these two signals together are the strongest DDoS triggers in the model.
-      </div>
-    </div>
-    <div class="mpc-box ps" id="mpc-ps">
-      <div class="mpc-label">Most Probable Cause</div>
-      <div class="mpc-title">Short Flow + Low Packet + Port Diversity (all three columns)</div>
-      <div class="mpc-desc">
-        All three signals must fire simultaneously — very short duration flows (ratio ≥ 0.9), minimal packet count (≤3 total), and high port diversity (≥100 distinct ports). This triple conjunction is the definitive PortScan fingerprint.
-      </div>
-    </div>
-
     <div class="verdict" id="verdict">
       <div class="v-icon"  id="v-icon"></div>
       <div style="flex:1">
@@ -363,7 +348,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
           <!-- ══════════ DDoS SVG Flow Diagram ══════════ -->
           <div id="cp-ddos" style="display:none">
-            <svg class="cp-svg" viewBox="0 0 860 510" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+            <svg class="cp-svg" viewBox="0 0 860 600" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
               <defs>
                 <marker id="arr-coral" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,100,130,.8)"/>
@@ -471,6 +456,12 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
               <!-- Arrow aggregator→DDoS -->
               <path d="M638,204 L730,204" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-final)"/>
+
+              <!-- ★ Most Probable Cause — DDoS ★ -->
+              <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
+              <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+              <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
+              <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
             </svg>
 
             <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
@@ -478,7 +469,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
           <!-- ══════════ PortScan SVG Flow Diagram ══════════ -->
           <div id="cp-ps" style="display:none">
-            <svg class="cp-svg" viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+            <svg class="cp-svg" viewBox="0 0 860 370" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
               <defs>
                 <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L0,6 L8,3 z" fill="rgba(41,121,255,.85)"/>
@@ -543,6 +534,12 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
               <!-- Arrow aggregator→PortScan -->
               <path d="M648,135 L740,126" stroke="rgba(41,121,255,.85)" stroke-width="2" fill="none" marker-end="url(#arr-blue-final)"/>
+
+              <!-- ★ Most Probable Cause — PortScan ★ -->
+              <rect x="80" y="298" width="700" height="58" rx="8" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.5)" stroke-width="1.5"/>
+              <text x="430" y="320" text-anchor="middle" fill="#5ca8ff" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+              <text x="430" y="338" text-anchor="middle" fill="#bdd1ff" font-size="11" font-weight="700">Short Flow + Low Packet + Port Diversity (all three columns)</text>
+              <text x="430" y="352" text-anchor="middle" fill="#90b8ff" font-size="9.5" opacity=".85">All three signals firing simultaneously → definitive PortScan fingerprint</text>
             </svg>
 
             <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
@@ -552,7 +549,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       </div><!-- /cp-wrap -->
     </div><!-- /attack-explain -->
 
-    <div class="proba-grid"   id="proba-grid"></div>
+    <div class="proba-grid" id="proba-grid"></div>
     <hr class="sep">
     <div class="ptitle" style="margin-bottom:.9rem">Feature Explanations</div>
     <div class="explain-grid" id="explain-grid"></div>
@@ -921,18 +918,12 @@ function renderCausalPath(label) {
   const wrap = document.getElementById('cp-wrap');
   const ddos = document.getElementById('cp-ddos');
   const ps   = document.getElementById('cp-ps');
-  const mpcD = document.getElementById('mpc-ddos');
-  const mpcP = document.getElementById('mpc-ps');
 
   const show = label === 'DDoS' || label === 'PortScan';
   wrap.style.display = show ? 'block' : 'none';
 
   ddos.style.display = label === 'DDoS'     ? 'block' : 'none';
   ps.style.display   = label === 'PortScan' ? 'block' : 'none';
-
-  /* Show the matching MPC box */
-  if (mpcD) mpcD.style.display = label === 'DDoS'     ? 'block' : 'none';
-  if (mpcP) mpcP.style.display = label === 'PortScan' ? 'block' : 'none';
 }
 
 function renderAttackExplain(label, explanations, usedVals){
