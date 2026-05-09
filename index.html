@@ -183,7 +183,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 /* ── Most Probable Cause ── */
 .mpc-box {
   display: none;
-  margin-top: .85rem;
+  margin-bottom: 1.25rem;
   padding: .9rem 1.2rem;
   border-radius: 8px;
   animation: fadeUp .4s ease both;
@@ -312,6 +312,23 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
   <div class="result-panel" id="result-panel">
     <div class="ptitle">Analysis Result</div>
+
+    <!-- ★ Most Probable Cause — shown above verdict ★ -->
+    <div class="mpc-box ddos" id="mpc-ddos">
+      <div class="mpc-label">Most Probable Cause</div>
+      <div class="mpc-title">Burstiness + Avg Packet Size</div>
+      <div class="mpc-desc">
+        IAT variance surge (Std/Mean &gt; 0.5) combined with micro-flood (&lt;100B) or bulk-flood (≥1400B) packet sizes — these two signals together are the strongest DDoS triggers in the model.
+      </div>
+    </div>
+    <div class="mpc-box ps" id="mpc-ps">
+      <div class="mpc-label">Most Probable Cause</div>
+      <div class="mpc-title">Short Flow + Low Packet + Port Diversity (all three columns)</div>
+      <div class="mpc-desc">
+        All three signals must fire simultaneously — very short duration flows (ratio ≥ 0.9), minimal packet count (≤3 total), and high port diversity (≥100 distinct ports). This triple conjunction is the definitive PortScan fingerprint.
+      </div>
+    </div>
+
     <div class="verdict" id="verdict">
       <div class="v-icon"  id="v-icon"></div>
       <div style="flex:1">
@@ -457,15 +474,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             </svg>
 
             <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
-
-            <!-- ★ Most Probable Cause — DDoS ★ -->
-            <div class="mpc-box ddos" id="mpc-ddos">
-              <div class="mpc-label">Most Probable Cause</div>
-              <div class="mpc-title">Burstiness + Avg Packet Size</div>
-              <div class="mpc-desc">
-                IAT variance surge (Std/Mean &gt; 0.5) combined with micro-flood (&lt;100B) or bulk-flood (≥1400B) packet sizes — these two signals together are the strongest DDoS triggers in the model.
-              </div>
-            </div>
           </div><!-- /cp-ddos -->
 
           <!-- ══════════ PortScan SVG Flow Diagram ══════════ -->
@@ -538,15 +546,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             </svg>
 
             <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
-
-            <!-- ★ Most Probable Cause — PortScan ★ -->
-            <div class="mpc-box ps" id="mpc-ps">
-              <div class="mpc-label">Most Probable Cause</div>
-              <div class="mpc-title">Short Flow + Low Packet + Port Diversity (all three columns)</div>
-              <div class="mpc-desc">
-                All three signals must fire simultaneously — very short duration flows (ratio ≥ 0.9), minimal packet count (≤3 total), and high port diversity (≥100 distinct ports). This triple conjunction is the definitive PortScan fingerprint.
-              </div>
-            </div>
           </div><!-- /cp-ps -->
 
         </div><!-- /cp-inner -->
