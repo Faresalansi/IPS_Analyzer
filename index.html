@@ -180,47 +180,17 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .cp-section-title { font-size: .6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: .9rem; font-family: var(--mono); }
 .cp-svg { width: 100%; overflow: visible; display: block; }
 
-/* ── Most Probable Cause ── */
-.mpc-box {
-  display: none;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
-  padding: .9rem 1.2rem;
-  border-radius: 8px;
-  animation: fadeUp .4s ease both;
-}
-.mpc-box.ddos {
-  background: rgba(255,61,113,.07);
-  border: 1px solid rgba(255,61,113,.45);
-}
-.mpc-box.ps {
-  background: rgba(41,121,255,.07);
-  border: 1px solid rgba(41,121,255,.45);
-}
-.mpc-label {
-  font-size: .6rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+/* ── Disabled Feature Indicator ── */
+.cp-disabled-feature {
+  font-size: .68rem;
+  color: var(--muted);
+  background: rgba(90, 122, 154, 0.15);
+  border: 1px solid rgba(90, 122, 154, 0.3);
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin-top: 0.6rem;
   font-family: var(--mono);
-  font-weight: 700;
-  margin-bottom: .45rem;
 }
-.mpc-box.ddos .mpc-label { color: #ff3d71; }
-.mpc-box.ps   .mpc-label { color: #5ca8ff; }
-.mpc-title {
-  font-size: .85rem;
-  font-family: var(--mono);
-  font-weight: 700;
-  margin-bottom: .3rem;
-}
-.mpc-box.ddos .mpc-title { color: #ffcdd8; }
-.mpc-box.ps   .mpc-title { color: #bdd1ff; }
-.mpc-desc {
-  font-size: .78rem;
-  line-height: 1.6;
-}
-.mpc-box.ddos .mpc-desc { color: #ffb3c6; }
-.mpc-box.ps   .mpc-desc { color: #90b8ff; }
 
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
@@ -456,6 +426,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             </svg>
 
             <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
+            <div id="cp-disabled-ddos" class="cp-disabled-feature" style="display:none;"></div>
           </div><!-- /cp-ddos -->
 
           <!-- ══════════ PortScan SVG Flow Diagram — UNIFIED BLUE ══════════ -->
@@ -534,6 +505,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
             </svg>
 
             <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
+            <div id="cp-disabled-ps" class="cp-disabled-feature" style="display:none;"></div>
           </div><!-- /cp-ps -->
 
         </div><!-- /cp-inner -->
@@ -797,6 +769,90 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
   return Math.max(pktLevel, byteLevel);
 }
 
+/* ═════════════════════════════════════════════════
+   DYNAMIC CAUSAL PATH
+   Only show features that have non-zero values
+   ═════════════════════════════════════════════════ */
+
+function buildDDoSDisabledMessage(usedVals) {
+  const disabled = [];
+  const trafficIntensity = usedVals['TrafficIntensity'] ?? 0;
+  if (trafficIntensity === 0) {
+    disabled.push("❌ Traffic Intensity = 0 (too low to trigger flood detection)");
+  }
+  const burstiness = usedVals['Burstiness'] ?? 0;
+  if (burstiness === 0) {
+    disabled.push("❌ Burstiness = 0 (traffic is smooth, no IAT variance detected)");
+  }
+  const fwdIATMean = usedVals['Fwd IAT Mean'] ?? 0;
+  if (fwdIATMean > 200) {
+    disabled.push("❌ Fwd IAT Mean > 200µs (forward packets not rapid enough)");
+  }
+  const bwdIATMean = usedVals['Bwd IAT Mean'] ?? 0;
+  if (bwdIATMean > 500) {
+    disabled.push("❌ Bwd IAT Mean > 500µs (backward responses not rapid enough)");
+  }
+  const avgPktSize = usedVals['Average Packet Size'] ?? 0;
+  if (avgPktSize >= 100 && avgPktSize <= 1400) {
+    disabled.push("❌ Average Packet Size in normal range 100–1400 (no micro/bulk flood signature)");
+  }
+  return disabled;
+}
+
+function buildPortScanDisabledMessage(usedVals) {
+  const disabled = [];
+  const shortFlowLevel = usedVals['ShortFlowLevel'] ?? 0;
+  if (shortFlowLevel === 0) {
+    disabled.push("❌ Short Flow Level = 0 (flow duration ratio < 0.9, not a short scan)");
+  }
+  const lowPacketLevel = usedVals['LowPacketLevel'] ?? 0;
+  if (lowPacketLevel === 0) {
+    disabled.push("❌ Low Packet Level = 0 (packet count > 3, not minimal)");
+  }
+  const portDiversityLevel = usedVals['PortDiversityLevel'] ?? 0;
+  if (portDiversityLevel === 0) {
+    disabled.push("❌ Port Diversity Level = 0 (< 100 distinct ports, not a port scan pattern)");
+  }
+  return disabled;
+}
+
+function renderCausalPath(label, usedVals) {
+  const wrap = document.getElementById('cp-wrap');
+  const ddos = document.getElementById('cp-ddos');
+  const ps   = document.getElementById('cp-ps');
+
+  const show = label === 'DDoS' || label === 'PortScan';
+  wrap.style.display = show ? 'block' : 'none';
+
+  if (label === 'DDoS') {
+    ddos.style.display = 'block';
+    const disabledMsg = buildDDoSDisabledMessage(usedVals);
+    const disabledDiv = document.getElementById('cp-disabled-ddos');
+    if (disabledMsg.length > 0) {
+      disabledDiv.innerHTML = disabledMsg.map(msg => `<div style="margin-bottom:.4rem">${msg}</div>`).join('');
+      disabledDiv.style.display = 'block';
+    } else {
+      disabledDiv.style.display = 'none';
+    }
+  } else {
+    ddos.style.display = 'none';
+  }
+
+  if (label === 'PortScan') {
+    ps.style.display = 'block';
+    const disabledMsg = buildPortScanDisabledMessage(usedVals);
+    const disabledDiv = document.getElementById('cp-disabled-ps');
+    if (disabledMsg.length > 0) {
+      disabledDiv.innerHTML = disabledMsg.map(msg => `<div style="margin-bottom:.4rem">${msg}</div>`).join('');
+      disabledDiv.style.display = 'block';
+    } else {
+      disabledDiv.style.display = 'none';
+    }
+  } else {
+    ps.style.display = 'none';
+  }
+}
+
 async function runPredict(){
   if(demoIndex >= DEMO_SAMPLES.length){
     DEMO_SAMPLES = generateBatch();
@@ -838,7 +894,7 @@ async function runPredict(){
     document.getElementById('run-info').textContent=`SAMPLE ${demoIndex}/30  ·  True: ${trueLabel}  ·  Pred: ${d.label}  ·  ${isCorrect?'✓ CORRECT':'✗ WRONG'}`;
     updateAccuracyBanner(trueLabel, d.label);
     showTrueLabelBadge(trueLabel, d.label);
-    renderResult(d, currentSourceIP, currentDestIP);
+    renderResult(d, currentSourceIP, currentDestIP, vals);
   } catch(e){
     endScan();
     alert("Make sure the server is running on :10000\n"+e.message);
@@ -905,18 +961,6 @@ function showChips(vals, srcIP, dstIP, trueLabel){
   });
 }
 
-function renderCausalPath(label) {
-  const wrap = document.getElementById('cp-wrap');
-  const ddos = document.getElementById('cp-ddos');
-  const ps   = document.getElementById('cp-ps');
-
-  const show = label === 'DDoS' || label === 'PortScan';
-  wrap.style.display = show ? 'block' : 'none';
-
-  ddos.style.display = label === 'DDoS'     ? 'block' : 'none';
-  ps.style.display   = label === 'PortScan' ? 'block' : 'none';
-}
-
 function renderAttackExplain(label, explanations, usedVals){
   const info = ATTACK_INFO[label] || ATTACK_INFO.BENIGN;
   const box  = document.getElementById('attack-explain');
@@ -951,10 +995,10 @@ function renderAttackExplain(label, explanations, usedVals){
     featsEl.appendChild(el);
   });
 
-  renderCausalPath(label);
+  renderCausalPath(label, usedVals);
 }
 
-function renderResult(d, srcIP, dstIP){
+function renderResult(d, srcIP, dstIP, usedVals){
   const panel=document.getElementById('result-panel');
   panel.className=`result-panel ${d.label}`;
   void panel.offsetWidth;
@@ -969,7 +1013,7 @@ function renderResult(d, srcIP, dstIP){
   document.getElementById('v-src-ip').innerHTML=srcIP?`Source IP: <span class="ip-val">${srcIP}</span>`:'';
   document.getElementById('v-dst-ip').innerHTML=dstIP?`Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>`:'';
 
-  renderAttackExplain(d.label, d.explanations||{}, d.used_values||{});
+  renderAttackExplain(d.label, d.explanations||{}, usedVals);
 
   const pg=document.getElementById('proba-grid');
   pg.innerHTML='';
@@ -988,7 +1032,7 @@ function renderResult(d, srcIP, dstIP){
   const grid=document.getElementById('explain-grid');
   grid.innerHTML='';
   const expl=d.explanations||{};
-  const used=d.used_values||{};
+  const used=usedVals||{};
 
   Object.entries(expl).forEach(([feat,info],i)=>{
     const m=getMeta(feat);
