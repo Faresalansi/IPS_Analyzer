@@ -180,52 +180,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .cp-section-title { font-size: .6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: .9rem; font-family: var(--mono); }
 .cp-svg { width: 100%; overflow: visible; display: block; }
 
-/* ── Hidden node styling ── */
-.cp-node-hidden { opacity: 0.2; }
-.cp-arrow-hidden { opacity: 0.15; }
-
-/* ── Most Probable Cause ── */
-.mpc-box {
-  display: none;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
-  padding: .9rem 1.2rem;
-  border-radius: 8px;
-  animation: fadeUp .4s ease both;
-}
-.mpc-box.ddos {
-  background: rgba(255,61,113,.07);
-  border: 1px solid rgba(255,61,113,.45);
-}
-.mpc-box.ps {
-  background: rgba(41,121,255,.07);
-  border: 1px solid rgba(41,121,255,.45);
-}
-.mpc-label {
-  font-size: .6rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-family: var(--mono);
-  font-weight: 700;
-  margin-bottom: .45rem;
-}
-.mpc-box.ddos .mpc-label { color: #ff3d71; }
-.mpc-box.ps   .mpc-label { color: #5ca8ff; }
-.mpc-title {
-  font-size: .85rem;
-  font-family: var(--mono);
-  font-weight: 700;
-  margin-bottom: .3rem;
-}
-.mpc-box.ddos .mpc-title { color: #ffcdd8; }
-.mpc-box.ps   .mpc-title { color: #bdd1ff; }
-.mpc-desc {
-  font-size: .78rem;
-  line-height: 1.6;
-}
-.mpc-box.ddos .mpc-desc { color: #ffb3c6; }
-.mpc-box.ps   .mpc-desc { color: #90b8ff; }
-
 /* ── Proba ── */
 .proba-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; margin-bottom: 1.5rem; }
 @media(max-width:500px){ .proba-grid{ grid-template-columns:1fr; } }
@@ -349,219 +303,9 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
         <div id="cp-inner" style="display:none">
           <div class="cp-section-title">Causal Path — how features influence other features and influence the decision</div>
-
-          <!-- ══════════ DDoS Multiple Causal Paths - Packet Size Based Selection ══════════ -->
-          <div id="cp-ddos" style="display:none">
-            
-            <!-- PATH 1: MICRO-FLOOD (Packet Size < 500B) -->
-            <div id="cp-ddos-microflood" style="display:none">
-              <svg class="cp-svg" viewBox="0 0 860 500" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
-                <defs>
-                  <marker id="arr-red-micro" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
-                  </marker>
-                  <marker id="arr-red-final-micro" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
-                  </marker>
-                </defs>
-
-                <!-- COL 1: Raw inputs -->
-                <g id="microflood-pps">
-                  <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Packets/s</text>
-                  <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥1000→lvl2 / ≥100→lvl1</text>
-                  <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
-                </g>
-
-                <g id="microflood-pkt-size">
-                  <rect x="4" y="90" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="108" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
-                  <text x="78" y="122" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">&lt;500 bytes</text>
-                  <text x="78" y="135" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">micro-flood</text>
-                </g>
-
-                <g id="microflood-iat-std">
-                  <rect x="4" y="170" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="188" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Std</text>
-                  <text x="78" y="202" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">Variance</text>
-                  <text x="78" y="215" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">indicator</text>
-                </g>
-
-                <!-- COL 2: Derived features -->
-                <g id="microflood-traffic-intensity">
-                  <rect x="240" y="10" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="29" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
-                  <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
-                  <text x="319" y="56" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">HIGH signal ●</text>
-                </g>
-
-                <g id="microflood-micro-flood-signal">
-                  <rect x="240" y="90" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="108" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Micro-Flood Signal</text>
-                  <text x="319" y="123" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">Pkt Size &lt; 500B</text>
-                  <text x="319" y="136" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">rapid small packets ●</text>
-                </g>
-
-                <g id="microflood-burstiness">
-                  <rect x="240" y="170" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="188" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Burstiness</text>
-                  <text x="319" y="203" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">IAT Std / IAT Mean</text>
-                  <text x="319" y="216" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">&gt;0.5 → burst ●</text>
-                </g>
-
-                <!-- COL 3: Aggregator -->
-                <g id="microflood-aggregator">
-                  <rect x="490" y="60" width="148" height="120" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
-                  <text x="564" y="83" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">MICRO FLOOD</text>
-                  <text x="564" y="101" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
-                  <text x="564" y="119" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Micro-Flood Signal</text>
-                  <text x="564" y="137" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
-                  <text x="564" y="160" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">→ DDoS</text>
-                </g>
-
-                <!-- COL 4: Label -->
-                <g id="microflood-label">
-                  <rect x="730" y="90" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
-                  <text x="790" y="118" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
-                  <text x="790" y="137" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Micro-Flood</text>
-                  <text x="790" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
-                </g>
-
-                <!-- Arrows -->
-                <g id="microflood-arrows-c1c2">
-                  <path d="M152,36 L240,29" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                  <path d="M152,116 L240,116" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                  <path d="M152,196 L240,196" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                </g>
-
-                <g id="microflood-arrows-c2agg">
-                  <path d="M398,36 C450,36 480,80 490,90" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                  <path d="M398,116 L490,119" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                  <path d="M398,196 C450,196 480,145 490,137" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
-                </g>
-
-                <g id="microflood-arrows-final">
-                  <path d="M638,120 L730,126" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final-micro)"/>
-                </g>
-
-                <!-- MPC -->
-                <g id="microflood-mpc">
-                  <rect x="80" y="410" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
-                  <text x="430" y="432" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-                  <text x="430" y="450" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">High Packet Rate + Small Packet Size + Variance</text>
-                  <text x="430" y="464" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">Rapid micro-packet flood pattern → DDoS attack</text>
-                </g>
-              </svg>
-              <div class="cp-verdict ddos">Verdict → Micro-Flood DDoS &nbsp;·&nbsp; High packet rate with small packet sizes (< 500B)</div>
-            </div>
-
-            <!-- PATH 2: BULK-FLOOD (Packet Size >= 500B) -->
-            <div id="cp-ddos-bulkflood" style="display:none">
-              <svg class="cp-svg" viewBox="0 0 860 500" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
-                <defs>
-                  <marker id="arr-red-bulk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
-                  </marker>
-                  <marker id="arr-red-final-bulk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
-                  </marker>
-                </defs>
-
-                <!-- COL 1: Raw inputs -->
-                <g id="bulkflood-bps">
-                  <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Bytes/s</text>
-                  <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥100k→lvl2 / ≥10k→lvl1</text>
-                  <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">throughput</text>
-                </g>
-
-                <g id="bulkflood-pkt-size">
-                  <rect x="4" y="90" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="108" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
-                  <text x="78" y="122" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥500 bytes</text>
-                  <text x="78" y="135" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">bulk data</text>
-                </g>
-
-                <g id="bulkflood-fwd-iat">
-                  <rect x="4" y="170" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                  <text x="78" y="188" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Fwd IAT Mean</text>
-                  <text x="78" y="202" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">Inter-arrival</text>
-                  <text x="78" y="215" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">timing</text>
-                </g>
-
-                <!-- COL 2: Derived features -->
-                <g id="bulkflood-traffic-intensity">
-                  <rect x="240" y="10" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="29" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
-                  <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
-                  <text x="319" y="56" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">EXTREME signal ●</text>
-                </g>
-
-                <g id="bulkflood-bulk-flood-signal">
-                  <rect x="240" y="90" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="108" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Bulk-Flood Signal</text>
-                  <text x="319" y="123" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">Pkt Size ≥ 500B</text>
-                  <text x="319" y="136" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">high-volume flood ●</text>
-                </g>
-
-                <g id="bulkflood-fwd-iat-signal">
-                  <rect x="240" y="170" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                  <text x="319" y="188" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Fwd IAT Signal</text>
-                  <text x="319" y="203" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤200µs → rapid</text>
-                  <text x="319" y="216" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">flooding ●</text>
-                </g>
-
-                <!-- COL 3: Aggregator -->
-                <g id="bulkflood-aggregator">
-                  <rect x="490" y="60" width="148" height="120" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
-                  <text x="564" y="83" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">BULK FLOOD</text>
-                  <text x="564" y="101" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
-                  <text x="564" y="119" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bulk-Flood Signal</text>
-                  <text x="564" y="137" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
-                  <text x="564" y="160" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">→ DDoS</text>
-                </g>
-
-                <!-- COL 4: Label -->
-                <g id="bulkflood-label">
-                  <rect x="730" y="90" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
-                  <text x="790" y="118" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
-                  <text x="790" y="137" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Bulk-Flood</text>
-                  <text x="790" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
-                </g>
-
-                <!-- Arrows -->
-                <g id="bulkflood-arrows-c1c2">
-                  <path d="M152,36 L240,29" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                  <path d="M152,116 L240,116" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                  <path d="M152,196 L240,196" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                </g>
-
-                <g id="bulkflood-arrows-c2agg">
-                  <path d="M398,36 C450,36 480,80 490,90" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                  <path d="M398,116 L490,119" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                  <path d="M398,196 C450,196 480,145 490,137" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
-                </g>
-
-                <g id="bulkflood-arrows-final">
-                  <path d="M638,120 L730,126" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final-bulk)"/>
-                </g>
-
-                <!-- MPC -->
-                <g id="bulkflood-mpc">
-                  <rect x="80" y="410" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
-                  <text x="430" y="432" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-                  <text x="430" y="450" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">High Throughput + Large Packet Size + Rapid Rate</text>
-                  <text x="430" y="464" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">Sustained bulk data flood → overwhelming DDoS attack</text>
-                </g>
-              </svg>
-              <div class="cp-verdict ddos">Verdict → Bulk-Flood DDoS &nbsp;·&nbsp; High throughput with large packet sizes (≥ 500B)</div>
-            </div>
-
-          </div><!-- /cp-ddos -->
-
-          <!-- ══════════ PortScan SVG Flow Diagram — UNIFIED BLUE ══════════ -->
+          <div id="cp-ddos-container"></div>
           <div id="cp-ps" style="display:none">
-            <svg class="cp-svg" viewBox="0 0 860 370" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace" id="portscan-svg">
+            <svg class="cp-svg" viewBox="0 0 860 370" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
               <defs>
                 <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L0,6 L8,3 z" fill="rgba(41,121,255,.85)"/>
@@ -572,90 +316,66 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               </defs>
 
               <!-- COL 1: Raw inputs — all BLUE -->
-              <g id="ps-duration" class="ps-input-group">
-                <rect x="4" y="30" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
-                <text x="78" y="48" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Flow Duration</text>
-                <text x="78" y="63" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">µs total length</text>
-              </g>
+              <rect x="4" y="30" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="48" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Flow Duration</text>
+              <text x="78" y="63" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">µs total length</text>
 
-              <g id="ps-packets" class="ps-input-group">
-                <rect x="4" y="114" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
-                <text x="78" y="132" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Total Packets</text>
-                <text x="78" y="147" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">fwd + bwd ≤ 3</text>
-              </g>
+              <rect x="4" y="114" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="132" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Total Packets</text>
+              <text x="78" y="147" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">fwd + bwd ≤ 3</text>
 
-              <g id="ps-ports" class="ps-input-group">
-                <rect x="4" y="198" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
-                <text x="78" y="216" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Distinct Dest. Ports</text>
-                <text x="78" y="231" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">unique port count</text>
-              </g>
+              <rect x="4" y="198" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="216" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Distinct Dest. Ports</text>
+              <text x="78" y="231" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">unique port count</text>
 
               <!-- COL 2: Derived — all BLUE -->
-              <g id="ps-short-flow" class="ps-derived-group">
-                <rect x="240" y="24" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
-                <text x="321" y="43" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Short Flow Level</text>
-                <text x="321" y="58" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
-                <text x="321" y="71" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
-              </g>
+              <rect x="240" y="24" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="43" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Short Flow Level</text>
+              <text x="321" y="58" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
+              <text x="321" y="71" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
 
-              <g id="ps-low-packet" class="ps-derived-group">
-                <rect x="240" y="108" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
-                <text x="321" y="127" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Low Packet Level</text>
-                <text x="321" y="142" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
-                <text x="321" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
-              </g>
+              <rect x="240" y="108" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="127" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Low Packet Level</text>
+              <text x="321" y="142" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
+              <text x="321" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
 
-              <g id="ps-port-diversity" class="ps-derived-group">
-                <rect x="240" y="192" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
-                <text x="321" y="211" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Port Diversity Level</text>
-                <text x="321" y="226" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">≥ 100 ports → 1 ●</text>
-                <text x="321" y="239" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
-              </g>
+              <rect x="240" y="192" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="211" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Port Diversity Level</text>
+              <text x="321" y="226" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">≥ 100 ports → 1 ●</text>
+              <text x="321" y="239" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
 
               <!-- COL 3: Aggregator — BLUE -->
-              <g id="ps-aggregator" class="ps-aggregator-group">
-                <rect x="500" y="80" width="148" height="110" rx="10" fill="rgba(41,121,255,.1)" stroke="rgba(41,121,255,.5)" stroke-width="1.5" stroke-dasharray="5,3"/>
-                <text x="574" y="103" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".8">SIGNALS</text>
-                <text x="574" y="121" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Short Flow Level</text>
-                <text x="574" y="139" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Low Packet Level</text>
-                <text x="574" y="157" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Port Diversity Level</text>
-                <text x="574" y="179" text-anchor="middle" fill="#bdd1ff" font-size="8.5" opacity=".7">all = 1 → PortScan</text>
-              </g>
+              <rect x="500" y="80" width="148" height="110" rx="10" fill="rgba(41,121,255,.1)" stroke="rgba(41,121,255,.5)" stroke-width="1.5" stroke-dasharray="5,3"/>
+              <text x="574" y="103" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".8">SIGNALS</text>
+              <text x="574" y="121" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Short Flow Level</text>
+              <text x="574" y="139" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Low Packet Level</text>
+              <text x="574" y="157" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Port Diversity Level</text>
+              <text x="574" y="179" text-anchor="middle" fill="#bdd1ff" font-size="8.5" opacity=".7">all = 1 → PortScan</text>
 
               <!-- COL 4: PortScan label — BLUE -->
-              <g id="ps-label" class="ps-label-group">
-                <rect x="740" y="90" width="112" height="72" rx="10" fill="rgba(41,121,255,.22)" stroke="rgba(41,121,255,.9)" stroke-width="2"/>
-                <text x="796" y="120" text-anchor="middle" fill="#5ca8ff" font-size="12" font-weight="700">PORTSCAN</text>
-                <text x="796" y="138" text-anchor="middle" fill="#bdd1ff" font-size="10" opacity=".85">Label</text>
-                <text x="796" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">🔍 BLOCK</text>
-              </g>
+              <rect x="740" y="90" width="112" height="72" rx="10" fill="rgba(41,121,255,.22)" stroke="rgba(41,121,255,.9)" stroke-width="2"/>
+              <text x="796" y="120" text-anchor="middle" fill="#5ca8ff" font-size="12" font-weight="700">PORTSCAN</text>
+              <text x="796" y="138" text-anchor="middle" fill="#bdd1ff" font-size="10" opacity=".85">Label</text>
+              <text x="796" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">🔍 BLOCK</text>
 
               <!-- Arrows col1→col2 — all BLUE -->
-              <g id="ps-arrows-c1c2" class="ps-arrows">
-                <path d="M152,51 L240,44" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-                <path d="M152,135 L240,134" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-                <path d="M152,219 L240,222" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-              </g>
+              <path d="M152,51 L240,44" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M152,135 L240,134" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M152,219 L240,222" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
 
               <!-- Arrows col2→aggregator — all BLUE -->
-              <g id="ps-arrows-c2agg" class="ps-arrows">
-                <path d="M402,50 C450,50 490,100 500,110" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-                <path d="M402,134 L500,135" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-                <path d="M402,218 C450,218 490,170 500,160" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
-              </g>
+              <path d="M402,50 C450,50 490,100 500,110" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M402,134 L500,135" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M402,218 C450,218 490,170 500,160" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
 
               <!-- Arrow aggregator→PortScan — BLUE -->
-              <g id="ps-arrows-final" class="ps-arrows">
-                <path d="M648,135 L740,126" stroke="rgba(41,121,255,.85)" stroke-width="2" fill="none" marker-end="url(#arr-blue-final)"/>
-              </g>
+              <path d="M648,135 L740,126" stroke="rgba(41,121,255,.85)" stroke-width="2" fill="none" marker-end="url(#arr-blue-final)"/>
 
               <!-- ★ Most Probable Cause — PortScan ★ -->
-              <g id="ps-mpc" class="ps-mpc-group">
-                <rect x="80" y="298" width="700" height="58" rx="8" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.5)" stroke-width="1.5"/>
-                <text x="430" y="320" text-anchor="middle" fill="#5ca8ff" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-                <text x="430" y="338" text-anchor="middle" fill="#bdd1ff" font-size="11" font-weight="700">Short Flow + Low Packet + Port Diversity (all three columns)</text>
-                <text x="430" y="352" text-anchor="middle" fill="#90b8ff" font-size="9.5" opacity=".85">All three signals firing simultaneously → definitive PortScan fingerprint</text>
-              </g>
+              <rect x="80" y="298" width="700" height="58" rx="8" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.5)" stroke-width="1.5"/>
+              <text x="430" y="320" text-anchor="middle" fill="#5ca8ff" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+              <text x="430" y="338" text-anchor="middle" fill="#bdd1ff" font-size="11" font-weight="700">Short Flow + Low Packet + Port Diversity (all three columns)</text>
+              <text x="430" y="352" text-anchor="middle" fill="#90b8ff" font-size="9.5" opacity=".85">All three signals firing simultaneously → definitive PortScan fingerprint</text>
             </svg>
 
             <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
@@ -693,7 +413,7 @@ function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 const DISTS = {
   BENIGN: () => {
     const variant = Math.random();
-    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, bwl = 0, lpl = 0, pdl = 0;
+    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, fwl = 0, bwl = 0, lpl = 0, pdl = 0;
     if (variant < 0.33) {
       fwdIAT = rng(0, 100); bwdIAT = rng(0, 100);
       dur    = rngInt(100, 300000);
@@ -722,6 +442,7 @@ const DISTS = {
       fiatS  = fiatM * rng(0.8, 1.6);
       bwl    = Math.random() < 0.4 ? 1 : 0;
       lpl    = Math.random() < 0.4 ? 1 : 0;
+      fwl    = Math.random() < 0.3 ? 1 : 0;
     }
     const burst = (fiatM > 0 && fiatS / fiatM > 0.5) ? 1 : 0;
     const ti    = bps >= 1e5 ? 2 : bps >= 1e4 ? 1 : 0;
@@ -732,14 +453,14 @@ const DISTS = {
       "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
       "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
       "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(1, 20),
-      "BackwardZeroLevel": bwl, "LowPacketLevel": lpl, "ShortFlowLevel": 0,
+      "BackwardZeroLevel": bwl, "LowPacketLevel": lpl, "ShortFlowLevel": fwl,
       "TrafficIntensity": ti, "Burstiness": burst, "PortDiversityLevel": pdl
     };
   },
 
   DDoS: () => {
     const subtype = Math.random();
-    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, ti;
+    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, ti, burst;
     if (subtype < 0.4) {
       fwdIAT = clamp(lognorm(Math.log(8e6), 1.2), 5e5, 2e7);
       bwdIAT = clamp(lognorm(Math.log(3e4), 1.5), 1e3, 5e5);
@@ -750,6 +471,7 @@ const DISTS = {
       fiatM  = dur / rng(10, 16);
       fiatS  = fiatM * rng(2, 4);
       ti     = 0;
+      burst  = fiatS / fiatM > 0.5 ? 1 : 0;
     } else if (subtype < 0.7) {
       fwdIAT = rng(200, 600);
       bwdIAT = rng(8000, 180000);
@@ -760,6 +482,7 @@ const DISTS = {
       fiatM  = dur / rng(6, 12);
       fiatS  = fiatM * rng(2.5, 4);
       ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
+      burst  = fiatS / fiatM > 0.5 ? 1 : 0;
     } else {
       fwdIAT = rng(280, 520);
       bwdIAT = rng(9000, 20000);
@@ -770,6 +493,7 @@ const DISTS = {
       fiatM  = dur / rng(7, 11);
       fiatS  = fiatM * rng(2, 3.5);
       ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
+      burst  = fiatS / fiatM > 0.5 ? 1 : 0;
     }
     return {
       true_label: 'DDoS',
@@ -779,7 +503,7 @@ const DISTS = {
       "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
       "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(2, 12),
       "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0,
-      "TrafficIntensity": ti, "Burstiness": 1, "PortDiversityLevel": 0
+      "TrafficIntensity": ti, "Burstiness": burst, "PortDiversityLevel": 0
     };
   },
 
@@ -878,7 +602,6 @@ function genFakeIP(){
 
 let currentSourceIP = '';
 let currentDestIP   = '';
-let currentFlowData = {};
 
 function updateAccuracyBanner(trueLabel, predLabel){
   totalRuns++;
@@ -923,6 +646,171 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
   return Math.max(pktLevel, byteLevel);
 }
 
+/* ════════════════════════════════════════════
+   DYNAMIC DDOS CAUSAL PATH GENERATOR
+   ════════════════════════════════════════════ */
+function generateDDoSCausalPath(usedVals) {
+  const ti = usedVals['TrafficIntensity'] ?? 0;
+  const burst = usedVals['Burstiness'] ?? 0;
+  const fwdIAT = usedVals['Fwd IAT Mean'] ?? 0;
+  const bwdIAT = usedVals['Bwd IAT Mean'] ?? 0;
+  const avgPktSz = usedVals['Average Packet Size'] ?? 0;
+
+  // Determine which signals are "firing" (active = 1)
+  const tiActive = ti > 0 ? 1 : 0;
+  const burstActive = burst === 1 ? 1 : 0;
+  const fwdActive = fwdIAT > 0 && fwdIAT <= 600 ? 1 : 0;  // Rapid flood threshold
+  const bwdActive = bwdIAT > 0 && bwdIAT <= 500 ? 1 : 0;   // Echo response threshold
+  const pktSzActive = (avgPktSz < 100 || avgPktSz >= 1400) ? 1 : 0;  // Micro or bulk flood
+
+  // Build column 1 (Raw inputs)
+  let col1HTML = '';
+  if (tiActive) {
+    col1HTML += `<rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Packets/s</text>
+      <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥1000→lvl2 / ≥100→lvl1</text>
+      <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>`;
+  }
+  if (burstActive) {
+    col1HTML += `<rect x="4" y="78" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="96" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Bytes/s</text>
+      <text x="78" y="110" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥100k→lvl2 / ≥10k→lvl1</text>
+      <text x="78" y="123" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>`;
+  }
+  if (burstActive) {
+    col1HTML += `<rect x="4" y="158" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="175" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Std</text>
+      <text x="78" y="191" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">numerator</text>`;
+  }
+  if (burstActive) {
+    col1HTML += `<rect x="4" y="218" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="235" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Mean</text>
+      <text x="78" y="251" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">denominator</text>`;
+  }
+  if (fwdActive) {
+    col1HTML += `<rect x="4" y="282" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="299" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Fwd IAT Mean</text>
+      <text x="78" y="314" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between fwd pkts</text>`;
+  }
+  if (bwdActive) {
+    col1HTML += `<rect x="4" y="342" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="359" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Bwd IAT Mean</text>
+      <text x="78" y="374" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between bwd pkts</text>`;
+  }
+  if (pktSzActive) {
+    col1HTML += `<rect x="4" y="404" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+      <text x="78" y="421" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
+      <text x="78" y="436" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">bytes per packet</text>`;
+  }
+
+  // Build column 2 (Derived features)
+  let col2HTML = '';
+  let col2Y = 24;
+  if (tiActive) {
+    col2HTML += `<rect x="240" y="${col2Y}" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+      <text x="319" y="${col2Y + 19}" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
+      <text x="319" y="${col2Y + 33}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
+      <text x="319" y="${col2Y + 46}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">2=HIGH · 1=MED · 0=LOW</text>`;
+    col2Y += 70;
+  }
+  if (burstActive) {
+    col2HTML += `<rect x="240" y="${col2Y}" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+      <text x="319" y="${col2Y + 19}" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Burstiness</text>
+      <text x="319" y="${col2Y + 33}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">IAT Std / IAT Mean</text>
+      <text x="319" y="${col2Y + 46}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">&gt;0.5 → 1 ●  else → 0 ○</text>`;
+    col2Y += 70;
+  }
+  if (fwdActive) {
+    col2HTML += `<rect x="240" y="${col2Y}" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+      <text x="319" y="${col2Y + 18}" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Fwd IAT Signal</text>
+      <text x="319" y="${col2Y + 34}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤200µs → rapid flood</text>`;
+    col2Y += 60;
+  }
+  if (bwdActive) {
+    col2HTML += `<rect x="240" y="${col2Y}" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+      <text x="319" y="${col2Y + 18}" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Bwd IAT Signal</text>
+      <text x="319" y="${col2Y + 34}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤500µs → flood echo</text>`;
+    col2Y += 60;
+  }
+  if (pktSzActive) {
+    col2HTML += `<rect x="240" y="${col2Y}" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+      <text x="319" y="${col2Y + 19}" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Pkt Size Signal</text>
+      <text x="319" y="${col2Y + 33}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">&lt;100B → micro-flood ●</text>
+      <text x="319" y="${col2Y + 46}" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">≥1400B → bulk flood ●</text>`;
+    col2Y += 70;
+  }
+
+  // Determine height based on active signals
+  const activeCount = tiActive + burstActive + fwdActive + bwdActive + pktSzActive;
+  const aggBoxHeight = 50 + activeCount * 18;
+  const aggBoxY = 150 - aggBoxHeight / 2;
+
+  // Build SVG
+  const svgHTML = `
+    <svg class="cp-svg" viewBox="0 0 860 600" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+      <defs>
+        <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
+        </marker>
+        <marker id="arr-red-final" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
+        </marker>
+      </defs>
+
+      <!-- COL 1: Raw inputs -->
+      ${col1HTML}
+
+      <!-- COL 2: Derived features -->
+      ${col2HTML}
+
+      <!-- COL 3: Aggregator -->
+      <rect x="490" y="${aggBoxY}" width="148" height="${aggBoxHeight}" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <text x="564" y="${aggBoxY + 24}" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">SIGNALS</text>
+      ${tiActive ? `<text x="564" y="${aggBoxY + 42}" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>` : ''}
+      ${burstActive ? `<text x="564" y="${aggBoxY + (tiActive ? 60 : 42)}" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>` : ''}
+      ${fwdActive ? `<text x="564" y="${aggBoxY + (tiActive ? 78 : 60) + (burstActive ? 18 : 0)}" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>` : ''}
+      ${bwdActive ? `<text x="564" y="${aggBoxY + (tiActive ? 96 : 78) + (burstActive ? 18 : 0) + (fwdActive ? 18 : 0)}" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bwd IAT Signal</text>` : ''}
+      ${pktSzActive ? `<text x="564" y="${aggBoxY + (tiActive ? 114 : 96) + (burstActive ? 18 : 0) + (fwdActive ? 18 : 0) + (bwdActive ? 18 : 0)}" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Pkt Size Signal</text>` : ''}
+      <text x="564" y="${aggBoxY + aggBoxHeight - 10}" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">firing → DDoS</text>
+
+      <!-- COL 4: DDoS label -->
+      <rect x="730" y="168" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
+      <text x="790" y="196" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
+      <text x="790" y="215" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Label</text>
+      <text x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
+
+      <!-- Arrows col1→col2 -->
+      <path d="M152,36 L240,50" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,104 L240,62" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,179 L240,185" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,239 L240,200" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,303 L240,297" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,363 L240,357" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M152,425 L240,424" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+
+      <!-- Arrows col2→aggregator -->
+      <path d="M398,50 C440,50 480,148 490,158" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M398,188 L490,189" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M398,297 C450,297 480,215 490,212" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M398,357 C450,357 480,232 490,228" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+      <path d="M398,424 C450,424 480,252 490,248" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+
+      <!-- Arrow aggregator→DDoS -->
+      <path d="M638,204 L730,204" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final)"/>
+
+      <!-- Most Probable Cause -->
+      <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
+      <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+      <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Active Signals: ${[tiActive && 'Intensity', burstActive && 'Burstiness', fwdActive && 'Fwd IAT', bwdActive && 'Bwd IAT', pktSzActive && 'Pkt Size'].filter(Boolean).join(' + ')}</text>
+      <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">Multiple flood patterns detected → strongest DDoS triggers</text>
+    </svg>
+
+    <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; ${activeCount} signals firing together create definitive DDoS fingerprint</div>
+  `;
+
+  return svgHTML;
+}
+
 async function runPredict(){
   if(demoIndex >= DEMO_SAMPLES.length){
     DEMO_SAMPLES = generateBatch();
@@ -951,8 +839,6 @@ async function runPredict(){
     vals['Flow Packets/s'] ?? 0,
     vals['Flow Bytes/s']   ?? 0
   );
-
-  currentFlowData = JSON.parse(JSON.stringify(vals));
 
   currentSourceIP = genFakeIP();
   do { currentDestIP = genFakeIP(); } while (currentDestIP === currentSourceIP);
@@ -1033,160 +919,20 @@ function showChips(vals, srcIP, dstIP, trueLabel){
   });
 }
 
-/* ════════════════════════════════════════════════════════════
-   DYNAMIC CAUSAL PATH RENDERING
-   Shows/hides nodes and arrows based on actual flow values
-   ════════════════════════════════════════════════════════════ */
-
-/* ════════════════════════════════════════════════════════════
-   DYNAMIC CAUSAL PATH RENDERING - DDoS Multiple Paths
-   Shows MICRO-FLOOD (< 500B) or BULK-FLOOD (>= 500B) based on actual packet size
-   ════════════════════════════════════════════════════════════ */
-
-function updateDDoSCausalPath(flowData) {
-  const pktSz = flowData['Average Packet Size'] || 0;
-  const microFloodDiv = document.getElementById('cp-ddos-microflood');
-  const bulkFloodDiv = document.getElementById('cp-ddos-bulkflood');
-  
-  // Select which path to show based on packet size
-  if (pktSz < 500) {
-    // MICRO-FLOOD PATH
-    microFloodDiv.style.display = 'block';
-    bulkFloodDiv.style.display = 'none';
-    updateMicroFloodPath(flowData);
-  } else {
-    // BULK-FLOOD PATH
-    microFloodDiv.style.display = 'none';
-    bulkFloodDiv.style.display = 'block';
-    updateBulkFloodPath(flowData);
-  }
-}
-
-function updateMicroFloodPath(flowData) {
-  const pps = flowData['Flow Packets/s'] || 0;
-  const pktSz = flowData['Average Packet Size'] || 0;
-  const fiatS = flowData['Flow IAT Std'] || 0;
-  const fiatM = flowData['Flow IAT Mean'] || 0;
-  const burst = flowData['Burstiness'] || 0;
-
-  // Compute signal levels
-  const ppsLevel = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
-  const microSignal = pktSz < 500 ? 1 : 0;
-  const burstSignal = burst > 0 ? 1 : 0;
-
-  // Update input nodes
-  document.getElementById('microflood-pps').style.opacity = ppsLevel > 0 ? 1 : 0.25;
-  document.getElementById('microflood-pkt-size').style.opacity = microSignal > 0 ? 1 : 0.25;
-  document.getElementById('microflood-iat-std').style.opacity = fiatS > 0 && burstSignal > 0 ? 1 : 0.25;
-
-  // Update derived nodes
-  document.getElementById('microflood-traffic-intensity').style.opacity = ppsLevel > 0 ? 1 : 0.25;
-  document.getElementById('microflood-micro-flood-signal').style.opacity = microSignal > 0 ? 1 : 0.25;
-  document.getElementById('microflood-burstiness').style.opacity = burstSignal > 0 ? 1 : 0.25;
-
-  // Count active signals
-  const numActiveSignals = [ppsLevel > 0, microSignal > 0, burstSignal > 0].filter(Boolean).length;
-  
-  // Update aggregator and label
-  document.getElementById('microflood-aggregator').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
-  document.getElementById('microflood-label').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
-
-  // Update arrows
-  document.getElementById('microflood-arrows-c1c2').style.opacity = (ppsLevel > 0 || microSignal > 0 || burstSignal > 0) ? 1 : 0.15;
-  document.getElementById('microflood-arrows-c2agg').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
-  document.getElementById('microflood-arrows-final').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
-
-  // Show MPC box if strong signal
-  document.getElementById('microflood-mpc').style.display = numActiveSignals >= 2 ? 'block' : 'none';
-}
-
-function updateBulkFloodPath(flowData) {
-  const bps = flowData['Flow Bytes/s'] || 0;
-  const pktSz = flowData['Average Packet Size'] || 0;
-  const fwdIAT = flowData['Fwd IAT Mean'] || 0;
-
-  // Compute signal levels
-  const bpsLevel = bps >= 100000 ? 2 : bps >= 10000 ? 1 : 0;
-  const bulkSignal = pktSz >= 500 ? 1 : 0;
-  const fwdIATSignal = fwdIAT <= 200 ? 1 : 0;
-
-  // Update input nodes
-  document.getElementById('bulkflood-bps').style.opacity = bpsLevel > 0 ? 1 : 0.25;
-  document.getElementById('bulkflood-pkt-size').style.opacity = bulkSignal > 0 ? 1 : 0.25;
-  document.getElementById('bulkflood-fwd-iat').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
-
-  // Update derived nodes
-  document.getElementById('bulkflood-traffic-intensity').style.opacity = bpsLevel > 0 ? 1 : 0.25;
-  document.getElementById('bulkflood-bulk-flood-signal').style.opacity = bulkSignal > 0 ? 1 : 0.25;
-  document.getElementById('bulkflood-fwd-iat-signal').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
-
-  // Count active signals
-  const numActiveSignals = [bpsLevel > 0, bulkSignal > 0, fwdIATSignal > 0].filter(Boolean).length;
-  
-  // Update aggregator and label
-  document.getElementById('bulkflood-aggregator').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
-  document.getElementById('bulkflood-label').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
-
-  // Update arrows
-  document.getElementById('bulkflood-arrows-c1c2').style.opacity = (bpsLevel > 0 || bulkSignal > 0 || fwdIATSignal > 0) ? 1 : 0.15;
-  document.getElementById('bulkflood-arrows-c2agg').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
-  document.getElementById('bulkflood-arrows-final').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
-
-  // Show MPC box if strong signal
-  document.getElementById('bulkflood-mpc').style.display = numActiveSignals >= 2 ? 'block' : 'none';
-}
-
-function updatePortScanCausalPath(flowData) {
-  const svg = document.getElementById('portscan-svg');
-  if (!svg) return;
-
-  const dur = flowData['Flow Duration'] || 0;
-  const ports = flowData['DistinctDestinationPort'] || 0;
-  const shortFlow = flowData['ShortFlowLevel'] || 0;
-  const lowPkt = flowData['LowPacketLevel'] || 0;
-  const portDiv = flowData['PortDiversityLevel'] || 0;
-
-  // Show nodes based on actual values
-  document.getElementById('ps-duration').style.opacity = dur <= 100 ? 1 : 0.25;
-  document.getElementById('ps-packets').style.opacity = lowPkt > 0 ? 1 : 0.25;
-  document.getElementById('ps-ports').style.opacity = ports >= 100 ? 1 : 0.25;
-
-  // Derived features
-  document.getElementById('ps-short-flow').style.opacity = shortFlow > 0 ? 1 : 0.25;
-  document.getElementById('ps-low-packet').style.opacity = lowPkt > 0 ? 1 : 0.25;
-  document.getElementById('ps-port-diversity').style.opacity = portDiv > 0 ? 1 : 0.25;
-
-  // Aggregator and label
-  const numSignals = [shortFlow > 0, lowPkt > 0, portDiv > 0].filter(Boolean).length;
-  document.getElementById('ps-aggregator').style.opacity = numSignals === 3 ? 1 : 0.25;
-  document.getElementById('ps-label').style.opacity = numSignals === 3 ? 1 : 0.25;
-
-  // Arrows
-  document.getElementById('ps-arrows-c1c2').style.opacity = (shortFlow > 0 || lowPkt > 0 || portDiv > 0) ? 1 : 0.15;
-  document.getElementById('ps-arrows-c2agg').style.opacity = numSignals === 3 ? 1 : 0.15;
-  document.getElementById('ps-arrows-final').style.opacity = numSignals === 3 ? 1 : 0.15;
-
-  // MPC box
-  document.getElementById('ps-mpc').style.display = numSignals === 3 ? 'block' : 'none';
-}
-
-function renderCausalPath(label) {
+function renderCausalPath(label, usedVals) {
   const wrap = document.getElementById('cp-wrap');
-  const ddos = document.getElementById('cp-ddos');
+  const ddosContainer = document.getElementById('cp-ddos-container');
   const ps   = document.getElementById('cp-ps');
 
   const show = label === 'DDoS' || label === 'PortScan';
   wrap.style.display = show ? 'block' : 'none';
 
-  if (label === 'DDoS') {
-    ddos.style.display = 'block';
-    ps.style.display = 'none';
-    updateDDoSCausalPath(currentFlowData);
-  } else if (label === 'PortScan') {
-    ddos.style.display = 'none';
-    ps.style.display = 'block';
-    updatePortScanCausalPath(currentFlowData);
+  if (label === 'DDoS' && usedVals) {
+    ddosContainer.innerHTML = generateDDoSCausalPath(usedVals);
+  } else {
+    ddosContainer.innerHTML = '';
   }
+  ps.style.display = label === 'PortScan' ? 'block' : 'none';
 }
 
 function renderAttackExplain(label, explanations, usedVals){
@@ -1223,7 +969,7 @@ function renderAttackExplain(label, explanations, usedVals){
     featsEl.appendChild(el);
   });
 
-  renderCausalPath(label);
+  renderCausalPath(label, usedVals);
 }
 
 function renderResult(d, srcIP, dstIP){
