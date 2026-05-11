@@ -179,8 +179,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .cp-wrap { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.06); }
 .cp-section-title { font-size: .6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: .9rem; font-family: var(--mono); }
 .cp-svg { width: 100%; overflow: visible; display: block; }
-.cp-pathways { display: grid; gap: 2rem; }
-.cp-pathway { animation: fadeUp .4s ease both; }
 
 /* ── Most Probable Cause ── */
 .mpc-box {
@@ -260,8 +258,6 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .cp-verdict { border-radius: 7px; padding: 8px 14px; font-size: .68rem; font-weight: 700; text-align: center; border-width: 1px; border-style: solid; font-family: var(--mono); letter-spacing: .8px; width: 100%; margin-top: 1rem; }
 .cp-verdict.ddos { background: rgba(255,61,113,.1); border-color: rgba(255,61,113,.5); color: #ffb3c6; }
 .cp-verdict.ps   { background: rgba(41,121,255,.1); border-color: rgba(41,121,255,.5);  color: #bdd1ff; }
-
-.cp-pathway-label { font-size: .75rem; font-family: var(--mono); color: var(--accent); margin-bottom: .8rem; padding: .6rem .9rem; background: rgba(0,229,255,.08); border-left: 2px solid var(--accent); border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -344,19 +340,201 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
           padding:.45rem 1.1rem; cursor:pointer; margin-bottom:.85rem;
           display:inline-flex; align-items:center; gap:.5rem; transition:background .2s, border-color .2s;">
           <span id="cp-toggle-icon" style="font-size:.55rem;">▶️</span>
-          <span id="cp-toggle-label">Show Causal Paths</span>
+          <span id="cp-toggle-label">Show Causal Path</span>
         </button>
 
         <div id="cp-inner" style="display:none">
-          <div class="cp-section-title">Causal Paths — How Features Influence the DDoS Decision</div>
+          <div class="cp-section-title">Causal Path — how features influence other features and influence the decision</div>
 
-          <!-- ═══════════════════════════════════════════════════════════
-               MULTIPLE CONDITIONAL DDoS CAUSAL PATHS
-               Each pathway displayed based on feature value conditions
-               Burstiness + Avg Packet Size always included as core triggers
-               ═══════════════════════════════════════════════════════════ -->
-          
-          <div class="cp-pathways" id="cp-pathways-container"></div>
+          <!-- ══════════ DDoS SVG Flow Diagram — UNIFIED RED ══════════ -->
+          <div id="cp-ddos" style="display:none">
+            <svg class="cp-svg" viewBox="0 0 860 600" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+              <defs>
+                <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
+                </marker>
+                <marker id="arr-red-final" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
+                </marker>
+              </defs>
+
+              <!-- COL 1: Raw inputs — all RED -->
+              <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Packets/s</text>
+              <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥1000→lvl2 / ≥100→lvl1</text>
+              <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
+
+              <rect x="4" y="78" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="96" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Bytes/s</text>
+              <text x="78" y="110" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥100k→lvl2 / ≥10k→lvl1</text>
+              <text x="78" y="123" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
+
+              <rect x="4" y="158" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="175" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Std</text>
+              <text x="78" y="191" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">numerator</text>
+
+              <rect x="4" y="218" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="235" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Mean</text>
+              <text x="78" y="251" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">denominator</text>
+
+              <rect x="4" y="282" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="299" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Fwd IAT Mean</text>
+              <text x="78" y="314" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between fwd pkts</text>
+
+              <rect x="4" y="342" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="359" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Bwd IAT Mean</text>
+              <text x="78" y="374" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between bwd pkts</text>
+
+              <rect x="4" y="404" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+              <text x="78" y="421" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
+              <text x="78" y="436" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">bytes per packet</text>
+
+              <!-- COL 2: Derived features — all RED -->
+              <rect x="240" y="24" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+              <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
+              <text x="319" y="57" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
+              <text x="319" y="70" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">2=HIGH · 1=MED · 0=LOW</text>
+
+              <rect x="240" y="162" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+              <text x="319" y="181" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Burstiness</text>
+              <text x="319" y="196" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">IAT Std / IAT Mean</text>
+              <text x="319" y="210" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">&gt;0.5 → 1 ●  else → 0 ○</text>
+
+              <rect x="240" y="276" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+              <text x="319" y="294" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Fwd IAT Signal</text>
+              <text x="319" y="310" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤200µs → rapid flood</text>
+
+              <rect x="240" y="336" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+              <text x="319" y="354" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Bwd IAT Signal</text>
+              <text x="319" y="370" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤500µs → flood echo</text>
+
+              <rect x="240" y="398" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+              <text x="319" y="417" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Pkt Size Signal</text>
+              <text x="319" y="431" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">&lt;100B → micro-flood ●</text>
+              <text x="319" y="445" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">≥1400B → bulk flood ●</text>
+
+              <!-- COL 3: Aggregator — RED -->
+              <rect x="490" y="130" width="148" height="148" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
+              <text x="564" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">SIGNALS</text>
+              <text x="564" y="171" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
+              <text x="564" y="189" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
+              <text x="564" y="207" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
+              <text x="564" y="225" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bwd IAT Signal</text>
+              <text x="564" y="243" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Pkt Size Signal</text>
+              <text x="564" y="266" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">all firing → DDoS</text>
+
+              <!-- COL 4: DDoS label — RED -->
+              <rect x="730" y="168" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
+              <text x="790" y="196" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
+              <text x="790" y="215" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Label</text>
+              <text id="cp-ddos-ips" x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">—</text>
+
+              <!-- Arrows col1→col2 — all RED -->
+              <path d="M152,36 L240,50" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,104 L240,62" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,179 L240,185" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,239 L240,200" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,303 L240,297" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,363 L240,357" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M152,425 L240,424" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+
+              <!-- Arrows col2→aggregator — all RED -->
+              <path d="M398,50 C440,50 480,148 490,158" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M398,188 L490,189" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M398,297 C450,297 480,215 490,212" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M398,357 C450,357 480,232 490,228" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+              <path d="M398,424 C450,424 480,252 490,248" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
+
+              <!-- Arrow aggregator→DDoS — RED -->
+              <path d="M638,204 L730,204" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final)"/>
+
+              <!-- ★ Most Probable Cause — DDoS ★ -->
+              <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
+              <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+              <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
+              <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
+            </svg>
+
+            <div class="cp-verdict ddos" id="cp-ddos-verdict">Verdict → DDoS · IPS decision will update after prediction</div>
+          </div><!-- /cp-ddos -->
+
+          <!-- ══════════ PortScan SVG Flow Diagram — UNIFIED BLUE ══════════ -->
+          <div id="cp-ps" style="display:none">
+            <svg class="cp-svg" viewBox="0 0 860 370" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+              <defs>
+                <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(41,121,255,.85)"/>
+                </marker>
+                <marker id="arr-blue-final" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(41,121,255,.95)"/>
+                </marker>
+              </defs>
+
+              <!-- COL 1: Raw inputs — all BLUE -->
+              <rect x="4" y="30" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="48" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Flow Duration</text>
+              <text x="78" y="63" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">µs total length</text>
+
+              <rect x="4" y="114" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="132" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Total Packets</text>
+              <text x="78" y="147" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">fwd + bwd ≤ 3</text>
+
+              <rect x="4" y="198" width="148" height="42" rx="7" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.4)" stroke-width="1"/>
+              <text x="78" y="216" text-anchor="middle" fill="#90b8ff" font-size="10" font-weight="700">Distinct Dest. Ports</text>
+              <text x="78" y="231" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".7">unique port count</text>
+
+              <!-- COL 2: Derived — all BLUE -->
+              <rect x="240" y="24" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="43" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Short Flow Level</text>
+              <text x="321" y="58" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
+              <text x="321" y="71" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
+
+              <rect x="240" y="108" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="127" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Low Packet Level</text>
+              <text x="321" y="142" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">ratio ≥ 0.9 → 1 ●</text>
+              <text x="321" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
+
+              <rect x="240" y="192" width="162" height="52" rx="7" fill="rgba(41,121,255,.16)" stroke="rgba(41,121,255,.75)" stroke-width="1.5"/>
+              <text x="321" y="211" text-anchor="middle" fill="#bdd1ff" font-size="10" font-weight="700">Port Diversity Level</text>
+              <text x="321" y="226" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".8">≥ 100 ports → 1 ●</text>
+              <text x="321" y="239" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">else → 0 ○</text>
+
+              <!-- COL 3: Aggregator — BLUE -->
+              <rect x="500" y="80" width="148" height="110" rx="10" fill="rgba(41,121,255,.1)" stroke="rgba(41,121,255,.5)" stroke-width="1.5" stroke-dasharray="5,3"/>
+              <text x="574" y="103" text-anchor="middle" fill="#90b8ff" font-size="9" opacity=".8">SIGNALS</text>
+              <text x="574" y="121" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Short Flow Level</text>
+              <text x="574" y="139" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Low Packet Level</text>
+              <text x="574" y="157" text-anchor="middle" fill="#bdd1ff" font-size="9.5">Port Diversity Level</text>
+              <text x="574" y="179" text-anchor="middle" fill="#bdd1ff" font-size="8.5" opacity=".7">all = 1 → PortScan</text>
+
+              <!-- COL 4: PortScan label — BLUE -->
+              <rect x="740" y="90" width="112" height="72" rx="10" fill="rgba(41,121,255,.22)" stroke="rgba(41,121,255,.9)" stroke-width="2"/>
+              <text x="796" y="120" text-anchor="middle" fill="#5ca8ff" font-size="12" font-weight="700">PORTSCAN</text>
+              <text x="796" y="138" text-anchor="middle" fill="#bdd1ff" font-size="10" opacity=".85">Label</text>
+              <text id="cp-ps-ips" x="796" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">—</text>
+
+              <!-- Arrows col1→col2 — all BLUE -->
+              <path d="M152,51 L240,44" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M152,135 L240,134" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M152,219 L240,222" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+
+              <!-- Arrows col2→aggregator — all BLUE -->
+              <path d="M402,50 C450,50 490,100 500,110" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M402,134 L500,135" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+              <path d="M402,218 C450,218 490,170 500,160" stroke="rgba(41,121,255,.55)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+
+              <!-- Arrow aggregator→PortScan — BLUE -->
+              <path d="M648,135 L740,126" stroke="rgba(41,121,255,.85)" stroke-width="2" fill="none" marker-end="url(#arr-blue-final)"/>
+
+              <!-- ★ Most Probable Cause — PortScan ★ -->
+              <rect x="80" y="298" width="700" height="58" rx="8" fill="rgba(41,121,255,.08)" stroke="rgba(41,121,255,.5)" stroke-width="1.5"/>
+              <text x="430" y="320" text-anchor="middle" fill="#5ca8ff" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+              <text x="430" y="338" text-anchor="middle" fill="#bdd1ff" font-size="11" font-weight="700">Short Flow + Low Packet + Port Diversity (all three columns)</text>
+              <text x="430" y="352" text-anchor="middle" fill="#90b8ff" font-size="9.5" opacity=".85">All three signals firing simultaneously → definitive PortScan fingerprint</text>
+            </svg>
+
+            <div class="cp-verdict ps" id="cp-ps-verdict">Verdict → PortScan · IPS decision will update after prediction</div>
+          </div><!-- /cp-ps -->
 
         </div><!-- /cp-inner -->
       </div><!-- /cp-wrap -->
@@ -619,165 +797,6 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
   return Math.max(pktLevel, byteLevel);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONDITIONAL DDoS CAUSAL PATHS — DYNAMICALLY GENERATED BASED ON FEATURE VALUES
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-function generateDDoSCausalPaths(usedVals, ips) {
-  const paths = [];
-  
-  // Extract key values
-  const ti = usedVals.TrafficIntensity ?? 0;
-  const burst = usedVals.Burstiness ?? 0;
-  const pktSz = usedVals['Average Packet Size'] ?? 0;
-  const fwdIAT = usedVals['Fwd IAT Mean'] ?? 0;
-  const bwdIAT = usedVals['Bwd IAT Mean'] ?? 0;
-  const pps = usedVals['Flow Packets/s'] ?? 0;
-  const bps = usedVals['Flow Bytes/s'] ?? 0;
-
-  // ═══ PATHWAY 1: HIGH TRAFFIC INTENSITY + BURSTINESS (Primary) ═══
-  if (ti >= 1) {
-    paths.push({
-      id: 'path-ti-burst',
-      title: '🔥 High Traffic Intensity + Burstiness Attack',
-      description: 'Simultaneous rapid packet injection with extreme volume variance',
-      conditions: `Traffic Intensity Level: ${ti} | Burstiness: ${burst}`,
-      signals: [
-        { name: 'Packets/s', value: pps.toFixed(2), threshold: pps >= 100 ? 'CRITICAL' : 'HIGH', icon: '📊' },
-        { name: 'Bytes/s', value: bps.toFixed(2), threshold: bps >= 10000 ? 'CRITICAL' : 'HIGH', icon: '📈' },
-        { name: 'Burstiness', value: burst === 1 ? 'ACTIVE' : 'DORMANT', threshold: 'FLAG', icon: '⚡' },
-        { name: 'Avg Packet Size', value: pktSz.toFixed(2) + ' B', threshold: (pktSz < 100 || pktSz >= 1400) ? 'ANOMALY' : 'NORMAL', icon: '📦' }
-      ],
-      verdict: `${ips} | Primary attack vector identified`,
-      mostProbableCause: 'Sustained volume + timing burstiness'
-    });
-  }
-
-  // ═══ PATHWAY 2: MICRO-PACKET FLOODING (Low Packet Size) ═══
-  if (pktSz < 100 && burst === 1) {
-    paths.push({
-      id: 'path-micro-flood',
-      title: '🎯 Micro-Packet Flood Pattern',
-      description: 'Flood of minimal-size packets (SYN/ACK pings) with irregular timing',
-      conditions: `Avg Packet Size: ${pktSz.toFixed(2)}B (< 100) | Burstiness: Active`,
-      signals: [
-        { name: 'Packet Size', value: pktSz.toFixed(2) + ' B', threshold: 'MICRO (<100B)', icon: '💥' },
-        { name: 'Fwd IAT Mean', value: fwdIAT.toFixed(2) + ' µs', threshold: fwdIAT <= 200 ? 'RAPID' : 'NORMAL', icon: '⚡' },
-        { name: 'Flow Packets/s', value: pps.toFixed(2), threshold: pps >= 100 ? 'HIGH' : 'MEDIUM', icon: '🔄' },
-        { name: 'Burstiness', value: burst === 1 ? 'BURSTY' : 'SMOOTH', threshold: 'VARIANCE SURGE', icon: '📡' }
-      ],
-      verdict: `${ips} | Micro-packet attack profile`,
-      mostProbableCause: 'SYN/ACK flood with minimal payload'
-    });
-  }
-
-  // ═══ PATHWAY 3: BULK DATA FLOOD (Large Packet Size) ═══
-  if (pktSz >= 1400 && burst === 1 && ti >= 1) {
-    paths.push({
-      id: 'path-bulk-flood',
-      title: '📤 Bulk Data Flood Pattern',
-      description: 'High-volume transfer of near-maximum sized packets with erratic timing',
-      conditions: `Avg Packet Size: ${pktSz.toFixed(2)}B (≥1400) | Burstiness: Active | TI: ${ti}`,
-      signals: [
-        { name: 'Packet Size', value: pktSz.toFixed(2) + ' B', threshold: 'BULK (≥1400B)', icon: '📦' },
-        { name: 'Bytes/s', value: bps.toFixed(2), threshold: bps >= 100000 ? 'EXTREME' : 'HIGH', icon: '🌊' },
-        { name: 'Bwd IAT Mean', value: bwdIAT.toFixed(2) + ' µs', threshold: bwdIAT <= 500 ? 'RAPID ECHO' : 'NORMAL', icon: '↩️' },
-        { name: 'Burstiness', value: burst === 1 ? 'BURSTY' : 'SMOOTH', threshold: 'TIMING VARIANCE', icon: '⚙️' }
-      ],
-      verdict: `${ips} | Bulk data injection attack`,
-      mostProbableCause: 'Large payload repetition flood'
-    });
-  }
-
-  // ═══ PATHWAY 4: FAST FORWARD IAT (Rapid Sending) ═══
-  if (fwdIAT <= 200 && fwdIAT > 0) {
-    paths.push({
-      id: 'path-fwd-flood',
-      title: '⚡ Rapid Forward Packet Injection',
-      description: 'Extremely short inter-arrival times indicate automated flooding from attacker side',
-      conditions: `Forward IAT Mean: ${fwdIAT.toFixed(2)}µs (≤200) | Burstiness: ${burst}`,
-      signals: [
-        { name: 'Fwd IAT Mean', value: fwdIAT.toFixed(2) + ' µs', threshold: 'EXTREME', icon: '🚀' },
-        { name: 'Traffic Intensity', value: ti, threshold: ti >= 1 ? 'CRITICAL' : 'ELEVATED', icon: '📊' },
-        { name: 'Avg Packet Size', value: pktSz.toFixed(2) + ' B', threshold: 'VARIABLE', icon: '📦' },
-        { name: 'Flow Packets/s', value: pps.toFixed(2), threshold: 'HIGH RATE', icon: '🔄' }
-      ],
-      verdict: `${ips} | High-frequency packet injection`,
-      mostProbableCause: 'Automated sender flooding (Forward path saturation)'
-    });
-  }
-
-  // ═══ PATHWAY 5: FAST BACKWARD IAT + MICRO-PACKETS (Response Echo) ═══
-  if (bwdIAT <= 500 && bwdIAT > 0 && pktSz < 100) {
-    paths.push({
-      id: 'path-bwd-echo',
-      title: '📬 Rapid Response Echo Attack',
-      description: 'Target responds with micro-packets at extreme speed (amplification reflection)',
-      conditions: `Backward IAT Mean: ${bwdIAT.toFixed(2)}µs (≤500) | Pkt Size: ${pktSz.toFixed(2)}B (micro)`,
-      signals: [
-        { name: 'Bwd IAT Mean', value: bwdIAT.toFixed(2) + ' µs', threshold: 'EXTREME', icon: '↩️' },
-        { name: 'Packet Size', value: pktSz.toFixed(2) + ' B', threshold: 'MICRO', icon: '💫' },
-        { name: 'Burstiness', value: burst === 1 ? 'BURSTY' : 'SMOOTH', threshold: 'VARIABLE', icon: '⚡' },
-        { name: 'Bytes/s', value: bps.toFixed(2), threshold: bps >= 10000 ? 'HIGH' : 'MEDIUM', icon: '🌊' }
-      ],
-      verdict: `${ips} | Reflection/amplification attack`,
-      mostProbableCause: 'Rapid micro-responses (Backward path saturation)'
-    });
-  }
-
-  return paths;
-}
-
-function renderDDoSCausalPaths(usedVals, ips) {
-  const paths = generateDDoSCausalPaths(usedVals, ips);
-  const container = document.getElementById('cp-pathways-container');
-  container.innerHTML = '';
-
-  if (paths.length === 0) {
-    container.innerHTML = `<div class="cp-pathway" style="padding: 1rem; text-align: center; color: var(--muted); font-family: var(--mono);">
-      No detailed pathways matched for current feature set
-    </div>`;
-    return;
-  }
-
-  paths.forEach((path, idx) => {
-    const svg = document.createElement('div');
-    svg.className = 'cp-pathway';
-    svg.style.animationDelay = (idx * 100) + 'ms';
-
-    const signalsHTML = path.signals.map(s => `
-      <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem; background: rgba(255,61,113,.04); border-radius: 5px; margin-bottom: 0.4rem; border-left: 2px solid rgba(255,61,113,.5);">
-        <span style="font-size: 1.2rem; flex-shrink: 0;">${s.icon}</span>
-        <div style="flex: 1;">
-          <div style="font-size: 0.7rem; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.2rem;">${s.name}</div>
-          <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text);">${s.value}</span>
-            <span style="font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 3px; background: rgba(255,61,113,.15); color: #ffb3c6; font-weight: 700; font-family: var(--mono);">${s.threshold}</span>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    svg.innerHTML = `
-      <div class="cp-pathway-label">${path.title}</div>
-      <div style="padding: 1.2rem; background: rgba(255,61,113,.04); border: 1px solid rgba(255,61,113,.3); border-radius: 10px; margin-bottom: 1rem;">
-        <div style="font-size: 0.82rem; color: #ffcdd8; line-height: 1.6; margin-bottom: 1rem;">${path.description}</div>
-        <div style="font-size: 0.7rem; font-family: var(--mono); padding: 0.6rem; background: rgba(0,0,0,.3); border-radius: 5px; color: var(--accent); margin-bottom: 1rem; border-left: 2px solid var(--accent);">
-          Conditions: ${path.conditions}
-        </div>
-        <div style="font-size: 0.78rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Active Signals</div>
-        ${signalsHTML}
-      </div>
-      <div style="padding: 0.9rem 1.2rem; background: rgba(255,61,113,.07); border: 1px solid rgba(255,61,113,.45); border-radius: 8px; margin-bottom: 0.8rem;">
-        <div style="font-size: 0.65rem; font-family: var(--mono); letter-spacing: 1.5px; text-transform: uppercase; color: #ff3d71; font-weight: 700; margin-bottom: 0.4rem;">Most Probable Cause</div>
-        <div style="font-size: 0.82rem; color: #ffb3c6;">${path.mostProbableCause}</div>
-      </div>
-      <div class="cp-verdict ddos">${path.verdict}</div>
-    `;
-    container.appendChild(svg);
-  });
-}
-
 async function runPredict(){
   if(demoIndex >= DEMO_SAMPLES.length){
     DEMO_SAMPLES = generateBatch();
@@ -893,14 +912,42 @@ function ipsIcon(ips) {
   return '🛡️';
 }
 
-function renderCausalPath(label, ips, usedVals) {
+function renderCausalPath(label, ips, explanations = {}, usedVals = {}) {
   const wrap = document.getElementById('cp-wrap');
+  const ddos = document.getElementById('cp-ddos');
+  const ps   = document.getElementById('cp-ps');
+
   const show = label === 'DDoS' || label === 'PortScan';
   wrap.style.display = show ? 'block' : 'none';
   if (!show) return;
 
+  ddos.style.display = label === 'DDoS' ? 'block' : 'none';
+  ps.style.display   = label === 'PortScan' ? 'block' : 'none';
+
+  const icon = ipsIcon(ips);
+
+  const ddosIps = document.getElementById('cp-ddos-ips');
+  const psIps = document.getElementById('cp-ps-ips');
+  const ddosVerdict = document.getElementById('cp-ddos-verdict');
+  const psVerdict = document.getElementById('cp-ps-verdict');
+
   if (label === 'DDoS') {
-    renderDDoSCausalPaths(usedVals || {}, ips || '');
+    if (ddosIps) ddosIps.textContent = `${icon} ${ips}`;
+    if (ddosVerdict) {
+      const ti = usedVals.TrafficIntensity ?? '—';
+      const burst = usedVals.Burstiness ?? '—';
+      ddosVerdict.textContent = `Verdict → DDoS · IPS Decision: ${ips} · TrafficIntensity=${ti} · Burstiness=${burst}`;
+    }
+  }
+
+  if (label === 'PortScan') {
+    if (psIps) psIps.textContent = `${icon} ${ips}`;
+    if (psVerdict) {
+      const shortFlow = usedVals.ShortFlowLevel ?? '—';
+      const lowPacket = usedVals.LowPacketLevel ?? '—';
+      const portDiv = usedVals.PortDiversityLevel ?? '—';
+      psVerdict.textContent = `Verdict → PortScan · IPS Decision: ${ips} · ShortFlow=${shortFlow} · LowPacket=${lowPacket} · PortDiversity=${portDiv}`;
+    }
   }
 }
 
@@ -938,7 +985,7 @@ function renderAttackExplain(label, explanations, usedVals, ips){
     featsEl.appendChild(el);
   });
 
-  renderCausalPath(label, ips || "", usedVals);
+  renderCausalPath(label, ips || "", explanations, usedVals);
 }
 
 function renderResult(d, srcIP, dstIP){
@@ -1061,12 +1108,12 @@ function toggleCausalPath() {
   const open  = inner.style.display === 'none';
   inner.style.display = open ? 'block' : 'none';
   icon.textContent    = open ? '▼' : '▶️';
-  label.textContent   = open ? 'Hide Causal Paths' : 'Show Causal Paths';
+  label.textContent   = open ? 'Hide Causal Path' : 'Show Causal Path';
   btn.style.borderColor = open ? 'rgba(0,229,255,.6)' : 'rgba(0,229,255,.3)';
   btn.style.background  = open ? 'rgba(0,229,255,.07)' : 'transparent';
 }
 
 loadMeta();
 </script>
-</body>
+</body>                                                                                       
 </html>
