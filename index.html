@@ -294,7 +294,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
   </div>
 
   <div class="run-wrap">
-    <button class="run-btn" id="run-btn" onclick="runPredict()">▶ &nbsp;Capture & Analyze Flow</button>
+    <button class="run-btn" id="run-btn" onclick="runPredict()">▶️ &nbsp;Capture & Analyze Flow</button>
   </div>
 
   <div class="scan-wrap">
@@ -339,7 +339,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
           color:var(--accent); font-family:var(--mono); font-size:.68rem; letter-spacing:1px;
           padding:.45rem 1.1rem; cursor:pointer; margin-bottom:.85rem;
           display:inline-flex; align-items:center; gap:.5rem; transition:background .2s, border-color .2s;">
-          <span id="cp-toggle-icon" style="font-size:.55rem;">▶</span>
+          <span id="cp-toggle-icon" style="font-size:.55rem;">▶️</span>
           <span id="cp-toggle-label">Show Causal Path</span>
         </button>
 
@@ -427,7 +427,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <rect x="730" y="168" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
               <text x="790" y="196" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
               <text x="790" y="215" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Label</text>
-              <text x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
+              <text id="cp-ddos-ips" x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">—</text>
 
               <!-- Arrows col1→col2 — all RED -->
               <path d="M152,36 L240,50" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
@@ -455,7 +455,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
             </svg>
 
-            <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
+            <div class="cp-verdict ddos" id="cp-ddos-verdict">Verdict → DDoS · IPS decision will update after prediction</div>
           </div><!-- /cp-ddos -->
 
           <!-- ══════════ PortScan SVG Flow Diagram — UNIFIED BLUE ══════════ -->
@@ -511,7 +511,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <rect x="740" y="90" width="112" height="72" rx="10" fill="rgba(41,121,255,.22)" stroke="rgba(41,121,255,.9)" stroke-width="2"/>
               <text x="796" y="120" text-anchor="middle" fill="#5ca8ff" font-size="12" font-weight="700">PORTSCAN</text>
               <text x="796" y="138" text-anchor="middle" fill="#bdd1ff" font-size="10" opacity=".85">Label</text>
-              <text x="796" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">🔍 BLOCK</text>
+              <text id="cp-ps-ips" x="796" y="155" text-anchor="middle" fill="#bdd1ff" font-size="9" opacity=".7">—</text>
 
               <!-- Arrows col1→col2 — all BLUE -->
               <path d="M152,51 L240,44" stroke="rgba(41,121,255,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
@@ -533,7 +533,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <text x="430" y="352" text-anchor="middle" fill="#90b8ff" font-size="9.5" opacity=".85">All three signals firing simultaneously → definitive PortScan fingerprint</text>
             </svg>
 
-            <div class="cp-verdict ps">Verdict → PortScan &nbsp;·&nbsp; short + low-packet + many-port signals all firing together</div>
+            <div class="cp-verdict ps" id="cp-ps-verdict">Verdict → PortScan · IPS decision will update after prediction</div>
           </div><!-- /cp-ps -->
 
         </div><!-- /cp-inner -->
@@ -745,7 +745,7 @@ function fmtNum(n){
 function genFakeIP(){
   const seg = () => Math.floor(Math.random()*254)+1;
   const ranges = [
-    () => `172.${16+Math.floor(Math.random()*16)}.${seg()}.${seg()}`,
+    () => `172.${16 + Math.floor(Math.random() * 16)}.${seg()}.${seg()}`,
     () => `192.168.${seg()}.${seg()}`,
   ];
   return ranges[Math.floor(Math.random()*ranges.length)]();
@@ -805,7 +805,7 @@ async function runPredict(){
     correctRuns = 0;
     document.getElementById('accuracy-banner').textContent = '30 new random samples generated — starting fresh batch';
     document.getElementById('run-info').textContent = '— New batch ready. Press to continue —';
-    document.getElementById('run-btn').textContent = '▶ &nbsp;Capture & Analyze Flow';
+    document.getElementById('run-btn').textContent = '▶️ &nbsp;Capture & Analyze Flow';
     return;
   }
 
@@ -835,7 +835,7 @@ async function runPredict(){
     const d=await r.json();
     endScan();
     const isCorrect = d.label === trueLabel;
-    document.getElementById('run-info').textContent=`SAMPLE ${demoIndex}/30  ·  True: ${trueLabel}  ·  Pred: ${d.label}  ·  ${isCorrect?'✓ CORRECT':'✗ WRONG'}`;
+    document.getElementById('run-info').textContent = `SAMPLE ${demoIndex}/30  ·  True: ${trueLabel}  ·  Pred: ${d.label}  ·  ${isCorrect ? '✓ CORRECT' : '✗ WRONG'}`;
     updateAccuracyBanner(trueLabel, d.label);
     showTrueLabelBadge(trueLabel, d.label);
     renderResult(d, currentSourceIP, currentDestIP);
@@ -845,7 +845,7 @@ async function runPredict(){
   } finally {
     btn.classList.remove('loading');
     if(demoIndex < DEMO_SAMPLES.length){
-      btn.textContent = '▶  Next Sample →';
+      btn.textContent = '▶️  Next Sample →';
     } else {
       btn.textContent = '🔄  Generate New Batch';
     }
@@ -870,20 +870,20 @@ function showChips(vals, srcIP, dstIP, trueLabel){
   if(srcIP){
     const c=document.createElement('div');
     c.className='chip'; c.style.animationDelay='0ms'; c.style.borderColor='rgba(0,229,255,.35)';
-    c.innerHTML=`Source IP: <strong style="color:var(--accent)">${srcIP}</strong>`;
+    c.innerHTML = `Source IP: <strong style="color:var(--accent)">${srcIP}</strong>`;
     strip.appendChild(c);
   }
   if(dstIP){
     const c=document.createElement('div');
     c.className='chip'; c.style.animationDelay='28ms'; c.style.borderColor='rgba(255,170,0,.35)';
-    c.innerHTML=`Dest IP: <strong style="color:var(--yellow)">${dstIP}</strong>`;
+    c.innerHTML = `Dest IP: <strong style="color:var(--yellow)">${dstIP}</strong>`;
     strip.appendChild(c);
   }
   if(trueLabel){
     const c=document.createElement('div');
     c.className='chip'; c.style.animationDelay='56ms';
     const clr = trueLabel==='BENIGN'?'var(--green)':trueLabel==='DDoS'?'var(--red)':'var(--yellow)';
-    c.innerHTML=`True Label: <strong style="color:${clr}">${trueLabel}</strong>`;
+    c.innerHTML = `True Label: <strong style="color:${clr}">${trueLabel}</strong>`;
     strip.appendChild(c);
   }
   Object.entries(vals).forEach(([k,v],i)=>{
@@ -905,19 +905,53 @@ function showChips(vals, srcIP, dstIP, trueLabel){
   });
 }
 
-function renderCausalPath(label) {
+function ipsIcon(ips) {
+  if (ips === 'BLOCK') return '🚨';
+  if (ips === 'RATE LIMIT') return '⚠️';
+  if (ips === 'ALLOW') return '✅';
+  return '🛡️';
+}
+
+function renderCausalPath(label, ips, explanations = {}, usedVals = {}) {
   const wrap = document.getElementById('cp-wrap');
   const ddos = document.getElementById('cp-ddos');
   const ps   = document.getElementById('cp-ps');
 
   const show = label === 'DDoS' || label === 'PortScan';
   wrap.style.display = show ? 'block' : 'none';
+  if (!show) return;
 
-  ddos.style.display = label === 'DDoS'     ? 'block' : 'none';
+  ddos.style.display = label === 'DDoS' ? 'block' : 'none';
   ps.style.display   = label === 'PortScan' ? 'block' : 'none';
+
+  const icon = ipsIcon(ips);
+
+  const ddosIps = document.getElementById('cp-ddos-ips');
+  const psIps = document.getElementById('cp-ps-ips');
+  const ddosVerdict = document.getElementById('cp-ddos-verdict');
+  const psVerdict = document.getElementById('cp-ps-verdict');
+
+  if (label === 'DDoS') {
+    if (ddosIps) ddosIps.textContent = `${icon} ${ips}`;
+    if (ddosVerdict) {
+      const ti = usedVals.TrafficIntensity ?? '—';
+      const burst = usedVals.Burstiness ?? '—';
+      ddosVerdict.textContent = `Verdict → DDoS · IPS Decision: ${ips} · TrafficIntensity=${ti} · Burstiness=${burst}`;
+    }
+  }
+
+  if (label === 'PortScan') {
+    if (psIps) psIps.textContent = `${icon} ${ips}`;
+    if (psVerdict) {
+      const shortFlow = usedVals.ShortFlowLevel ?? '—';
+      const lowPacket = usedVals.LowPacketLevel ?? '—';
+      const portDiv = usedVals.PortDiversityLevel ?? '—';
+      psVerdict.textContent = `Verdict → PortScan · IPS Decision: ${ips} · ShortFlow=${shortFlow} · LowPacket=${lowPacket} · PortDiversity=${portDiv}`;
+    }
+  }
 }
 
-function renderAttackExplain(label, explanations, usedVals){
+function renderAttackExplain(label, explanations, usedVals, ips){
   const info = ATTACK_INFO[label] || ATTACK_INFO.BENIGN;
   const box  = document.getElementById('attack-explain');
   const badge= document.getElementById('ae-badge');
@@ -925,8 +959,8 @@ function renderAttackExplain(label, explanations, usedVals){
   const desc = document.getElementById('ae-desc');
   const featsEl = document.getElementById('ae-features');
 
-  box.className  = `attack-explain ${label}`;
-  badge.className= `ae-badge ${label}`;
+  box.className = `attack-explain ${label}`;
+  badge.className = `ae-badge ${label}`;
   badge.textContent = label;
   title.textContent = info.title;
   desc.textContent  = info.desc;
@@ -951,25 +985,25 @@ function renderAttackExplain(label, explanations, usedVals){
     featsEl.appendChild(el);
   });
 
-  renderCausalPath(label);
+  renderCausalPath(label, ips || "", explanations, usedVals);
 }
 
 function renderResult(d, srcIP, dstIP){
   const panel=document.getElementById('result-panel');
-  panel.className=`result-panel ${d.label}`;
+  panel.className = `result-panel ${d.label}`;
   void panel.offsetWidth;
   setTimeout(()=> panel.classList.add('show'), 20);
 
   const icons={BENIGN:"✅",DDoS:"🚨",PortScan:"🔍"};
-  document.getElementById('verdict').className=`verdict ${d.label}`;
+  document.getElementById('verdict').className = `verdict ${d.label}`;
   document.getElementById('v-icon').textContent=icons[d.label]||"❓";
   document.getElementById('v-label').textContent=d.label;
   const ipsCls={'ALLOW':'ips-ALLOW','BLOCK':'ips-BLOCK','RATE LIMIT':'ips-RATE-LIMIT'}[d.ips]||'ips-ALLOW';
-  document.getElementById('v-ips').innerHTML=`IPS Decision: <span class="${ipsCls}">${d.ips}</span>`;
-  document.getElementById('v-src-ip').innerHTML=srcIP?`Source IP: <span class="ip-val">${srcIP}</span>`:'';
-  document.getElementById('v-dst-ip').innerHTML=dstIP?`Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>`:'';
+  document.getElementById('v-ips').innerHTML = `IPS Decision: <span class="${ipsCls}">${d.ips}</span>`;
+  document.getElementById('v-src-ip').innerHTML = srcIP ? `Source IP: <span class="ip-val">${srcIP}</span>` : '';
+  document.getElementById('v-dst-ip').innerHTML = dstIP ? `Dest IP: <span class="ip-val" style="color:var(--yellow)">${dstIP}</span>` : '';
 
-  renderAttackExplain(d.label, d.explanations||{}, d.used_values||{});
+  renderAttackExplain(d.label, d.explanations || {}, d.used_values || {}, d.ips);
 
   const pg=document.getElementById('proba-grid');
   pg.innerHTML='';
@@ -994,10 +1028,10 @@ function renderResult(d, srcIP, dstIP){
     const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
-    const rangeHint = r ? (r.opts ? '(0 or 1)' : `(${fmtNum(r.min)}–${fmtNum(r.max)} ${r.unit||''})`) : '';
+    const rangeHint = r ? (r.opts ? '(0 or 1)' : `(${fmtNum(r.min)}–${fmtNum(r.max)} ${r.unit || ''})`) : '';
     const c=document.createElement('div');
-    c.className=`ec ${info.level}`;
-    c.style.animation=`fadeUp .3s ease ${i*22}ms both`;
+    c.className = `ec ${info.level}`;
+    c.style.animation = `fadeUp .3s ease ${i * 22}ms both`;
     c.innerHTML=`<div class="ec-name">${m.label||feat}</div>
       <div class="ec-val">${val} <small style="font-size:.55rem;color:var(--muted)">${m.unit||''}</small></div>
       <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">${rangeHint}</div>
@@ -1010,7 +1044,7 @@ function renderResult(d, srcIP, dstIP){
     const ev=evalLevel('TrafficIntensity',ti);
     const m=getMeta('TrafficIntensity');
     const c=document.createElement('div');
-    c.className=`ec ${ev.level}`;
+    c.className = `ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Traffic Intensity'}</div>
       <div class="ec-val">${ti} <small style="font-size:.55rem;color:var(--muted)">0–2</small></div>
       <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(auto-computed)</div>
@@ -1024,7 +1058,7 @@ function renderResult(d, srcIP, dstIP){
     const ev=evalLevel('PortDiversityLevel',pdl);
     const m=getMeta('PortDiversityLevel');
     const c=document.createElement('div');
-    c.className=`ec ${ev.level}`;
+    c.className = `ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Port Diversity Level'}</div>
       <div class="ec-val">${pdl} <small style="font-size:.55rem;color:var(--muted)">(${raw} ports)</small></div>
       <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(computed: DistinctPort ≥ 100)</div>
@@ -1073,7 +1107,7 @@ function toggleCausalPath() {
   const btn   = document.getElementById('cp-toggle-btn');
   const open  = inner.style.display === 'none';
   inner.style.display = open ? 'block' : 'none';
-  icon.textContent    = open ? '▼' : '▶';
+  icon.textContent    = open ? '▼' : '▶️';
   label.textContent   = open ? 'Hide Causal Path' : 'Show Causal Path';
   btn.style.borderColor = open ? 'rgba(0,229,255,.6)' : 'rgba(0,229,255,.3)';
   btn.style.background  = open ? 'rgba(0,229,255,.07)' : 'transparent';
@@ -1081,5 +1115,5 @@ function toggleCausalPath() {
 
 loadMeta();
 </script>
-</body>
+</body>                                                                                       
 </html>
