@@ -350,152 +350,213 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
         <div id="cp-inner" style="display:none">
           <div class="cp-section-title">Causal Path — how features influence other features and influence the decision</div>
 
-          <!-- ══════════ DDoS SVG Flow Diagram — UNIFIED RED with Dynamic Nodes ══════════ -->
+          <!-- ══════════ DDoS Multiple Causal Paths - Packet Size Based Selection ══════════ -->
           <div id="cp-ddos" style="display:none">
-            <svg class="cp-svg" viewBox="0 0 860 600" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace" id="ddos-svg">
-              <defs>
-                <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
-                </marker>
-                <marker id="arr-red-final" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
-                </marker>
-              </defs>
+            
+            <!-- PATH 1: MICRO-FLOOD (Packet Size < 500B) -->
+            <div id="cp-ddos-microflood" style="display:none">
+              <svg class="cp-svg" viewBox="0 0 860 500" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+                <defs>
+                  <marker id="arr-red-micro" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
+                  </marker>
+                  <marker id="arr-red-final-micro" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
+                  </marker>
+                </defs>
 
-              <!-- COL 1: Raw inputs — all RED -->
-              <g id="ddos-pps" class="ddos-input-group">
-                <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Packets/s</text>
-                <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥1000→lvl2 / ≥100→lvl1</text>
-                <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
-              </g>
+                <!-- COL 1: Raw inputs -->
+                <g id="microflood-pps">
+                  <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Packets/s</text>
+                  <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥1000→lvl2 / ≥100→lvl1</text>
+                  <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
+                </g>
 
-              <g id="ddos-bps" class="ddos-input-group">
-                <rect x="4" y="78" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="96" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Bytes/s</text>
-                <text x="78" y="110" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥100k→lvl2 / ≥10k→lvl1</text>
-                <text x="78" y="123" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">else → lvl 0</text>
-              </g>
+                <g id="microflood-pkt-size">
+                  <rect x="4" y="90" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="108" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
+                  <text x="78" y="122" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">&lt;500 bytes</text>
+                  <text x="78" y="135" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">micro-flood</text>
+                </g>
 
-              <g id="ddos-iat-std" class="ddos-input-group">
-                <rect x="4" y="158" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="175" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Std</text>
-                <text x="78" y="191" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">numerator</text>
-              </g>
+                <g id="microflood-iat-std">
+                  <rect x="4" y="170" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="188" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Std</text>
+                  <text x="78" y="202" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">Variance</text>
+                  <text x="78" y="215" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">indicator</text>
+                </g>
 
-              <g id="ddos-iat-mean" class="ddos-input-group">
-                <rect x="4" y="218" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="235" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow IAT Mean</text>
-                <text x="78" y="251" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">denominator</text>
-              </g>
+                <!-- COL 2: Derived features -->
+                <g id="microflood-traffic-intensity">
+                  <rect x="240" y="10" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="29" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
+                  <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
+                  <text x="319" y="56" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">HIGH signal ●</text>
+                </g>
 
-              <g id="ddos-fwd-iat" class="ddos-input-group">
-                <rect x="4" y="282" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="299" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Fwd IAT Mean</text>
-                <text x="78" y="314" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between fwd pkts</text>
-              </g>
+                <g id="microflood-micro-flood-signal">
+                  <rect x="240" y="90" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="108" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Micro-Flood Signal</text>
+                  <text x="319" y="123" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">Pkt Size &lt; 500B</text>
+                  <text x="319" y="136" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">rapid small packets ●</text>
+                </g>
 
-              <g id="ddos-bwd-iat" class="ddos-input-group">
-                <rect x="4" y="342" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="359" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Bwd IAT Mean</text>
-                <text x="78" y="374" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">µs between bwd pkts</text>
-              </g>
+                <g id="microflood-burstiness">
+                  <rect x="240" y="170" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="188" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Burstiness</text>
+                  <text x="319" y="203" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">IAT Std / IAT Mean</text>
+                  <text x="319" y="216" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">&gt;0.5 → burst ●</text>
+                </g>
 
-              <g id="ddos-pkt-size" class="ddos-input-group">
-                <rect x="4" y="404" width="148" height="42" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
-                <text x="78" y="421" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
-                <text x="78" y="436" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">bytes per packet</text>
-              </g>
+                <!-- COL 3: Aggregator -->
+                <g id="microflood-aggregator">
+                  <rect x="490" y="60" width="148" height="120" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
+                  <text x="564" y="83" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">MICRO FLOOD</text>
+                  <text x="564" y="101" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
+                  <text x="564" y="119" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Micro-Flood Signal</text>
+                  <text x="564" y="137" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
+                  <text x="564" y="160" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">→ DDoS</text>
+                </g>
 
-              <!-- COL 2: Derived features — all RED -->
-              <g id="ddos-traffic-intensity" class="ddos-derived-group">
-                <rect x="240" y="24" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
-                <text x="319" y="57" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
-                <text x="319" y="70" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">2=HIGH · 1=MED · 0=LOW</text>
-              </g>
+                <!-- COL 4: Label -->
+                <g id="microflood-label">
+                  <rect x="730" y="90" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
+                  <text x="790" y="118" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
+                  <text x="790" y="137" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Micro-Flood</text>
+                  <text x="790" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
+                </g>
 
-              <g id="ddos-burstiness" class="ddos-derived-group">
-                <rect x="240" y="162" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                <text x="319" y="181" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Burstiness</text>
-                <text x="319" y="196" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">IAT Std / IAT Mean</text>
-                <text x="319" y="210" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">&gt;0.5 → 1 ●  else → 0 ○</text>
-              </g>
+                <!-- Arrows -->
+                <g id="microflood-arrows-c1c2">
+                  <path d="M152,36 L240,29" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                  <path d="M152,116 L240,116" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                  <path d="M152,196 L240,196" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                </g>
 
-              <g id="ddos-fwd-iat-signal" class="ddos-derived-group">
-                <rect x="240" y="276" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                <text x="319" y="294" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Fwd IAT Signal</text>
-                <text x="319" y="310" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤200µs → rapid flood</text>
-              </g>
+                <g id="microflood-arrows-c2agg">
+                  <path d="M398,36 C450,36 480,80 490,90" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                  <path d="M398,116 L490,119" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                  <path d="M398,196 C450,196 480,145 490,137" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-micro)"/>
+                </g>
 
-              <g id="ddos-bwd-iat-signal" class="ddos-derived-group">
-                <rect x="240" y="336" width="158" height="42" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                <text x="319" y="354" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Bwd IAT Signal</text>
-                <text x="319" y="370" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤500µs → flood echo</text>
-              </g>
+                <g id="microflood-arrows-final">
+                  <path d="M638,120 L730,126" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final-micro)"/>
+                </g>
 
-              <g id="ddos-pkt-size-signal" class="ddos-derived-group">
-                <rect x="240" y="398" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
-                <text x="319" y="417" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Pkt Size Signal</text>
-                <text x="319" y="431" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">&lt;100B → micro-flood ●</text>
-                <text x="319" y="445" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">≥1400B → bulk flood ●</text>
-              </g>
+                <!-- MPC -->
+                <g id="microflood-mpc">
+                  <rect x="80" y="410" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
+                  <text x="430" y="432" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+                  <text x="430" y="450" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">High Packet Rate + Small Packet Size + Variance</text>
+                  <text x="430" y="464" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">Rapid micro-packet flood pattern → DDoS attack</text>
+                </g>
+              </svg>
+              <div class="cp-verdict ddos">Verdict → Micro-Flood DDoS &nbsp;·&nbsp; High packet rate with small packet sizes (< 500B)</div>
+            </div>
 
-              <!-- COL 3: Aggregator — RED -->
-              <g id="ddos-aggregator" class="ddos-aggregator-group">
-                <rect x="490" y="130" width="148" height="148" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
-                <text x="564" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">SIGNALS</text>
-                <text x="564" y="171" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
-                <text x="564" y="189" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Burstiness</text>
-                <text x="564" y="207" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
-                <text x="564" y="225" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bwd IAT Signal</text>
-                <text x="564" y="243" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Pkt Size Signal</text>
-                <text x="564" y="266" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">all firing → DDoS</text>
-              </g>
+            <!-- PATH 2: BULK-FLOOD (Packet Size >= 500B) -->
+            <div id="cp-ddos-bulkflood" style="display:none">
+              <svg class="cp-svg" viewBox="0 0 860 500" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',monospace">
+                <defs>
+                  <marker id="arr-red-bulk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.8)"/>
+                  </marker>
+                  <marker id="arr-red-final-bulk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,61,113,.9)"/>
+                  </marker>
+                </defs>
 
-              <!-- COL 4: DDoS label — RED -->
-              <g id="ddos-label" class="ddos-label-group">
-                <rect x="730" y="168" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
-                <text x="790" y="196" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
-                <text x="790" y="215" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Label</text>
-                <text x="790" y="232" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
-              </g>
+                <!-- COL 1: Raw inputs -->
+                <g id="bulkflood-bps">
+                  <rect x="4" y="10" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="28" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Flow Bytes/s</text>
+                  <text x="78" y="42" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥100k→lvl2 / ≥10k→lvl1</text>
+                  <text x="78" y="55" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">throughput</text>
+                </g>
 
-              <!-- Arrows col1→col2 — all RED -->
-              <g id="ddos-arrows-c1c2" class="ddos-arrows">
-                <path d="M152,36 L240,50" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,104 L240,62" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,179 L240,185" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,239 L240,200" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,303 L240,297" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,363 L240,357" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M152,425 L240,424" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-              </g>
+                <g id="bulkflood-pkt-size">
+                  <rect x="4" y="90" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="108" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Avg Packet Size</text>
+                  <text x="78" y="122" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">≥500 bytes</text>
+                  <text x="78" y="135" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">bulk data</text>
+                </g>
 
-              <!-- Arrows col2→aggregator — all RED -->
-              <g id="ddos-arrows-c2agg" class="ddos-arrows">
-                <path d="M398,50 C440,50 480,148 490,158" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M398,188 L490,189" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M398,297 C450,297 480,215 490,212" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M398,357 C450,357 480,232 490,228" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-                <path d="M398,424 C450,424 480,252 490,248" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red)"/>
-              </g>
+                <g id="bulkflood-fwd-iat">
+                  <rect x="4" y="170" width="148" height="52" rx="7" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.45)" stroke-width="1"/>
+                  <text x="78" y="188" text-anchor="middle" fill="#ffb3c6" font-size="10" font-weight="700">Fwd IAT Mean</text>
+                  <text x="78" y="202" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">Inter-arrival</text>
+                  <text x="78" y="215" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">timing</text>
+                </g>
 
-              <!-- Arrow aggregator→DDoS — RED -->
-              <g id="ddos-arrows-final" class="ddos-arrows">
-                <path d="M638,204 L730,204" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final)"/>
-              </g>
+                <!-- COL 2: Derived features -->
+                <g id="bulkflood-traffic-intensity">
+                  <rect x="240" y="10" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="29" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Traffic Intensity</text>
+                  <text x="319" y="43" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">max(PacketLvl, ByteLvl)</text>
+                  <text x="319" y="56" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">EXTREME signal ●</text>
+                </g>
 
-              <!-- ★ Most Probable Cause — DDoS ★ -->
-              <g id="ddos-mpc" class="ddos-mpc-group">
-                <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
-                <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-                <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
-                <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
-              </g>
-            </svg>
+                <g id="bulkflood-bulk-flood-signal">
+                  <rect x="240" y="90" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="108" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Bulk-Flood Signal</text>
+                  <text x="319" y="123" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">Pkt Size ≥ 500B</text>
+                  <text x="319" y="136" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">high-volume flood ●</text>
+                </g>
 
-            <div class="cp-verdict ddos">Verdict → DDoS &nbsp;·&nbsp; TrafficIntensity + Burstiness + Fwd/Bwd IAT Signal + Pkt Size Signal firing together</div>
+                <g id="bulkflood-fwd-iat-signal">
+                  <rect x="240" y="170" width="158" height="52" rx="7" fill="rgba(255,61,113,.15)" stroke="rgba(255,61,113,.75)" stroke-width="1.5"/>
+                  <text x="319" y="188" text-anchor="middle" fill="#ffcdd8" font-size="10" font-weight="700">Fwd IAT Signal</text>
+                  <text x="319" y="203" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".8">≤200µs → rapid</text>
+                  <text x="319" y="216" text-anchor="middle" fill="#ffcdd8" font-size="9" opacity=".7">flooding ●</text>
+                </g>
+
+                <!-- COL 3: Aggregator -->
+                <g id="bulkflood-aggregator">
+                  <rect x="490" y="60" width="148" height="120" rx="10" fill="rgba(255,61,113,.1)" stroke="rgba(255,61,113,.55)" stroke-width="1.5" stroke-dasharray="5,3"/>
+                  <text x="564" y="83" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".8">BULK FLOOD</text>
+                  <text x="564" y="101" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Traffic Intensity</text>
+                  <text x="564" y="119" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Bulk-Flood Signal</text>
+                  <text x="564" y="137" text-anchor="middle" fill="#ffcdd8" font-size="9.5">Fwd IAT Signal</text>
+                  <text x="564" y="160" text-anchor="middle" fill="#ffb3c6" font-size="8.5" opacity=".65">→ DDoS</text>
+                </g>
+
+                <!-- COL 4: Label -->
+                <g id="bulkflood-label">
+                  <rect x="730" y="90" width="120" height="72" rx="10" fill="rgba(255,61,113,.22)" stroke="rgba(255,61,113,.9)" stroke-width="2"/>
+                  <text x="790" y="118" text-anchor="middle" fill="#ff3d71" font-size="16" font-weight="700">DDoS</text>
+                  <text x="790" y="137" text-anchor="middle" fill="#ffb3c6" font-size="10" opacity=".85">Bulk-Flood</text>
+                  <text x="790" y="154" text-anchor="middle" fill="#ffb3c6" font-size="9" opacity=".7">🚨 BLOCK</text>
+                </g>
+
+                <!-- Arrows -->
+                <g id="bulkflood-arrows-c1c2">
+                  <path d="M152,36 L240,29" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                  <path d="M152,116 L240,116" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                  <path d="M152,196 L240,196" stroke="rgba(255,61,113,.6)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                </g>
+
+                <g id="bulkflood-arrows-c2agg">
+                  <path d="M398,36 C450,36 480,80 490,90" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                  <path d="M398,116 L490,119" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                  <path d="M398,196 C450,196 480,145 490,137" stroke="rgba(255,61,113,.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-red-bulk)"/>
+                </g>
+
+                <g id="bulkflood-arrows-final">
+                  <path d="M638,120 L730,126" stroke="rgba(255,61,113,.8)" stroke-width="2" fill="none" marker-end="url(#arr-red-final-bulk)"/>
+                </g>
+
+                <!-- MPC -->
+                <g id="bulkflood-mpc">
+                  <rect x="80" y="410" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
+                  <text x="430" y="432" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
+                  <text x="430" y="450" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">High Throughput + Large Packet Size + Rapid Rate</text>
+                  <text x="430" y="464" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">Sustained bulk data flood → overwhelming DDoS attack</text>
+                </g>
+              </svg>
+              <div class="cp-verdict ddos">Verdict → Bulk-Flood DDoS &nbsp;·&nbsp; High throughput with large packet sizes (≥ 500B)</div>
+            </div>
+
           </div><!-- /cp-ddos -->
 
           <!-- ══════════ PortScan SVG Flow Diagram — UNIFIED BLUE ══════════ -->
@@ -977,55 +1038,102 @@ function showChips(vals, srcIP, dstIP, trueLabel){
    Shows/hides nodes and arrows based on actual flow values
    ════════════════════════════════════════════════════════════ */
 
-function updateDDoSCausalPath(flowData) {
-  const svg = document.getElementById('ddos-svg');
-  if (!svg) return;
+/* ════════════════════════════════════════════════════════════
+   DYNAMIC CAUSAL PATH RENDERING - DDoS Multiple Paths
+   Shows MICRO-FLOOD (< 500B) or BULK-FLOOD (>= 500B) based on actual packet size
+   ════════════════════════════════════════════════════════════ */
 
-  const ti = flowData['TrafficIntensity'] || 0;
-  const pps = flowData['Flow Packets/s'] || 0;
-  const bps = flowData['Flow Bytes/s'] || 0;
-  const burst = flowData['Burstiness'] || 0;
-  const fiatM = flowData['Flow IAT Mean'] || 0;
-  const fiatS = flowData['Flow IAT Std'] || 0;
-  const fwdIAT = flowData['Fwd IAT Mean'] || 0;
-  const bwdIAT = flowData['Bwd IAT Mean'] || 0;
+function updateDDoSCausalPath(flowData) {
   const pktSz = flowData['Average Packet Size'] || 0;
+  const microFloodDiv = document.getElementById('cp-ddos-microflood');
+  const bulkFloodDiv = document.getElementById('cp-ddos-bulkflood');
+  
+  // Select which path to show based on packet size
+  if (pktSz < 500) {
+    // MICRO-FLOOD PATH
+    microFloodDiv.style.display = 'block';
+    bulkFloodDiv.style.display = 'none';
+    updateMicroFloodPath(flowData);
+  } else {
+    // BULK-FLOOD PATH
+    microFloodDiv.style.display = 'none';
+    bulkFloodDiv.style.display = 'block';
+    updateBulkFloodPath(flowData);
+  }
+}
+
+function updateMicroFloodPath(flowData) {
+  const pps = flowData['Flow Packets/s'] || 0;
+  const pktSz = flowData['Average Packet Size'] || 0;
+  const fiatS = flowData['Flow IAT Std'] || 0;
+  const fiatM = flowData['Flow IAT Mean'] || 0;
+  const burst = flowData['Burstiness'] || 0;
 
   // Compute signal levels
   const ppsLevel = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
+  const microSignal = pktSz < 500 ? 1 : 0;
+  const burstSignal = burst > 0 ? 1 : 0;
+
+  // Update input nodes
+  document.getElementById('microflood-pps').style.opacity = ppsLevel > 0 ? 1 : 0.25;
+  document.getElementById('microflood-pkt-size').style.opacity = microSignal > 0 ? 1 : 0.25;
+  document.getElementById('microflood-iat-std').style.opacity = fiatS > 0 && burstSignal > 0 ? 1 : 0.25;
+
+  // Update derived nodes
+  document.getElementById('microflood-traffic-intensity').style.opacity = ppsLevel > 0 ? 1 : 0.25;
+  document.getElementById('microflood-micro-flood-signal').style.opacity = microSignal > 0 ? 1 : 0.25;
+  document.getElementById('microflood-burstiness').style.opacity = burstSignal > 0 ? 1 : 0.25;
+
+  // Count active signals
+  const numActiveSignals = [ppsLevel > 0, microSignal > 0, burstSignal > 0].filter(Boolean).length;
+  
+  // Update aggregator and label
+  document.getElementById('microflood-aggregator').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
+  document.getElementById('microflood-label').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
+
+  // Update arrows
+  document.getElementById('microflood-arrows-c1c2').style.opacity = (ppsLevel > 0 || microSignal > 0 || burstSignal > 0) ? 1 : 0.15;
+  document.getElementById('microflood-arrows-c2agg').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
+  document.getElementById('microflood-arrows-final').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
+
+  // Show MPC box if strong signal
+  document.getElementById('microflood-mpc').style.display = numActiveSignals >= 2 ? 'block' : 'none';
+}
+
+function updateBulkFloodPath(flowData) {
+  const bps = flowData['Flow Bytes/s'] || 0;
+  const pktSz = flowData['Average Packet Size'] || 0;
+  const fwdIAT = flowData['Fwd IAT Mean'] || 0;
+
+  // Compute signal levels
   const bpsLevel = bps >= 100000 ? 2 : bps >= 10000 ? 1 : 0;
+  const bulkSignal = pktSz >= 500 ? 1 : 0;
   const fwdIATSignal = fwdIAT <= 200 ? 1 : 0;
-  const bwdIATSignal = bwdIAT <= 500 ? 1 : 0;
-  const pktSizeSignal = (pktSz < 100 || pktSz >= 1400) ? 1 : 0;
 
-  // Hide/show input nodes based on significance
-  document.getElementById('ddos-pps').style.opacity = ppsLevel > 0 ? 1 : 0.25;
-  document.getElementById('ddos-bps').style.opacity = bpsLevel > 0 ? 1 : 0.25;
-  document.getElementById('ddos-iat-std').style.opacity = fiatS > 0 && burst > 0 ? 1 : 0.25;
-  document.getElementById('ddos-iat-mean').style.opacity = fiatM > 0 && burst > 0 ? 1 : 0.25;
-  document.getElementById('ddos-fwd-iat').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
-  document.getElementById('ddos-bwd-iat').style.opacity = bwdIATSignal > 0 ? 1 : 0.25;
-  document.getElementById('ddos-pkt-size').style.opacity = pktSizeSignal > 0 ? 1 : 0.25;
+  // Update input nodes
+  document.getElementById('bulkflood-bps').style.opacity = bpsLevel > 0 ? 1 : 0.25;
+  document.getElementById('bulkflood-pkt-size').style.opacity = bulkSignal > 0 ? 1 : 0.25;
+  document.getElementById('bulkflood-fwd-iat').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
 
-  // Hide/show derived feature nodes based on signal strength
-  document.getElementById('ddos-traffic-intensity').style.opacity = ti > 0 ? 1 : 0.25;
-  document.getElementById('ddos-burstiness').style.opacity = burst > 0 ? 1 : 0.25;
-  document.getElementById('ddos-fwd-iat-signal').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
-  document.getElementById('ddos-bwd-iat-signal').style.opacity = bwdIATSignal > 0 ? 1 : 0.25;
-  document.getElementById('ddos-pkt-size-signal').style.opacity = pktSizeSignal > 0 ? 1 : 0.25;
+  // Update derived nodes
+  document.getElementById('bulkflood-traffic-intensity').style.opacity = bpsLevel > 0 ? 1 : 0.25;
+  document.getElementById('bulkflood-bulk-flood-signal').style.opacity = bulkSignal > 0 ? 1 : 0.25;
+  document.getElementById('bulkflood-fwd-iat-signal').style.opacity = fwdIATSignal > 0 ? 1 : 0.25;
 
-  // Show/hide aggregator and final arrow based on overall signals
-  const numActiveSignals = [ti > 0, burst > 0, fwdIATSignal > 0, bwdIATSignal > 0, pktSizeSignal > 0].filter(Boolean).length;
-  document.getElementById('ddos-aggregator').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
-  document.getElementById('ddos-label').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
+  // Count active signals
+  const numActiveSignals = [bpsLevel > 0, bulkSignal > 0, fwdIATSignal > 0].filter(Boolean).length;
+  
+  // Update aggregator and label
+  document.getElementById('bulkflood-aggregator').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
+  document.getElementById('bulkflood-label').style.opacity = numActiveSignals >= 2 ? 1 : 0.25;
 
-  // Arrows opacity based on source nodes
-  document.getElementById('ddos-arrows-c1c2').style.opacity = (ppsLevel > 0 || bpsLevel > 0 || fiatS > 0 || fwdIATSignal > 0 || bwdIATSignal > 0 || pktSizeSignal > 0) ? 1 : 0.15;
-  document.getElementById('ddos-arrows-c2agg').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
-  document.getElementById('ddos-arrows-final').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
+  // Update arrows
+  document.getElementById('bulkflood-arrows-c1c2').style.opacity = (bpsLevel > 0 || bulkSignal > 0 || fwdIATSignal > 0) ? 1 : 0.15;
+  document.getElementById('bulkflood-arrows-c2agg').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
+  document.getElementById('bulkflood-arrows-final').style.opacity = numActiveSignals >= 2 ? 1 : 0.15;
 
-  // Show MPC box if it's a likely DDoS
-  document.getElementById('ddos-mpc').style.display = numActiveSignals >= 3 ? 'block' : 'none';
+  // Show MPC box if strong signal
+  document.getElementById('bulkflood-mpc').style.display = numActiveSignals >= 2 ? 'block' : 'none';
 }
 
 function updatePortScanCausalPath(flowData) {
