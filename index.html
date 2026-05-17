@@ -92,6 +92,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 .run-btn:hover::before { opacity: 1; }
 .run-btn:active { transform: scale(.97); }
 .run-btn.loading { opacity:.5; pointer-events:none; animation: glow 1s ease-in-out infinite; }
+.run-btn.finished { opacity:.4; pointer-events:none; border-color: var(--muted); color: var(--muted); }
 @keyframes glow { 0%,100%{box-shadow:0 0 4px rgba(0,229,255,.1)} 50%{box-shadow:0 0 28px rgba(0,229,255,.5)} }
 
 /* ── Scan progress ── */
@@ -288,7 +289,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
       <div class="db-icon">📊</div>
       <div class="db-text">
         <h3>Demo Mode — 30 Random Samples</h3>
-        <p>Each batch is freshly generated (10 DDoS · 10 PortScan · 10 BENIGN) using statistical distributions from the real CIC-IDS2017 dataset. Every run produces a unique set. The true label is shown alongside the model prediction so you can track accuracy in real time.</p>
+        <p>A fixed batch of 30 samples (10 DDoS · 10 PortScan · 10 BENIGN) generated using statistical distributions from the real CIC-IDS2017 dataset. The true label is shown alongside the model prediction so you can track accuracy in real time. Demo ends after 30 samples.</p>
       </div>
     </div>
   </div>
@@ -784,6 +785,7 @@ function generateBatch() {
 let DEMO_SAMPLES = [];
 let demoIndex = 0;
 let totalRuns = 0, correctRuns = 0;
+let demoFinished = false;
 DEMO_SAMPLES = generateBatch();
 
 /* ── Feature metadata ── */
@@ -888,14 +890,8 @@ function computeTrafficIntensity(pktPerSec, bytesPerSec) {
 }
 
 async function runPredict(){
-  if(demoIndex >= DEMO_SAMPLES.length){
-    DEMO_SAMPLES = generateBatch();
-    demoIndex = 0;
-    totalRuns = 0;
-    correctRuns = 0;
-    document.getElementById('accuracy-banner').textContent = '30 new random samples generated — starting fresh batch';
-    document.getElementById('run-info').textContent = '— New batch ready. Press to continue —';
-    document.getElementById('run-btn').textContent = '▶️ &nbsp;Capture & Analyze Flow';
+  // Demo is over — stop entirely, no regeneration
+  if(demoFinished || demoIndex >= DEMO_SAMPLES.length){
     return;
   }
 
@@ -934,10 +930,18 @@ async function runPredict(){
     alert("Make sure the server is running on :10000\n"+e.message);
   } finally {
     btn.classList.remove('loading');
-    if(demoIndex < DEMO_SAMPLES.length){
-      btn.textContent = '▶️  Next Sample →';
+    // Check if we just finished the last sample
+    if(demoIndex >= DEMO_SAMPLES.length){
+      demoFinished = true;
+      btn.classList.add('finished');
+      btn.textContent = '✓  Demo Complete — 30/30';
+      // Final banner update
+      const pct = (correctRuns/totalRuns*100).toFixed(1);
+      const color = parseFloat(pct) >= 80 ? 'var(--green)' : parseFloat(pct) >= 60 ? 'var(--yellow)' : 'var(--red)';
+      document.getElementById('accuracy-banner').innerHTML =
+        `✓ DEMO FINISHED &nbsp;·&nbsp; FINAL ACCURACY: <span style="color:${color};font-weight:700">${correctRuns}/${totalRuns} = ${pct}%</span> &nbsp;·&nbsp; reload page to restart`;
     } else {
-      btn.textContent = '🔄  Generate New Batch';
+      btn.textContent = '▶️  Next Sample →';
     }
   }
 }
@@ -1019,7 +1023,6 @@ function renderCausalPath(label, ips, usedVals = {}) {
     const full = document.getElementById('cp-ddos-full');
     const incomplete = document.getElementById('cp-ddos-incomplete');
     
-    // عرض النسخة الكاملة أو الناقصة حسب Traffic Intensity
     if (ti >= 1) {
       full.style.display = 'block';
       incomplete.style.display = 'none';
