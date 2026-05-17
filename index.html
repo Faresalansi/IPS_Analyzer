@@ -897,7 +897,7 @@ async function runPredict(){
 
   const btn=document.getElementById('run-btn');
   btn.classList.add('loading');
-  btn.textContent='⏳  Capturing...';
+  btn.innerHTML='⏳ &nbsp;Capturing...';
   startScan();
 
   const sample = DEMO_SAMPLES[demoIndex++];
@@ -934,14 +934,14 @@ async function runPredict(){
     if(demoIndex >= DEMO_SAMPLES.length){
       demoFinished = true;
       btn.classList.add('finished');
-      btn.textContent = '✓  Demo Complete — 30/30';
+      btn.innerHTML = '✓ &nbsp;Demo Complete — 30/30';
       // Final banner update
       const pct = (correctRuns/totalRuns*100).toFixed(1);
       const color = parseFloat(pct) >= 80 ? 'var(--green)' : parseFloat(pct) >= 60 ? 'var(--yellow)' : 'var(--red)';
       document.getElementById('accuracy-banner').innerHTML =
         `✓ DEMO FINISHED &nbsp;·&nbsp; FINAL ACCURACY: <span style="color:${color};font-weight:700">${correctRuns}/${totalRuns} = ${pct}%</span> &nbsp;·&nbsp; reload page to restart`;
     } else {
-      btn.textContent = '▶️  Next Sample →';
+      btn.innerHTML = '▶️ &nbsp;Next Sample →';
     }
   }
 }
