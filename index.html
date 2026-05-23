@@ -457,8 +457,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <!-- ★ Most Probable Cause — DDoS ★ -->
               <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
               <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-              <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
-              <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
+              <text id="cp-ddos-full-mpc-title" x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
+              <text id="cp-ddos-full-mpc-desc" x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
             </svg>
 
             <!-- INCOMPLETE VERSION (Traffic Intensity = 0) -->
@@ -550,8 +550,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
               <!-- ★ Most Probable Cause — DDoS ★ -->
               <rect x="80" y="528" width="700" height="58" rx="8" fill="rgba(255,61,113,.08)" stroke="rgba(255,61,113,.5)" stroke-width="1.5"/>
               <text x="430" y="550" text-anchor="middle" fill="#ff3d71" font-size="10" font-weight="700" letter-spacing="1.5">MOST PROBABLE CAUSE</text>
-              <text x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
-              <text x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
+              <text id="cp-ddos-inc-mpc-title" x="430" y="568" text-anchor="middle" fill="#ffcdd8" font-size="11" font-weight="700">Burstiness + Avg Packet Size</text>
+              <text id="cp-ddos-inc-mpc-desc" x="430" y="582" text-anchor="middle" fill="#ffb3c6" font-size="9.5" opacity=".85">IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers</text>
             </svg>
 
             <div class="cp-verdict ddos" id="cp-ddos-verdict">Verdict → DDoS · IPS decision will update after prediction</div>
@@ -964,6 +964,20 @@ function renderCausalPath(label, ips, usedVals = {}) {
     ].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = pktDisplay;
+    });
+
+    // ── Update "Most Probable Cause" text based on whether Pkt Size is included
+    const mpcTitle = hidePkt ? 'Burstiness' : 'Burstiness + Avg Packet Size';
+    const mpcDesc  = hidePkt
+      ? 'IAT variance surge → strongest DDoS trigger'
+      : 'IAT variance surge + micro/bulk flood packet pattern → strongest DDoS triggers';
+    ['cp-ddos-full-mpc-title', 'cp-ddos-inc-mpc-title'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = mpcTitle;
+    });
+    ['cp-ddos-full-mpc-desc', 'cp-ddos-inc-mpc-desc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = mpcDesc;
     });
 
     const icon = ipsIcon(ips);
