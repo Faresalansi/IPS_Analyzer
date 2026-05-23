@@ -288,8 +288,8 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="db-item">
       <div class="db-icon">📊</div>
       <div class="db-text">
-        <h3>Demo Mode — 30 Random Samples</h3>
-        <p>A fixed batch of 30 samples (10 DDoS · 10 PortScan · 10 BENIGN) generated using statistical distributions from the real CIC-IDS2017 dataset. The true label is shown alongside the model prediction so you can track accuracy in real time. Demo ends after 30 samples.</p>
+        <h3>Demo Mode — 30 Real Test Samples</h3>
+        <p>A fixed batch of 30 real samples (10 DDoS · 10 PortScan · 10 BENIGN) picked randomly from the CIC-IDS2017 test dataset. The true label is shown alongside the model prediction so you can track accuracy in real time. Demo ends after 30 samples.</p>
       </div>
     </div>
   </div>
@@ -303,7 +303,7 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
     <div class="scan-bar"><div class="scan-fill" id="scan-fill"></div></div>
   </div>
 
-  <div class="run-info" id="run-info">— 30 random samples will be generated. Press to start —</div>
+  <div class="run-info" id="run-info">— 30 real test samples loaded. Press to start —</div>
 
   <div class="true-label-row" id="true-label-row" style="display:none">
     True Label: <span class="tl-badge" id="tl-badge"></span>
@@ -640,140 +640,47 @@ header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid
 
 <script>
 /* ─────────────────────────────────────────────
-   STATISTICAL SAMPLE GENERATOR
-   Distributions derived from real CIC-IDS2017 data
-   10 BENIGN · 10 DDoS · 10 PortScan per batch
+   REAL TEST SAMPLES — 30 randomly picked rows
+   from CIC-IDS2017 test dataset
+   10 DDoS · 10 BENIGN · 10 PortScan
    ───────────────────────────────────────────── */
 
-function rng(min, max) { return Math.random() * (max - min) + min; }
-function rngInt(min, max) { return Math.floor(rng(min, max + 1)); }
-function lognorm(mu, sigma) {
-  let u = 0, v = 0;
-  while (!u) u = Math.random();
-  while (!v) v = Math.random();
-  const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  return Math.exp(mu + sigma * z);
-}
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+const DEMO_DATA = [
+  { "true_label": "DDoS", "Fwd IAT Mean": 6107.0, "Bwd IAT Mean": 13573.66667, "Average Packet Size": 1661.0, "SynOnlyRatio": 0.0, "Flow Duration": 40772.0, "Flow IAT Mean": 6795.333333, "Flow IAT Std": 11361.42605, "Flow Packets/s": 90.31, "Flow Bytes/s": 150000.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 2, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 329.0, "Bwd IAT Mean": 369479.4, "Average Packet Size": 1292.555556, "SynOnlyRatio": 0.0, "Flow Duration": 1847442.0, "Flow IAT Mean": 230930.25, "Flow IAT Std": 652845.3531, "Flow Packets/s": 2.71, "Flow Bytes/s": 3498.23, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 1551469.5, "Bwd IAT Mean": 0.0, "Average Packet Size": 7.2, "SynOnlyRatio": 0.0, "Flow Duration": 6205878.0, "Flow IAT Mean": 1551469.5, "Flow IAT Std": 3099592.793, "Flow Packets/s": 0.81, "Flow Bytes/s": 5.8, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 14752.0, "Bwd IAT Mean": 122610.1667, "Average Packet Size": 1162.7, "SynOnlyRatio": 0.0, "Flow Duration": 735759.0, "Flow IAT Mean": 81751.0, "Flow IAT Std": 234196.4029, "Flow Packets/s": 21.5, "Flow Bytes/s": 25000.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 1, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 3094257.333, "Bwd IAT Mean": 0.0, "Average Packet Size": 7.5, "SynOnlyRatio": 0.0, "Flow Duration": 9282772.0, "Flow IAT Mean": 3094257.333, "Flow IAT Std": 5357686.656, "Flow Packets/s": 0.54, "Flow Bytes/s": 4.04, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 11600000.0, "Bwd IAT Mean": 5761.333333, "Average Packet Size": 971.9166667, "SynOnlyRatio": 0.0, "Flow Duration": 80943040.0, "Flow IAT Mean": 7358458.182, "Flow IAT Std": 24400000.0, "Flow Packets/s": 0.06, "Flow Bytes/s": 60.04, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 6540.5, "Bwd IAT Mean": 235213.0, "Average Packet Size": 1661.0, "SynOnlyRatio": 0.0, "Flow Duration": 705818.0, "Flow IAT Mean": 117636.3333, "Flow IAT Std": 281592.3847, "Flow Packets/s": 15.05, "Flow Bytes/s": 25000.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 1, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 12381.5, "Bwd IAT Mean": 59583.8, "Average Packet Size": 1291.888889, "SynOnlyRatio": 0.0, "Flow Duration": 297983.0, "Flow IAT Mean": 37247.875, "Flow IAT Std": 95591.91674, "Flow Packets/s": 19.35, "Flow Bytes/s": 25000.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 1, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 1725553.2, "Bwd IAT Mean": 6401.75, "Average Packet Size": 1059.181818, "SynOnlyRatio": 0.0, "Flow Duration": 8628637.0, "Flow IAT Mean": 862863.7, "Flow IAT Std": 2530458.335, "Flow Packets/s": 0.58, "Flow Bytes/s": 613.76, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "DDoS", "Fwd IAT Mean": 241578.25, "Bwd IAT Mean": 0.0, "Average Packet Size": 7.2, "SynOnlyRatio": 0.0, "Flow Duration": 966313.0, "Flow IAT Mean": 241578.25, "Flow IAT Std": 482141.9255, "Flow Packets/s": 5.17, "Flow Bytes/s": 37.26, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 0.0, "SynOnlyRatio": 0.0, "Flow Duration": 59.0, "Flow IAT Mean": 59.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 1500.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 47641.83333, "Bwd IAT Mean": 97.0, "Average Packet Size": 1292.555556, "SynOnlyRatio": 0.0, "Flow Duration": 285851.0, "Flow IAT Mean": 35731.375, "Flow IAT Std": 100744.5354, "Flow Packets/s": 19.34, "Flow Bytes/s": 25000.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 1, "Burstiness": 1, "PortDiversityLevel": 1 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 0.0, "SynOnlyRatio": 0.0, "Flow Duration": 76.0, "Flow IAT Mean": 76.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 1500.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 130.5, "SynOnlyRatio": 0.0, "Flow Duration": 196920.0, "Flow IAT Mean": 196920.0, "Flow IAT Std": 0.0, "Flow Packets/s": 25.39, "Flow Bytes/s": 3313.53, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 1.0, "Bwd IAT Mean": 3.0, "Average Packet Size": 110.25, "SynOnlyRatio": 0.0, "Flow Duration": 31668.0, "Flow IAT Mean": 10556.0, "Flow IAT Std": 18280.06425, "Flow Packets/s": 226.76, "Flow Bytes/s": 25000.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 1, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 9.0, "SynOnlyRatio": 0.0, "Flow Duration": 39.0, "Flow IAT Mean": 39.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 13500.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 72.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 9.0, "SynOnlyRatio": 0.0, "Flow Duration": 72.0, "Flow IAT Mean": 72.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 13500.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 107.0, "SynOnlyRatio": 0.0, "Flow Duration": 30702.0, "Flow IAT Mean": 30702.0, "Flow IAT Std": 0.0, "Flow Packets/s": 50.0, "Flow Bytes/s": 5350.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 10336.66667, "Bwd IAT Mean": 4.0, "Average Packet Size": 96.16666667, "SynOnlyRatio": 0.0, "Flow Duration": 70086.0, "Flow IAT Mean": 14017.2, "Flow IAT Std": 19399.32832, "Flow Packets/s": 50.0, "Flow Bytes/s": 4808.33, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 1, "PortDiversityLevel": 0 },
+  { "true_label": "BENIGN", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 134.0, "SynOnlyRatio": 0.0, "Flow Duration": 61705.0, "Flow IAT Mean": 61705.0, "Flow IAT Std": 0.0, "Flow Packets/s": 50.0, "Flow Bytes/s": 6700.0, "DistinctDestinationPort": 5, "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0, "TrafficIntensity": 0, "Burstiness": 0, "PortDiversityLevel": 0 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 75.0, "Flow IAT Mean": 75.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 44.0, "Flow IAT Mean": 44.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 3.0, "SynOnlyRatio": 0.0, "Flow Duration": 55.0, "Flow IAT Mean": 55.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 4500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 70.0, "Flow IAT Mean": 70.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 74.0, "Flow IAT Mean": 74.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 21.0, "Flow IAT Mean": 21.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 3.0, "SynOnlyRatio": 0.0, "Flow Duration": 42.0, "Flow IAT Mean": 42.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 4500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 3.0, "SynOnlyRatio": 0.0, "Flow Duration": 39.0, "Flow IAT Mean": 39.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 4500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 3.0, "SynOnlyRatio": 0.0, "Flow Duration": 45.0, "Flow IAT Mean": 45.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 4500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+  { "true_label": "PortScan", "Fwd IAT Mean": 0.0, "Bwd IAT Mean": 0.0, "Average Packet Size": 5.0, "SynOnlyRatio": 0.0, "Flow Duration": 43.0, "Flow IAT Mean": 43.0, "Flow IAT Std": 0.0, "Flow Packets/s": 1500.0, "Flow Bytes/s": 7500.0, "DistinctDestinationPort": 250, "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1, "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1 },
+];
 
-const DISTS = {
-  BENIGN: () => {
-    const variant = Math.random();
-    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, bwl = 0, lpl = 0, pdl = 0;
-    if (variant < 0.33) {
-      fwdIAT = rng(0, 100); bwdIAT = rng(0, 100);
-      dur    = rngInt(100, 300000);
-      pktSz  = rng(40, 150);
-      pps    = clamp(1e6 / dur * rng(3, 20), 1, 50000);
-      bps    = pps * pktSz;
-      fiatM  = rng(30, 80000);
-      fiatS  = fiatM * rng(0.5, 2);
-    } else if (variant < 0.66) {
-      fwdIAT = clamp(lognorm(Math.log(3e6), 1), 5e5, 2e7);
-      bwdIAT = clamp(lognorm(Math.log(3e6), 1), 5e5, 2e7);
-      dur    = clamp(lognorm(Math.log(5e7), 0.8), 5e6, 2e8);
-      pktSz  = rng(5, 140);
-      pps    = clamp(10 / (dur / 1e6), 0.05, 5);
-      bps    = pps * pktSz;
-      fiatM  = dur / rng(8, 16);
-      fiatS  = fiatM * rng(0.8, 1.5);
-      pdl    = Math.random() < 0.2 ? 1 : 0;
-    } else {
-      fwdIAT = rng(3000, 10000); bwdIAT = 0;
-      dur    = rngInt(5000, 50000);
-      pktSz  = rng(5, 20);
-      pps    = clamp(1e6 / dur * rng(2, 5), 50, 500);
-      bps    = pps * pktSz;
-      fiatM  = fwdIAT;
-      fiatS  = fiatM * rng(0.8, 1.6);
-      bwl    = Math.random() < 0.4 ? 1 : 0;
-      lpl    = Math.random() < 0.4 ? 1 : 0;
-    }
-    const burst = (fiatM > 0 && fiatS / fiatM > 0.5) ? 1 : 0;
-    const ti    = bps >= 1e5 ? 2 : bps >= 1e4 ? 1 : 0;
-    return {
-      true_label: 'BENIGN',
-      "Fwd IAT Mean": +fwdIAT.toFixed(4), "Bwd IAT Mean": +bwdIAT.toFixed(4),
-      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
-      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
-      "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
-      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(1, 20),
-      "BackwardZeroLevel": bwl, "LowPacketLevel": lpl, "ShortFlowLevel": 0,
-      "TrafficIntensity": ti, "Burstiness": burst, "PortDiversityLevel": pdl
-    };
-  },
-
-  DDoS: () => {
-    const subtype = Math.random();
-    let fwdIAT, bwdIAT, dur, pps, pktSz, bps, fiatM, fiatS, ti;
-    if (subtype < 0.4) {
-      fwdIAT = clamp(lognorm(Math.log(8e6), 1.2), 5e5, 2e7);
-      bwdIAT = clamp(lognorm(Math.log(3e4), 1.5), 1e3, 5e5);
-      dur    = clamp(lognorm(Math.log(6e7), 0.7), 1e7, 1.5e8);
-      pktSz  = rng(700, 1100);
-      pps    = clamp(0.18 * rng(0.5, 2), 0.05, 1);
-      bps    = pps * pktSz;
-      fiatM  = dur / rng(10, 16);
-      fiatS  = fiatM * rng(2, 4);
-      ti     = 0;
-    } else if (subtype < 0.7) {
-      fwdIAT = rng(200, 600);
-      bwdIAT = rng(8000, 180000);
-      dur    = rngInt(30000, 2000000);
-      pktSz  = rng(1100, 1750);
-      pps    = clamp(1e6 / dur * rng(5, 20), 2, 250);
-      bps    = pps * pktSz;
-      fiatM  = dur / rng(6, 12);
-      fiatS  = fiatM * rng(2.5, 4);
-      ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
-    } else {
-      fwdIAT = rng(280, 520);
-      bwdIAT = rng(9000, 20000);
-      dur    = rngInt(30000, 110000);
-      pktSz  = rng(1200, 1800);
-      pps    = clamp(rng(80, 220), 50, 300);
-      bps    = pps * pktSz;
-      fiatM  = dur / rng(7, 11);
-      fiatS  = fiatM * rng(2, 3.5);
-      ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
-    }
-    return {
-      true_label: 'DDoS',
-      "Fwd IAT Mean": +fwdIAT.toFixed(4), "Bwd IAT Mean": +bwdIAT.toFixed(4),
-      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
-      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
-      "Flow IAT Std": +fiatS.toFixed(4), "Flow Packets/s": +pps.toFixed(4),
-      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": rngInt(2, 12),
-      "BackwardZeroLevel": 0, "LowPacketLevel": 0, "ShortFlowLevel": 0,
-      "TrafficIntensity": ti, "Burstiness": 1, "PortDiversityLevel": 0
-    };
-  },
-
-  PortScan: () => {
-    const dur   = rngInt(10, 100);
-    const fiatM = dur * rng(0.9, 1.1);
-    const pps   = clamp(1e6 / dur * rng(0.9, 1.1), 5000, 200000);
-    const pktSz = rng(2.5, 5.5);
-    const bps   = pps * pktSz;
-    const ports = rngInt(100, 600);
-    return {
-      true_label: 'PortScan',
-      "Fwd IAT Mean": 0, "Bwd IAT Mean": 0,
-      "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
-      "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
-      "Flow IAT Std": 0, "Flow Packets/s": +pps.toFixed(4),
-      "Flow Bytes/s": +bps.toFixed(4), "DistinctDestinationPort": ports,
-      "BackwardZeroLevel": 0, "LowPacketLevel": 1, "ShortFlowLevel": 1,
-      "TrafficIntensity": 2, "Burstiness": 0, "PortDiversityLevel": 1
-    };
-  }
-};
-
+/* Build randomized batch from real samples (shuffled each page load) */
 function generateBatch() {
-  const batch = [];
-  ['BENIGN', 'DDoS', 'PortScan'].forEach(lbl => {
-    for (let i = 0; i < 10; i++) batch.push(DISTS[lbl]());
-  });
+  const batch = DEMO_DATA.map(s => ({ ...s }));
   for (let i = batch.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [batch[i], batch[j]] = [batch[j], batch[i]];
