@@ -1108,13 +1108,11 @@ function renderResult(d, srcIP, dstIP, usedVals){
     const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
-    const rangeHint = r ? (r.opts ? '(0 or 1)' : `(${fmtNum(r.min)}–${fmtNum(r.max)} ${r.unit || ''})`) : '';
     const c=document.createElement('div');
     c.className = `ec ${info.level}`;
     c.style.animation = `fadeUp .3s ease ${i * 22}ms both`;
     c.innerHTML=`<div class="ec-name">${m.label||feat}</div>
       <div class="ec-val">${val} <small style="font-size:.55rem;color:var(--muted)">${m.unit||''}</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">${rangeHint}</div>
       <div class="ec-txt ${info.level}">${info.text||m.description||'—'}</div>`;
     grid.appendChild(c);
   });
@@ -1127,7 +1125,7 @@ function renderResult(d, srcIP, dstIP, usedVals){
     c.className = `ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Traffic Intensity'}</div>
       <div class="ec-val">${ti} <small style="font-size:.55rem;color:var(--muted)">0–2</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(auto-computed)</div>
+
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
@@ -1141,7 +1139,7 @@ function renderResult(d, srcIP, dstIP, usedVals){
     c.className = `ec ${ev.level}`;
     c.innerHTML=`<div class="ec-name">${m.label||'Port Diversity Level'}</div>
       <div class="ec-val">${pdl} <small style="font-size:.55rem;color:var(--muted)">(${raw} ports)</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(computed: DistinctPort ≥ 100)</div>
+
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
@@ -1155,7 +1153,7 @@ function renderResult(d, srcIP, dstIP, usedVals){
     c.className = `ec ${ev.level}`;
     c.innerHTML = `<div class="ec-name">${m.label||'Short Flow Ratio'}</div>
       <div class="ec-val">${sfr.toFixed(3)} <small style="font-size:.55rem;color:var(--muted)">→ Level ${sfl}</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(ratio ≥ 0.9 → ShortFlowLevel=1)</div>
+
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
@@ -1169,7 +1167,7 @@ function renderResult(d, srcIP, dstIP, usedVals){
     c.className = `ec ${ev.level}`;
     c.innerHTML = `<div class="ec-name">${m.label||'Low Packet Flow Ratio'}</div>
       <div class="ec-val">${lpfr.toFixed(3)} <small style="font-size:.55rem;color:var(--muted)">→ Level ${lpl}</small></div>
-      <div style="font-size:.6rem;color:var(--muted);margin-bottom:.18rem;font-family:var(--mono)">(ratio ≥ 0.9 → LowPacketLevel=1)</div>
+
       <div class="ec-txt ${ev.level}">${ev.text||'—'}</div>`;
     grid.appendChild(c);
   }
