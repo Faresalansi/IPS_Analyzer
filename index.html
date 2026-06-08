@@ -700,9 +700,11 @@ const DISTS = {
     const lowPacketFlowRatio = +rng(0.93, 1.0).toFixed(3);
     const sfl = shortFlowRatio    >= 0.9 ? 1 : 0;
     const lpl = lowPacketFlowRatio >= 0.9 ? 1 : 0;
+    const fwdIAT = rng(0.5, 8);      // µs — باكت واحد لكل port، IAT صغير جداً
+    const bwdIAT = 0;                 // لا يوجد backward responses في PortScan
     return {
       true_label: 'PortScan',
-      "Fwd IAT Mean": 0, "Bwd IAT Mean": 0,
+      "Fwd IAT Mean": +fwdIAT.toFixed(4), "Bwd IAT Mean": bwdIAT,
       "Average Packet Size": +pktSz.toFixed(4), "SynOnlyRatio": 0,
       "Flow Duration": +dur.toFixed(4), "Flow IAT Mean": +fiatM.toFixed(4),
       "Flow IAT Std": 0, "Flow Packets/s": +pps.toFixed(4),
