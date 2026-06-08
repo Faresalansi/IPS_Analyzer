@@ -1041,7 +1041,9 @@ function renderAttackExplain(label, explanations, usedVals, ips){
   info.keyFeats.forEach(feat => {
     const expl = explanations[feat];
     const val  = expl ? expl.value : (usedVals[feat] ?? '—');
-    const level= expl ? expl.level : 'ok';
+    let level  = expl ? expl.level : 'ok';
+    /* ── Force danger level for Burstiness=1 ── */
+    if (feat === 'Burstiness' && val === 1) level = 'danger';
     const m    = getMeta(feat);
     const r    = RANGES[feat];
     const isBin = r && !!r.opts;
@@ -1101,6 +1103,8 @@ function renderResult(d, srcIP, dstIP, usedVals){
 
   Object.entries(expl).forEach(([feat,info],i)=>{
     if(HIDDEN_FEATS.has(feat)) return;
+    /* ── Force danger level for Burstiness=1 ── */
+    if(feat === 'Burstiness' && info.value === 1) info.level = 'danger';
     const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
