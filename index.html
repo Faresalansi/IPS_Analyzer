@@ -673,7 +673,6 @@ const DISTS = {
       fiatS  = fiatM * rng(2, 3.5);
       ti     = pps >= 1000 ? 2 : pps >= 100 ? 1 : 0;
     }
-    // DDoS: ShortFlowRatio منخفضة جداً
     const shortFlowRatio    = +rng(0.0, 0.08).toFixed(3);
     const lowPacketFlowRatio = +rng(0.0, 0.10).toFixed(3);
     return {
@@ -697,7 +696,6 @@ const DISTS = {
     const pktSz = rng(2.5, 5.5);
     const bps   = pps * pktSz;
     const ports = rngInt(100, 600);
-    // PortScan: ShortFlowRatio عالية جداً
     const shortFlowRatio    = +rng(0.92, 1.0).toFixed(3);
     const lowPacketFlowRatio = +rng(0.93, 1.0).toFixed(3);
     const sfl = shortFlowRatio    >= 0.9 ? 1 : 0;
@@ -741,14 +739,12 @@ const RANGES = {
   "Fwd IAT Mean":            { min:0, max:100000, dec:0, unit:"µs",    label:"Forward IAT Mean"          },
   "Bwd IAT Mean":            { min:0, max:100000, dec:0, unit:"µs",    label:"Backward IAT Mean"         },
   "Average Packet Size":     { min:20, max:1500,  dec:1, unit:"bytes", label:"Average Packet Size"       },
-  "SynOnlyRatio":            { min:0, max:1,      dec:3, unit:"ratio", label:"SYN-Only Ratio"            },
   "Flow Duration":           { min:0, max:100000, dec:0, unit:"µs",    label:"Flow Duration"             },
   "Flow IAT Mean":           { min:0, max:100000, dec:0, unit:"µs",    label:"Flow IAT Mean"             },
   "Flow IAT Std":            { min:0, max:100000, dec:0, unit:"µs",    label:"Flow IAT Std"              },
   "Flow Packets/s":          { min:0, max:5000,   dec:1, unit:"pkt/s", label:"Flow Packets/s"            },
   "Flow Bytes/s":            { min:0, max:100000, dec:0, unit:"B/s",   label:"Flow Bytes/s"              },
   "DistinctDestinationPort": { min:1, max:500,    dec:0, unit:"ports", label:"Distinct Destination Port" },
-  "BackwardZeroLevel":       { opts:[0,1], unit:"", label:"Backward Zero Level" },
   "LowPacketLevel":          { opts:[0,1], unit:"", label:"Low Packet Level"    },
   "ShortFlowLevel":          { opts:[0,1], unit:"", label:"Short Flow Level"    },
   "ShortFlowRatio":          { min:0, max:1, dec:3, unit:"ratio", label:"Short Flow Ratio" },
@@ -858,9 +854,7 @@ async function runPredict(){
     vals['Flow Packets/s'] ?? 0,
     vals['Flow Bytes/s']   ?? 0
   );
-  // حساب ShortFlowLevel من ShortFlowRatio
   vals['ShortFlowLevel'] = (vals['ShortFlowRatio'] ?? 0) >= 0.9 ? 1 : 0;
-  // حساب LowPacketLevel من LowPacketFlowRatio
   vals['LowPacketLevel'] = (vals['LowPacketFlowRatio'] ?? 0) >= 0.9 ? 1 : 0;
 
   currentSourceIP = genFakeIP();
@@ -907,13 +901,13 @@ function showTrueLabelBadge(trueLabel, predLabel){
   correct.textContent = ok ? '✓ Correct' : '✗ Wrong';
 }
 
-// الـ chips اللي تظهر للمستخدم — ShortFlowRatio و LowPacketFlowRatio يظهران صراحة
+/* ── CHIP_ORDER: SynOnlyRatio and BackwardZeroLevel removed ── */
 const CHIP_ORDER = [
-  "Fwd IAT Mean","Bwd IAT Mean","Average Packet Size","SynOnlyRatio",
+  "Fwd IAT Mean","Bwd IAT Mean","Average Packet Size",
   "Flow Duration","Flow IAT Mean","Flow IAT Std","Flow Packets/s","Flow Bytes/s",
   "DistinctDestinationPort","ShortFlowRatio","ShortFlowLevel",
   "LowPacketFlowRatio","LowPacketLevel",
-  "BackwardZeroLevel","TrafficIntensity","Burstiness","PortDiversityLevel"
+  "TrafficIntensity","Burstiness","PortDiversityLevel"
 ];
 
 function showChips(vals, srcIP, dstIP, trueLabel){
@@ -1102,7 +1096,11 @@ function renderResult(d, srcIP, dstIP, usedVals){
   const expl=d.explanations||{};
   const used=usedVals||{};
 
+  /* ── Hidden features: never show in explain grid ── */
+  const HIDDEN_FEATS = new Set(['SynOnlyRatio','BackwardZeroLevel']);
+
   Object.entries(expl).forEach(([feat,info],i)=>{
+    if(HIDDEN_FEATS.has(feat)) return;
     const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
@@ -1144,7 +1142,6 @@ function renderResult(d, srcIP, dstIP, usedVals){
     grid.appendChild(c);
   }
 
-  // ShortFlowRatio card
   if(used.ShortFlowRatio !== undefined && !expl['ShortFlowRatio']){
     const sfr = used.ShortFlowRatio;
     const sfl = used.ShortFlowLevel ?? (sfr >= 0.9 ? 1 : 0);
@@ -1159,7 +1156,6 @@ function renderResult(d, srcIP, dstIP, usedVals){
     grid.appendChild(c);
   }
 
-  // LowPacketFlowRatio card
   if(used.LowPacketFlowRatio !== undefined && !expl['LowPacketFlowRatio']){
     const lpfr = used.LowPacketFlowRatio;
     const lpl  = used.LowPacketLevel ?? (lpfr >= 0.9 ? 1 : 0);
@@ -1185,10 +1181,8 @@ const EN_META = {
   "Flow Packets/s":          { label:"Flow Packets/s", unit:"pkt/s", description:"Normal packet rate", thresholds:[{op:">=",value:1000,level:"danger",text:"≥ 1000 pkt/s — PacketLevel 2, likely DDoS"},{op:">=",value:100,level:"warning",text:"≥ 100 pkt/s — PacketLevel 1, monitor closely"}] },
   "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:100000,level:"danger",text:"≥ 100 000 B/s — ByteLevel 2, possible flood attack"},{op:">=",value:10000,level:"warning",text:"≥ 10 000 B/s — ByteLevel 1, elevated throughput"}] },
   "Fwd IAT Mean":            { label:"Forward IAT Mean", unit:"µs", description:"Normal forward inter-arrival time — regular traffic", thresholds:[{op:"<=",value:200,level:"danger",text:"Near-zero forward IAT — automated high-speed sending"}] },
-  "SynOnlyRatio":            { label:"SYN-Only Ratio", unit:"", description:"Normal SYN ratio", thresholds:[{op:">=",value:0.8,level:"danger",text:"Very high SYN ratio — suspicious, possible scan or flood"},{op:">=",value:0.5,level:"warning",text:"Elevated SYN ratio — monitor"}] },
   "DistinctDestinationPort": { label:"Distinct Destination Ports", unit:"ports", description:"Low port diversity — normal", thresholds:[{op:">=",value:100,level:"danger",text:"≥100 unique ports — clear PortScan pattern"},{op:">=",value:30,level:"warning",text:"Elevated port diversity — possible reconnaissance"}] },
   "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Level 2 — max(PacketLevel,ByteLevel)=2, high DDoS signal"},{op:">=",value:1,level:"warning",text:"Level 1 — medium intensity, monitor"},{op:"==",value:0,level:"ok",text:"Level 0 — normal intensity"}] },
-  "BackwardZeroLevel":       { label:"Backward Zero Level", unit:"", description:"Backward traffic present", thresholds:[{op:"==",value:1,level:"warning",text:"No backward responses — possible one-way attack"},{op:"==",value:0,level:"ok",text:"Backward replies present — normal two-way connection"}] },
   "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets (≤3 total) — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
   "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — ShortFlowRatio ≥ 0.9, clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
   "PortDiversityLevel":      { label:"Port Diversity Level", unit:"", description:"Low port diversity", thresholds:[{op:"==",value:1,level:"danger",text:"≥100 distinct ports targeted — clear PortScan pattern"},{op:"==",value:0,level:"ok",text:"Low port diversity — normal behavior"}] },
