@@ -1105,6 +1105,12 @@ function renderResult(d, srcIP, dstIP, usedVals){
     if(HIDDEN_FEATS.has(feat)) return;
     /* ── Force danger level for Burstiness=1 ── */
     if(feat === 'Burstiness' && info.value === 1) info.level = 'danger';
+    /* ── Override TrafficIntensity text from server ── */
+    if(feat === 'TrafficIntensity') {
+      const ev = evalLevel('TrafficIntensity', info.value);
+      info.text = ev.text;
+      info.level = ev.level;
+    }
     const m=getMeta(feat);
     const val=typeof info.value==='number'?(Number.isInteger(info.value)?info.value:info.value.toFixed(3)):info.value;
     const r = RANGES[feat];
@@ -1184,7 +1190,7 @@ const EN_META = {
   "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:100000,level:"danger",text:"≥ 100 000 B/s — ByteLevel 2, possible flood attack"},{op:">=",value:10000,level:"warning",text:"≥ 10 000 B/s — ByteLevel 1, elevated throughput"}] },
   "Fwd IAT Mean":            { label:"Forward IAT Mean", unit:"µs", description:"Normal forward inter-arrival time — regular traffic", thresholds:[{op:"<=",value:200,level:"danger",text:"Near-zero forward IAT — automated high-speed sending"}] },
   "DistinctDestinationPort": { label:"Distinct Destination Ports", unit:"ports", description:"Low port diversity — normal", thresholds:[{op:">=",value:100,level:"danger",text:"≥100 unique ports — clear PortScan pattern"},{op:">=",value:30,level:"warning",text:"Elevated port diversity — possible reconnaissance"}] },
-  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Level 2 — max(PacketLevel,ByteLevel)=2, high DDoS signal"},{op:">=",value:1,level:"warning",text:"Level 1 — medium intensity, monitor"},{op:"==",value:0,level:"ok",text:"Level 0 — normal intensity"}] },
+  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Very high traffic intensity"},{op:">=",value:1,level:"warning",text:"Medium intensity — monitor"},{op:"==",value:0,level:"ok",text:"Normal intensity"}] },
   "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets (≤3 total) — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
   "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — ShortFlowRatio ≥ 0.9, clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
   "PortDiversityLevel":      { label:"Port Diversity Level", unit:"", description:"Low port diversity", thresholds:[{op:"==",value:1,level:"danger",text:"≥100 distinct ports targeted — clear PortScan pattern"},{op:"==",value:0,level:"ok",text:"Low port diversity — normal behavior"}] },
