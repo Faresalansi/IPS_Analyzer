@@ -1172,200 +1172,22 @@ function renderResult(d, srcIP, dstIP, usedVals){
 }
 
 const EN_META = {
-  /* ── Average Packet Size ──
-     PortScan: 2–6 bytes (tiny SYN-only) → warning/context
-     DDoS:     <100 bytes micro-flood OR ≥1400 bytes bulk-flood → danger
-     BENIGN:   40–1400 bytes → ok                                          */
-  "Average Packet Size": {
-    label:"Average Packet Size", unit:"bytes",
-    description:"Typical packet size — consistent with normal traffic",
-    thresholds:[
-      {op:"<=",value:10,  level:"warning", text:"Extremely small packets (≤10 B) — typical of SYN-only PortScan probes"},
-      {op:"<=",value:100, level:"warning", text:"Small packets — could indicate micro-flood DDoS or lightweight scan"},
-      {op:">=",value:1400,level:"warning", text:"Near-maximum size — possible bulk-flood DDoS pattern"}
-    ]
-  },
-
-  /* ── Burstiness ──
-     1 = bursty (IAT Std/Mean > 0.5) → strong DDoS signal
-     0 = steady → normal or PortScan (PortScan has fixed IAT = ok here)    */
-  "Burstiness": {
-    label:"Burstiness", unit:"",
-    description:"Steady, uniform inter-arrival times — normal traffic",
-    thresholds:[
-      {op:"==",value:1, level:"danger", text:"Bursty traffic (IAT Std/Mean > 0.5) — irregular flood pattern, strong DDoS indicator"},
-      {op:"==",value:0, level:"ok",     text:"Smooth, uniform timing — consistent with normal or scan flows"}
-    ]
-  },
-
-  /* ── Backward IAT Mean ──
-     0 in PortScan is EXPECTED (no replies)
-     0 in DDoS subtype-0 can also appear (one-way flood)
-     Very low but >0 → abnormally fast responses (DDoS echo)
-     High → slow server or idle connection                                  */
-  "Bwd IAT Mean": {
-    label:"Backward IAT Mean", unit:"µs",
-    description:"Normal backward inter-arrival time — server replies at expected rate",
-    thresholds:[
-      {op:"==",value:0,   level:"ok",      text:"No backward packets — expected for PortScan (server drops/rejects silently)"},
-      {op:"<=",value:500, level:"danger",  text:"Extremely fast backward responses — abnormal echo speed, possible DDoS reflection"},
-      {op:">=",value:1e8, level:"warning", text:"Very long backward IAT — slow or overloaded server response"}
-    ]
-  },
-
-  /* ── Flow Duration ──
-     PortScan: 10–100 µs (ultra-short) → clear scan signal
-     DDoS:     varies widely
-     BENIGN:   thousands to millions µs                                    */
-  "Flow Duration": {
-    label:"Flow Duration", unit:"µs",
-    description:"Normal flow duration — sustained bidirectional connection",
-    thresholds:[
-      {op:"<=",value:100,   level:"danger",  text:"Ultra-short flow (≤100 µs) — hallmark of PortScan probe, no real connection established"},
-      {op:"<=",value:5000,  level:"warning", text:"Very short flow — possible scan or incomplete handshake"},
-      {op:">=",value:5e7,   level:"ok",      text:"Long-duration flow — consistent with sustained normal traffic"}
-    ]
-  },
-
-  /* ── Flow IAT Mean ──
-     PortScan: near-zero (single ultra-fast packet series)
-     DDoS:     low (rapid flood)
-     BENIGN:   hundreds to millions µs                                     */
-  "Flow IAT Mean": {
-    label:"Flow IAT Mean", unit:"µs",
-    description:"Normal inter-arrival spacing — packets arrive at human/app speed",
-    thresholds:[
-      {op:"<=",value:50,  level:"danger",  text:"Near-zero IAT — automated packet generation, consistent with scan or flood"},
-      {op:"<=",value:200, level:"warning", text:"Very low IAT — high packet rate, possible DDoS flooding pattern"},
-      {op:">=",value:1e6, level:"ok",      text:"Large IAT — slow, idle, or long-lived normal flow"}
-    ]
-  },
-
-  /* ── Flow IAT Std ──
-     0 in PortScan = perfectly uniform timing (automated scanner)
-     High in DDoS = bursty flood                                           */
-  "Flow IAT Std": {
-    label:"Flow IAT Std", unit:"µs",
-    description:"Normal timing variance — natural variation in packet arrivals",
-    thresholds:[
-      {op:"==",value:0,    level:"warning", text:"Zero variance — perfectly uniform timing, consistent with automated scanner or single-packet flows"},
-      {op:">=",value:1e6,  level:"danger",  text:"Extremely high variance — highly bursty traffic, strong DDoS indicator"},
-      {op:">=",value:5e4,  level:"warning", text:"High variance — irregular packet timing, monitor for flood activity"}
-    ]
-  },
-
-  /* ── Flow Packets/s ──
-     PortScan: very high (5 000–200 000 pkt/s) → danger
-     DDoS:     high (100–1000+) → danger/warning
-     BENIGN:   low to moderate                                             */
-  "Flow Packets/s": {
-    label:"Flow Packets/s", unit:"pkt/s",
-    description:"Normal packet rate — consistent with legitimate application traffic",
-    thresholds:[
-      {op:">=",value:10000,level:"danger",  text:"Extremely high packet rate — consistent with PortScan or volumetric DDoS"},
-      {op:">=",value:1000, level:"danger",  text:"≥ 1000 pkt/s — TrafficIntensity Level 2, strong DDoS flood signal"},
-      {op:">=",value:100,  level:"warning", text:"≥ 100 pkt/s — TrafficIntensity Level 1, elevated rate — monitor closely"}
-    ]
-  },
-
-  /* ── Flow Bytes/s ──
-     PortScan: moderate-high due to pkt/s × tiny pkt size
-     DDoS:     very high bytes/s                                           */
-  "Flow Bytes/s": {
-    label:"Flow Bytes/s", unit:"B/s",
-    description:"Normal throughput — consistent with expected application bandwidth",
-    thresholds:[
-      {op:">=",value:1e6,  level:"danger",  text:"≥ 1 MB/s — extremely high throughput, strong volumetric DDoS signal"},
-      {op:">=",value:1e5,  level:"danger",  text:"≥ 100 KB/s — ByteLevel 2, high flood intensity"},
-      {op:">=",value:1e4,  level:"warning", text:"≥ 10 KB/s — ByteLevel 1, elevated throughput — monitor"}
-    ]
-  },
-
-  /* ── Forward IAT Mean ──
-     PortScan: 0 (single fwd pkt per flow, no successive fwd arrivals)
-     DDoS:     200–600 µs (rapid automated sending)
-     BENIGN:   thousands to millions µs                                    */
-  "Fwd IAT Mean": {
-    label:"Forward IAT Mean", unit:"µs",
-    description:"Normal forward inter-arrival time — app sends at human pace",
-    thresholds:[
-      {op:"==",value:0,   level:"ok",      text:"Zero forward IAT — single packet per flow, expected in PortScan (one SYN per port)"},
-      {op:"<=",value:200, level:"danger",  text:"Near-zero forward IAT (>0) — automated high-speed sending, strong DDoS flood indicator"},
-      {op:"<=",value:1000,level:"warning", text:"Low forward IAT — high send rate, possible flooding activity"}
-    ]
-  },
-
-  /* ── Distinct Destination Ports ──                                      */
-  "DistinctDestinationPort": {
-    label:"Distinct Destination Ports", unit:"ports",
-    description:"Few destination ports — consistent with normal single-service traffic",
-    thresholds:[
-      {op:">=",value:100, level:"danger",  text:"≥ 100 unique ports targeted — definitive PortScan fingerprint"},
-      {op:">=",value:30,  level:"warning", text:"Elevated port count — possible reconnaissance activity"}
-    ]
-  },
-
-  /* ── Traffic Intensity ──                                               */
-  "TrafficIntensity": {
-    label:"Traffic Intensity", unit:"",
-    description:"Level 0 — low intensity, normal traffic",
-    thresholds:[
-      {op:">=",value:2, level:"danger",  text:"Level 2 — max(PacketLevel, ByteLevel) = 2, very high flood intensity, strong DDoS signal"},
-      {op:">=",value:1, level:"warning", text:"Level 1 — medium intensity, elevated rate — monitor for flood escalation"},
-      {op:"==",value:0, level:"ok",      text:"Level 0 — normal intensity, no flood indicators"}
-    ]
-  },
-
-  /* ── Low Packet Level ──
-     1 = ≤3 total packets → expected in PortScan, suspicious in DDoS      */
-  "LowPacketLevel": {
-    label:"Low Packet Level", unit:"",
-    description:"Sufficient packets per flow — consistent with normal connections",
-    thresholds:[
-      {op:"==",value:1, level:"warning", text:"≤ 3 packets total — very short exchange, typical of PortScan probes or incomplete handshakes"},
-      {op:"==",value:0, level:"ok",      text:"Normal packet count per flow — consistent with real connections"}
-    ]
-  },
-
-  /* ── Short Flow Level ──                                                */
-  "ShortFlowLevel": {
-    label:"Short Flow Level", unit:"",
-    description:"Normal flow length — flows have sufficient duration",
-    thresholds:[
-      {op:"==",value:1, level:"danger",  text:"ShortFlowRatio ≥ 0.9 — nearly all flows are ultra-short, strong PortScan pattern"},
-      {op:"==",value:0, level:"ok",      text:"Normal flow length — flows last long enough for real data exchange"}
-    ]
-  },
-
-  /* ── Port Diversity Level ──                                            */
-  "PortDiversityLevel": {
-    label:"Port Diversity Level", unit:"",
-    description:"Low port diversity — traffic targets a consistent service",
-    thresholds:[
-      {op:"==",value:1, level:"danger", text:"≥ 100 distinct ports targeted — clear PortScan sweep pattern"},
-      {op:"==",value:0, level:"ok",     text:"Low port diversity — traffic focused on expected services"}
-    ]
-  },
-
-  /* ── Short Flow Ratio ──                                                */
-  "ShortFlowRatio": {
-    label:"Short Flow Ratio", unit:"ratio",
-    description:"Low short-flow ratio — most flows have normal duration",
-    thresholds:[
-      {op:">=",value:0.9, level:"danger",  text:"≥ 0.9 → ShortFlowLevel=1 — nearly all flows are ultra-short, definitive PortScan signal"},
-      {op:">=",value:0.5, level:"warning", text:"Elevated short-flow ratio — possible scanning or probe activity"}
-    ]
-  },
-
-  /* ── Low Packet Flow Ratio ──                                           */
-  "LowPacketFlowRatio": {
-    label:"Low Packet Flow Ratio", unit:"ratio",
-    description:"Low minimal-packet ratio — flows carry real payloads",
-    thresholds:[
-      {op:">=",value:0.9, level:"danger",  text:"≥ 0.9 → LowPacketLevel=1 — nearly all flows have ≤3 packets, strong PortScan indicator"},
-      {op:">=",value:0.5, level:"warning", text:"Elevated low-packet ratio — possible scanning or SYN-flood activity"}
-    ]
-  },
+  "Average Packet Size":     { label:"Average Packet Size", unit:"bytes", description:"Normal packet size — healthy flow", thresholds:[{op:"<=",value:100,level:"warning",text:"Very small packets — possible flooding pattern"},{op:">=",value:1400,level:"warning",text:"Near-max size — possible bulk data transfer"}] },
+  "Burstiness":              { label:"Burstiness", unit:"", description:"Smooth, steady traffic flow", thresholds:[{op:"==",value:1,level:"danger",text:"Bursty traffic — IAT Std / IAT Mean > 0.5"},{op:"==",value:0,level:"ok",text:"Smooth traffic — IAT Std / IAT Mean ≤ 0.5"}] },
+  "Bwd IAT Mean":            { label:"Backward IAT Mean", unit:"µs", description:"Normal backward inter-arrival time", thresholds:[{op:"<=",value:500,level:"danger",text:"Very low backward IAT — abnormally fast responses"},{op:">=",value:80000,level:"warning",text:"High backward IAT — slow or delayed responses"}] },
+  "Flow Duration":           { label:"Flow Duration", unit:"µs", description:"Normal flow duration — sustained connection", thresholds:[{op:"<=",value:500,level:"warning",text:"Very short flow — possible scan or probe"}] },
+  "Flow IAT Mean":           { label:"Flow IAT Mean", unit:"µs", description:"Normal flow IAT", thresholds:[{op:"<=",value:200,level:"danger",text:"Extremely fast inter-arrivals — possible flood"}] },
+  "Flow IAT Std":            { label:"Flow IAT Std", unit:"µs", description:"Normal IAT variance", thresholds:[{op:">=",value:50000,level:"warning",text:"High variance — irregular traffic timing"}] },
+  "Flow Packets/s":          { label:"Flow Packets/s", unit:"pkt/s", description:"Normal packet rate", thresholds:[{op:">=",value:1000,level:"danger",text:"≥ 1000 pkt/s — PacketLevel 2, likely DDoS"},{op:">=",value:100,level:"warning",text:"≥ 100 pkt/s — PacketLevel 1, monitor closely"}] },
+  "Flow Bytes/s":            { label:"Flow Bytes/s", unit:"B/s", description:"Normal throughput", thresholds:[{op:">=",value:100000,level:"danger",text:"≥ 100 000 B/s — ByteLevel 2, possible flood attack"},{op:">=",value:10000,level:"warning",text:"≥ 10 000 B/s — ByteLevel 1, elevated throughput"}] },
+  "Fwd IAT Mean":            { label:"Forward IAT Mean", unit:"µs", description:"Normal forward inter-arrival time — regular traffic", thresholds:[{op:"<=",value:200,level:"danger",text:"Near-zero forward IAT — automated high-speed sending"}] },
+  "DistinctDestinationPort": { label:"Distinct Destination Ports", unit:"ports", description:"Low port diversity — normal", thresholds:[{op:">=",value:100,level:"danger",text:"≥100 unique ports — clear PortScan pattern"},{op:">=",value:30,level:"warning",text:"Elevated port diversity — possible reconnaissance"}] },
+  "TrafficIntensity":        { label:"Traffic Intensity", unit:"", description:"Normal traffic intensity", thresholds:[{op:">=",value:2,level:"danger",text:"Level 2 — max(PacketLevel,ByteLevel)=2, high DDoS signal"},{op:">=",value:1,level:"warning",text:"Level 1 — medium intensity, monitor"},{op:"==",value:0,level:"ok",text:"Level 0 — normal intensity"}] },
+  "LowPacketLevel":          { label:"Low Packet Level", unit:"", description:"Normal packet count", thresholds:[{op:"==",value:1,level:"warning",text:"Very few packets (≤3 total) — typical of short scan flows"},{op:"==",value:0,level:"ok",text:"Sufficient packets — normal flows"}] },
+  "ShortFlowLevel":          { label:"Short Flow Level", unit:"", description:"Normal flow length", thresholds:[{op:"==",value:1,level:"warning",text:"Very short flows — ShortFlowRatio ≥ 0.9, clear attack pattern"},{op:"==",value:0,level:"ok",text:"Normal flow length"}] },
+  "PortDiversityLevel":      { label:"Port Diversity Level", unit:"", description:"Low port diversity", thresholds:[{op:"==",value:1,level:"danger",text:"≥100 distinct ports targeted — clear PortScan pattern"},{op:"==",value:0,level:"ok",text:"Low port diversity — normal behavior"}] },
+  "ShortFlowRatio":          { label:"Short Flow Ratio", unit:"ratio", description:"Low ratio of short flows — normal", thresholds:[{op:">=",value:0.9,level:"danger",text:"≥ 0.9 → ShortFlowLevel=1 — nearly all flows are short, strong PortScan signal"},{op:">=",value:0.5,level:"warning",text:"Elevated ratio — monitor for scanning activity"}] },
+  "LowPacketFlowRatio":      { label:"Low Packet Flow Ratio", unit:"ratio", description:"Low ratio of minimal-packet flows — normal", thresholds:[{op:">=",value:0.9,level:"danger",text:"≥ 0.9 → LowPacketLevel=1 — nearly all flows have ≤3 packets, strong PortScan signal"},{op:">=",value:0.5,level:"warning",text:"Elevated ratio — possible scanning activity"}] },
 };
 
 function getMeta(feat) { return EN_META[feat] || META[feat] || {}; }
