@@ -988,8 +988,17 @@ function renderCausalPath(label, ips, usedVals = {}) {
     if (ddosIps) ddosIps.textContent = `${icon} ${ips}`;
     if (ddosIpsInc) ddosIpsInc.textContent = `${icon} ${ips}`;
     if (ddosVerdict) {
-      const burst = usedVals.Burstiness ?? '—';
-      ddosVerdict.textContent = `Verdict → DDoS · IPS Decision: ${ips} · TrafficIntensity=${ti} · Burstiness=${burst}`;
+      const burst  = usedVals.Burstiness ?? 0;
+      const fwdIAT = usedVals['Fwd IAT Mean'] ?? 0;
+      const bwdIAT = usedVals['Bwd IAT Mean'] ?? 0;
+      const pktSz  = usedVals['Average Packet Size'] ?? 0;
+      const parts  = ['Verdict → DDoS', `IPS: ${ips}`];
+      if (ti >= 1)                       parts.push(`TrafficIntensity=${ti}`);
+      if (burst === 1)                   parts.push(`Burstiness=1`);
+      if (fwdIAT > 0 && fwdIAT <= 200)  parts.push(`FwdIAT=${fwdIAT.toFixed(0)}µs`);
+      if (bwdIAT > 0 && bwdIAT <= 500)  parts.push(`BwdIAT=${bwdIAT.toFixed(0)}µs`);
+      if (pktSz < 100 || pktSz >= 1400) parts.push(`PktSize=${pktSz.toFixed(0)}B`);
+      ddosVerdict.textContent = parts.join(' · ');
     }
   }
 
@@ -999,12 +1008,16 @@ function renderCausalPath(label, ips, usedVals = {}) {
     const psVerdict = document.getElementById('cp-ps-verdict');
     if (psIps) psIps.textContent = `${icon} ${ips}`;
     if (psVerdict) {
-      const sfr = usedVals.ShortFlowRatio ?? '—';
-      const sfl = usedVals.ShortFlowLevel ?? '—';
-      const lpfr = usedVals.LowPacketFlowRatio ?? '—';
-      const lpl = usedVals.LowPacketLevel ?? '—';
-      const portDiv = usedVals.PortDiversityLevel ?? '—';
-      psVerdict.textContent = `Verdict → PortScan · IPS: ${ips} · ShortFlowRatio=${sfr}→Lvl${sfl} · LowPacketRatio=${lpfr}→Lvl${lpl} · PortDiversity=${portDiv}`;
+      const sfr     = usedVals.ShortFlowRatio     ?? 0;
+      const sfl     = usedVals.ShortFlowLevel     ?? 0;
+      const lpfr    = usedVals.LowPacketFlowRatio ?? 0;
+      const lpl     = usedVals.LowPacketLevel     ?? 0;
+      const portDiv = usedVals.PortDiversityLevel ?? 0;
+      const parts   = ['Verdict → PortScan', `IPS: ${ips}`];
+      if (sfl === 1)     parts.push(`ShortFlowRatio=${sfr.toFixed(3)}→Lvl1`);
+      if (lpl === 1)     parts.push(`LowPacketRatio=${lpfr.toFixed(3)}→Lvl1`);
+      if (portDiv === 1) parts.push(`PortDiversity=1`);
+      psVerdict.textContent = parts.join(' · ');
     }
   }
 }
